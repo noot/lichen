@@ -17,8 +17,8 @@ pub struct Agent {
     pub(crate) coordinator_url: String,
     pub(crate) client: reqwest::Client,
     pub(crate) role: AgentRole,
-    port: u16,
     pub(crate) poll_interval: u64,
+    port: u16,
 }
 
 impl Agent {
@@ -29,8 +29,8 @@ impl Agent {
             coordinator_url: args.coordinator_url,
             client: reqwest::Client::new(),
             role: args.role,
-            port: args.port,
             poll_interval: args.poll_interval,
+            port: args.port,
         }
     }
 

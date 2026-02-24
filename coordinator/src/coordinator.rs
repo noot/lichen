@@ -22,7 +22,7 @@ pub struct Coordinator {
 }
 
 impl Coordinator {
-    pub fn new(args: Args) -> Self {
+    pub fn new(args: &Args) -> Self {
         Self {
             alpha: args.alpha,
             beta: args.beta,

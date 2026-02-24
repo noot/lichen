@@ -13,7 +13,7 @@ async fn main() -> Result<()> {
     let token = CancellationToken::new();
 
     let run_token = token.clone();
-    let coordinator = Coordinator::new(Args::parse());
+    let coordinator = Coordinator::new(&Args::parse());
     let handle = tokio::spawn(async move { coordinator.run(run_token).await });
 
     tokio::select! {
