@@ -74,10 +74,28 @@ fn spawn_agent(
     token: CancellationToken,
     config: &LlmConfig,
 ) {
+    spawn_agent_with_model(
+        coordinator_url,
+        role,
+        agent_id,
+        token,
+        config,
+        &config.model,
+    );
+}
+
+fn spawn_agent_with_model(
+    coordinator_url: &str,
+    role: AgentRole,
+    agent_id: &str,
+    token: CancellationToken,
+    config: &LlmConfig,
+    model: &str,
+) {
     let args = Args {
         port: 0,
         agent_id: agent_id.to_string(),
-        model: config.model.clone(),
+        model: model.to_string(),
         llm_url: config.base_url.clone(),
         api_key: Some(config.api_key.clone()),
         provider: config.provider,
@@ -230,6 +248,156 @@ async fn full_lifecycle() {
             assert_eq!(worker_id, "worker-1");
             assert_eq!(ratings.len(), 3, "expected 3 ratings");
             assert_eq!(scores.len(), 3, "expected 3 scores");
+        }
+        other => panic!("expected Scored, got {other:?}"),
+    }
+
+    agent_token.cancel();
+    coord_token.cancel();
+}
+
+#[tokio::test]
+#[ignore]
+async fn multi_model_lifecycle() {
+    init_tracing();
+    let config = llm_config();
+    let (base, client, coord_token) = spawn_coordinator().await;
+    let agent_token = coord_token.child_token();
+
+    // different model per agent
+    let models = [
+        ("worker-sonnet", AgentRole::Worker, "claude-sonnet-4-6"),
+        ("rater-gpt", AgentRole::Rater, "gpt-4o-mini"),
+        ("rater-haiku", AgentRole::Rater, "claude-haiku-4-5"),
+        ("rater-gemini", AgentRole::Rater, "gemini-2.5-flash"),
+        ("rater-gpt5", AgentRole::Rater, "gpt-5-mini"),
+        ("rater-llama", AgentRole::Rater, "llama-4-scout-17b-16e"),
+    ];
+
+    for (id, role, model) in &models {
+        spawn_agent_with_model(&base, *role, id, agent_token.clone(), &config, model);
+    }
+
+    let task = client
+        .create_task(
+            "write a short function in rust that reverses a string. include a docstring.",
+            5,
+        )
+        .await
+        .unwrap();
+
+    let status = poll_until_phase(
+        &client,
+        task.task.id,
+        |p| matches!(p, TaskPhase::Scored { .. }),
+        180,
+    )
+    .await;
+
+    match &status.phase {
+        TaskPhase::Scored {
+            worker_id,
+            worker_output,
+            ratings,
+            scores,
+            bts_accepted,
+            approval,
+            accepted,
+        } => {
+            assert_eq!(worker_id, "worker-sonnet");
+            assert!(!worker_output.is_empty());
+            assert_eq!(ratings.len(), 5, "expected 5 ratings");
+            assert_eq!(scores.len(), 5, "expected 5 scores");
+
+            println!("\n=== multi-model results ===");
+            println!("worker output:\n{worker_output}\n");
+            println!(
+                "accepted: {accepted} (approval: {approval:.2}, bts_accepted: {bts_accepted})"
+            );
+            for (rating, score) in ratings.iter().zip(scores.iter()) {
+                let vote = if rating.signal { "good" } else { "bad" };
+                println!(
+                    "  {} — vote: {}, prediction: {:.2}, payment: {:.4}",
+                    score.agent_id, vote, rating.prediction, score.payment
+                );
+            }
+        }
+        other => panic!("expected Scored, got {other:?}"),
+    }
+
+    agent_token.cancel();
+    coord_token.cancel();
+}
+
+#[tokio::test]
+#[ignore]
+async fn ten_model_lifecycle() {
+    init_tracing();
+    let config = llm_config();
+    let (base, client, coord_token) = spawn_coordinator().await;
+    let agent_token = coord_token.child_token();
+
+    // 1 worker + 9 raters across different providers and model sizes
+    let models = [
+        ("worker-sonnet", AgentRole::Worker, "claude-sonnet-4-6"),
+        ("rater-haiku", AgentRole::Rater, "claude-haiku-4-5"),
+        ("rater-sonnet-4.5", AgentRole::Rater, "claude-sonnet-4-5"),
+        ("rater-gpt5", AgentRole::Rater, "gpt-5"),
+        ("rater-gpt4.1m", AgentRole::Rater, "gpt-4.1-mini"),
+        ("rater-gpt5m", AgentRole::Rater, "gpt-5-mini"),
+        ("rater-gemini", AgentRole::Rater, "gemini-2.5-flash"),
+        ("rater-gemini3", AgentRole::Rater, "gemini-3-pro"),
+        ("rater-llama", AgentRole::Rater, "llama-4-maverick-17b-128e"),
+        ("rater-gpt4o", AgentRole::Rater, "gpt-4o"),
+    ];
+
+    for (id, role, model) in &models {
+        spawn_agent_with_model(&base, *role, id, agent_token.clone(), &config, model);
+    }
+
+    let task = client
+        .create_task(
+            "write a short function in rust that reverses a string. include a docstring.",
+            9,
+        )
+        .await
+        .unwrap();
+
+    let status = poll_until_phase(
+        &client,
+        task.task.id,
+        |p| matches!(p, TaskPhase::Scored { .. }),
+        300,
+    )
+    .await;
+
+    match &status.phase {
+        TaskPhase::Scored {
+            worker_id,
+            worker_output,
+            ratings,
+            scores,
+            bts_accepted,
+            approval,
+            accepted,
+        } => {
+            assert_eq!(worker_id, "worker-sonnet");
+            assert!(!worker_output.is_empty());
+            assert_eq!(ratings.len(), 9, "expected 9 ratings");
+            assert_eq!(scores.len(), 9, "expected 9 scores");
+
+            println!("\n=== 10-model results ===");
+            println!("worker output:\n{worker_output}\n");
+            println!(
+                "accepted: {accepted} (approval: {approval:.2}, bts_accepted: {bts_accepted})"
+            );
+            for (rating, score) in ratings.iter().zip(scores.iter()) {
+                let vote = if rating.signal { "good" } else { "bad" };
+                println!(
+                    "  {:20} — vote: {:4}, prediction: {:.2}, payment: {:.4}",
+                    score.agent_id, vote, rating.prediction, score.payment
+                );
+            }
         }
         other => panic!("expected Scored, got {other:?}"),
     }

@@ -58,11 +58,15 @@ async fn full_task_lifecycle() {
     match &task.phase {
         TaskPhase::Scored {
             bts_accepted,
+            approval,
+            accepted,
             scores,
             ..
         } => {
             // actual good = 2/3 ≈ 0.67, avg predicted = 0.4. good is surprisingly popular.
             assert!(bts_accepted);
+            assert!(*approval >= 0.5);
+            assert!(accepted);
             assert_eq!(scores.len(), 3);
         }
         other => panic!("expected Scored, got {other:?}"),
@@ -88,8 +92,13 @@ async fn bad_work_rejected_by_bts() {
         .unwrap();
 
     match &task.phase {
-        TaskPhase::Scored { bts_accepted, .. } => {
+        TaskPhase::Scored {
+            bts_accepted,
+            accepted,
+            ..
+        } => {
             assert!(!bts_accepted);
+            assert!(!accepted);
         }
         other => panic!("expected Scored, got {other:?}"),
     }

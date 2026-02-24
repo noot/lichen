@@ -73,7 +73,11 @@ pub enum TaskPhase {
         ratings: Vec<SubmitRatingRequest>,
         scores: Vec<ScoreResult>,
         /// Whether "good" was surprisingly popular — i.e. the actual fraction
-        /// of "good" votes exceeded the average predicted fraction.
+        /// of "good" votes met or exceeded the average predicted fraction.
         bts_accepted: bool,
+        /// Fraction of raters who voted "good" (0.0 to 1.0).
+        approval: f64,
+        /// Overall verdict: true if approval >= 0.5 and bts_accepted.
+        accepted: bool,
     },
 }

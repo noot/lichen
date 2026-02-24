@@ -71,6 +71,7 @@ async fn handle_work(
         }
     };
 
+    info!("agent {agent_id} completed task {task_id}: {output}");
     match coordinator.submit_result(*task_id, agent_id, &output).await {
         Ok(_) => info!("submitted result for task {task_id}"),
         Err(e) => error!("submit result failed for {task_id}: {e}"),
@@ -114,6 +115,8 @@ async fn handle_rate(
     };
 
     let (signal, prediction) = parse_rating(&raw).unwrap_or((false, 0.5));
+    let vote = if signal { "good" } else { "bad" };
+    info!("agent {agent_id} rated task {task_id}: {vote}, prediction={prediction:.2}");
 
     match coordinator
         .submit_rating(*task_id, agent_id, signal, prediction)

@@ -136,15 +136,19 @@ pub(crate) async fn submit_rating(
         let actual_good = ratings.iter().filter(|r| r.signal).count() as f64 / ratings.len() as f64;
         let predicted_good =
             ratings.iter().map(|r| r.prediction).sum::<f64>() / ratings.len() as f64;
-        let bts_accepted = actual_good > predicted_good;
+        let bts_accepted = actual_good >= predicted_good;
+        let approval = actual_good;
+        let accepted = approval >= 0.5 && bts_accepted;
 
-        info!("task {task_id}: scored (bts_accepted={bts_accepted}) — {scores:?}");
+        info!("task {task_id}: scored (accepted={accepted}, approval={approval:.2}, bts_accepted={bts_accepted}) — {scores:?}");
         task.phase = TaskPhase::Scored {
             worker_id,
             worker_output,
             ratings,
             scores,
             bts_accepted,
+            approval,
+            accepted,
         };
     }
 

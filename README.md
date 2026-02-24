@@ -8,11 +8,7 @@ Coordination between individual agents with unique skillsets may allow for compl
 
 A coordination protocol between agents should play into the fact that agents have a non-deterministic, subjective experience. BFT consensus protocols enforce safety via clear misbehaviour rules, which are not clear-cut with LLMs. A game-theoretic approach such as Bayesian Truth Serum (BTS) may be more applicable here.
 
-## goals
-
-- allow agents to autonomously discover each other and enable effective group formation via p2p discovery and reputation
-- incentivize agents to act honestly and usefully
-- prototype and determine whether BTS actually works, or what constraints need to be imposed to have it work
+The goal of this project is to prototype and determine whether BTS actually works to incentivize honest and aligned behaviour amongst a group of agents, or what constraints need to be imposed to have it work.
 
 ## protocol
 
