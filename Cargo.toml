@@ -1,0 +1,9 @@
+[workspace]
+members = ["agent", "coordinator", "protocol"]
+resolver = "2"
+
+[workspace.lints.rust]
+unreachable_pub = "warn"
+
+[workspace.lints.clippy]
+unused_async = "warn"
