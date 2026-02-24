@@ -14,11 +14,15 @@ use crate::cli::Args;
 use crate::handlers;
 use protocol::TaskStatus;
 
-pub struct Coordinator {
+pub(crate) struct AppState {
     pub(crate) alpha: f64,
     pub(crate) beta: f64,
     pub(crate) tasks: RwLock<HashMap<Uuid, TaskStatus>>,
-    port: u16,
+}
+
+pub struct Coordinator {
+    alpha: f64,
+    beta: f64,
 }
 
 impl Coordinator {
@@ -26,13 +30,26 @@ impl Coordinator {
         Self {
             alpha: args.alpha,
             beta: args.beta,
-            tasks: RwLock::new(HashMap::new()),
-            port: args.port,
         }
     }
 
-    pub async fn run(self, token: CancellationToken) -> Result<()> {
-        let state = Arc::new(self);
+    pub async fn run(
+        self,
+        listener: tokio::net::TcpListener,
+        token: CancellationToken,
+    ) -> Result<()> {
+        let Self { alpha, beta } = self;
+
+        info!(
+            "coordinator listening on {}",
+            listener.local_addr().wrap_err("failed to get local addr")?
+        );
+
+        let state = Arc::new(AppState {
+            alpha,
+            beta,
+            tasks: RwLock::new(HashMap::new()),
+        });
 
         let app = Router::new()
             .route("/health", get(|| async { "ok" }))
@@ -41,13 +58,7 @@ impl Coordinator {
             .route("/tasks/{task_id}", get(handlers::get_task))
             .route("/tasks/{task_id}/result", post(handlers::submit_result))
             .route("/tasks/{task_id}/rating", post(handlers::submit_rating))
-            .with_state(state.clone());
-
-        let addr = format!("0.0.0.0:{}", state.port);
-        info!("coordinator listening on {}", addr);
-        let listener = tokio::net::TcpListener::bind(&addr)
-            .await
-            .wrap_err("failed to bind listener")?;
+            .with_state(state);
 
         tokio::select! {
             result = axum::serve(listener, app) => {

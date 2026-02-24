@@ -1,0 +1,13 @@
+[package]
+name = "client"
+version = "0.1.0"
+edition = "2021"
+
+[lints]
+workspace = true
+
+[dependencies]
+protocol = { path = "../protocol" }
+reqwest = { version = "0.12", features = ["json"] }
+eyre = "0.6"
+uuid = { version = "1", features = ["v4"] }

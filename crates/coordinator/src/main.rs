@@ -10,11 +10,16 @@ use coordinator::Coordinator;
 async fn main() -> Result<()> {
     tracing_subscriber::fmt::init();
 
+    let args = Args::parse();
     let token = CancellationToken::new();
-
     let run_token = token.clone();
-    let coordinator = Coordinator::new(&Args::parse());
-    let handle = tokio::spawn(async move { coordinator.run(run_token).await });
+
+    let listener = tokio::net::TcpListener::bind(format!("0.0.0.0:{}", args.port))
+        .await
+        .wrap_err("failed to bind listener")?;
+
+    let coordinator = Coordinator::new(&args);
+    let handle = tokio::spawn(async move { coordinator.run(listener, run_token).await });
 
     tokio::select! {
         result = handle => {

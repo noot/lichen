@@ -72,8 +72,8 @@ pub enum TaskPhase {
         worker_output: String,
         ratings: Vec<SubmitRatingRequest>,
         scores: Vec<ScoreResult>,
-        /// Whether "good" was surprisingly popular — i.e. more raters said
-        /// "good" than the average prediction.
-        accepted: bool,
+        /// Whether "good" was surprisingly popular — i.e. the actual fraction
+        /// of "good" votes exceeded the average predicted fraction.
+        bts_accepted: bool,
     },
 }

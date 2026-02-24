@@ -138,7 +138,7 @@ impl LlmClient {
             .json(&body);
 
         if let Some(key) = &self.api_key {
-            req = req.bearer_auth(key);
+            req = req.header("x-api-key", key);
         }
 
         let resp = req
@@ -165,19 +165,23 @@ impl LlmClient {
 mod tests {
     use super::*;
 
-    /// Integration test: hits a real Anthropic-compatible API.
-    /// Requires LLM_API_KEY and optionally LLM_BASE_URL / LLM_MODEL.
+    /// Integration test: hits a real LLM API.
+    /// Requires LLM_API_KEY and optionally LLM_BASE_URL / LLM_MODEL / LLM_PROVIDER.
     /// Skipped by default; run with `cargo test -- --ignored`.
     #[tokio::test]
     #[ignore]
-    async fn anthropic_roundtrip() {
+    async fn llm_roundtrip() {
         let key = std::env::var("LLM_API_KEY").expect("set LLM_API_KEY to run this test");
         let base_url =
             std::env::var("LLM_BASE_URL").unwrap_or_else(|_| "https://api.anthropic.com/v1".into());
         let model =
             std::env::var("LLM_MODEL").unwrap_or_else(|_| "claude-sonnet-4-20250514".into());
+        let provider = match std::env::var("LLM_PROVIDER").unwrap_or_default().as_str() {
+            "openai" => Provider::Openai,
+            _ => Provider::Anthropic,
+        };
 
-        let client = LlmClient::new(base_url, model, Some(key), Provider::Anthropic);
+        let client = LlmClient::new(base_url, model, Some(key), provider);
 
         let messages = vec![Message {
             role: "user".into(),

@@ -11,12 +11,12 @@ use protocol::{
 use tracing::info;
 use uuid::Uuid;
 
+use crate::coordinator::AppState;
 use crate::scoring;
-use crate::Coordinator;
 
 /// POST /tasks — create a new task
 pub(crate) async fn create_task(
-    State(state): State<Arc<Coordinator>>,
+    State(state): State<Arc<AppState>>,
     Json(req): Json<CreateTaskRequest>,
 ) -> (StatusCode, Json<TaskStatus>) {
     let task_id = Uuid::new_v4();
@@ -36,14 +36,14 @@ pub(crate) async fn create_task(
 }
 
 /// GET /tasks — list all tasks
-pub(crate) async fn list_tasks(State(state): State<Arc<Coordinator>>) -> Json<Vec<TaskStatus>> {
+pub(crate) async fn list_tasks(State(state): State<Arc<AppState>>) -> Json<Vec<TaskStatus>> {
     let tasks = state.tasks.read().await;
     Json(tasks.values().cloned().collect())
 }
 
 /// GET /tasks/:task_id — get task status
 pub(crate) async fn get_task(
-    State(state): State<Arc<Coordinator>>,
+    State(state): State<Arc<AppState>>,
     Path(task_id): Path<Uuid>,
 ) -> Result<Json<TaskStatus>, StatusCode> {
     state
@@ -58,7 +58,7 @@ pub(crate) async fn get_task(
 
 /// POST /tasks/:task_id/result — worker pushes output
 pub(crate) async fn submit_result(
-    State(state): State<Arc<Coordinator>>,
+    State(state): State<Arc<AppState>>,
     Path(task_id): Path<Uuid>,
     Json(req): Json<SubmitResultRequest>,
 ) -> Result<Json<TaskStatus>, (StatusCode, String)> {
@@ -83,7 +83,7 @@ pub(crate) async fn submit_result(
 
 /// POST /tasks/:task_id/rating — rater pushes rating
 pub(crate) async fn submit_rating(
-    State(state): State<Arc<Coordinator>>,
+    State(state): State<Arc<AppState>>,
     Path(task_id): Path<Uuid>,
     Json(req): Json<SubmitRatingRequest>,
 ) -> Result<Json<TaskStatus>, (StatusCode, String)> {
@@ -136,15 +136,15 @@ pub(crate) async fn submit_rating(
         let actual_good = ratings.iter().filter(|r| r.signal).count() as f64 / ratings.len() as f64;
         let predicted_good =
             ratings.iter().map(|r| r.prediction).sum::<f64>() / ratings.len() as f64;
-        let accepted = actual_good > predicted_good;
+        let bts_accepted = actual_good > predicted_good;
 
-        info!("task {task_id}: scored (accepted={accepted}) — {scores:?}");
+        info!("task {task_id}: scored (bts_accepted={bts_accepted}) — {scores:?}");
         task.phase = TaskPhase::Scored {
             worker_id,
             worker_output,
             ratings,
             scores,
-            accepted,
+            bts_accepted,
         };
     }
 

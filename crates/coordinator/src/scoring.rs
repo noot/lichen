@@ -1,9 +1,14 @@
 use protocol::{ScoreResult, SubmitRatingRequest};
 
+/// small epsilon to avoid log(0)
+const EPS: f64 = 1e-10;
+
 /// Compute RBTS scores for a set of rating responses.
 ///
 /// For each agent:
-///   - Information score: fraction of peers whose signal matches theirs
+///   - Information score: log(actual_freq / avg_predicted_freq) for the agent's
+///     chosen signal. this is the BTS "surprisingly popular" log score — agents
+///     are rewarded when their answer is more common than predicted.
 ///   - Prediction score: QPS(their prediction, actual fraction who said "good")
 ///   - Payment = alpha * information_score + beta * prediction_score
 ///
@@ -23,26 +28,26 @@ pub(crate) fn rbts_score(
             .collect();
     }
 
+    let n = responses.len() as f64;
     let num_good = responses.iter().filter(|r| r.signal).count();
-    let actual_good_frac = num_good as f64 / responses.len() as f64;
+    let actual_good_frac = (num_good as f64 / n).clamp(EPS, 1.0 - EPS);
+    let actual_bad_frac = 1.0 - actual_good_frac;
+
+    // average predicted fraction of "good" across all agents
+    let avg_predicted_good =
+        (responses.iter().map(|r| r.prediction).sum::<f64>() / n).clamp(EPS, 1.0 - EPS);
+    let avg_predicted_bad = 1.0 - avg_predicted_good;
 
     responses
         .iter()
-        .enumerate()
-        .map(|(i, resp)| {
-            // compare with all peers (not self) and average
-            let peers: Vec<usize> = (0..responses.len()).filter(|&j| j != i).collect();
-            let information_score = peers
-                .iter()
-                .map(|&j| {
-                    if resp.signal == responses[j].signal {
-                        1.0
-                    } else {
-                        0.0
-                    }
-                })
-                .sum::<f64>()
-                / peers.len() as f64;
+        .map(|resp| {
+            // log score: log(actual_freq / avg_predicted_freq) for the chosen answer.
+            // agents who voted with the "surprisingly popular" answer get positive scores.
+            let information_score = if resp.signal {
+                (actual_good_frac / avg_predicted_good).ln()
+            } else {
+                (actual_bad_frac / avg_predicted_bad).ln()
+            };
 
             let prediction_score = qps(resp.prediction, actual_good_frac);
 
@@ -92,24 +97,28 @@ mod tests {
     }
 
     #[test]
-    fn honest_majority_gets_non_negative_payments() {
+    fn surprisingly_popular_answer_gets_positive_information_score() {
+        // 3 agents vote "good" and predict 0.5, 1 votes "bad" and predicts 0.5.
+        // actual good = 0.75, avg predicted good = 0.5.
+        // "good" is surprisingly popular → log(0.75/0.5) > 0.
+        // "bad" is surprisingly unpopular → log(0.25/0.5) < 0.
         let responses = vec![
-            make_response("a", true, 0.8),
-            make_response("b", true, 0.7),
-            make_response("c", true, 0.9),
-            make_response("d", false, 0.6),
+            make_response("a", true, 0.5),
+            make_response("b", true, 0.5),
+            make_response("c", true, 0.5),
+            make_response("d", false, 0.5),
         ];
-        let scores = rbts_score(&responses, 1.0, 1.0);
-        assert_eq!(scores.len(), 4);
-        // all should have non-negative payments when mostly honest
-        for s in &scores {
-            assert!(
-                s.payment >= 0.0,
-                "{} had negative payment: {}",
-                s.agent_id,
-                s.payment
-            );
-        }
+        let scores = rbts_score(&responses, 1.0, 0.0); // information score only
+        let good_voter = scores.iter().find(|s| s.agent_id == "a").unwrap();
+        let bad_voter = scores.iter().find(|s| s.agent_id == "d").unwrap();
+        assert!(
+            good_voter.payment > 0.0,
+            "surprisingly popular voter should have positive score"
+        );
+        assert!(
+            bad_voter.payment < 0.0,
+            "surprisingly unpopular voter should have negative score"
+        );
     }
 
     #[test]
