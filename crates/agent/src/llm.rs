@@ -20,6 +20,7 @@ pub(crate) struct LlmClient {
 struct OpenAiRequest<'a> {
     model: &'a str,
     messages: &'a [Message],
+    max_tokens: u32,
 }
 
 #[derive(Debug, Deserialize)]
@@ -82,18 +83,48 @@ impl LlmClient {
         }
     }
 
+    /// Maximum number of retries for rate-limited (429) requests.
+    const MAX_RETRIES: u32 = 5;
+
+    /// Base delay for exponential backoff on 429s.
+    const RETRY_BASE_DELAY: std::time::Duration = std::time::Duration::from_secs(2);
+
     pub(crate) async fn chat(&self, messages: &[Message]) -> Result<String> {
-        match self.provider {
-            Provider::Openai => self.chat_openai(messages).await,
-            Provider::Anthropic => self.chat_anthropic(messages).await,
+        let mut last_err = None;
+        for attempt in 0..=Self::MAX_RETRIES {
+            let result = match self.provider {
+                Provider::Openai => self.chat_openai_once(messages).await,
+                Provider::Anthropic => self.chat_anthropic_once(messages).await,
+            };
+            match result {
+                Ok(text) => return Ok(text),
+                Err(e) => {
+                    let is_rate_limited = e.to_string().contains("429");
+                    if is_rate_limited && attempt < Self::MAX_RETRIES {
+                        let delay = Self::RETRY_BASE_DELAY * 2u32.pow(attempt);
+                        tracing::warn!(
+                            model = %self.model,
+                            attempt = attempt + 1,
+                            delay_ms = delay.as_millis() as u64,
+                            "rate limited (429), retrying after backoff"
+                        );
+                        tokio::time::sleep(delay).await;
+                        last_err = Some(e);
+                        continue;
+                    }
+                    return Err(e);
+                }
+            }
         }
+        Err(last_err.unwrap_or_else(|| eyre::eyre!("max retries exceeded")))
     }
 
-    async fn chat_openai(&self, messages: &[Message]) -> Result<String> {
+    async fn chat_openai_once(&self, messages: &[Message]) -> Result<String> {
         let url = format!("{}/chat/completions", self.base_url);
         let mut req = self.client.post(&url).json(&OpenAiRequest {
             model: &self.model,
             messages,
+            max_tokens: 16384,
         });
 
         if let Some(key) = &self.api_key {
@@ -101,11 +132,22 @@ impl LlmClient {
         }
 
         let resp = req.send().await.wrap_err("failed to send openai request")?;
-        let resp = resp.error_for_status().wrap_err("openai request failed")?;
-        let resp: OpenAiResponse = resp
-            .json()
+        let status = resp.status();
+        if !status.is_success() {
+            let body = resp.text().await.unwrap_or_else(|_| "<unreadable>".into());
+            return Err(eyre::eyre!(
+                "openai request failed: model={} status={} body={}",
+                self.model,
+                status,
+                body
+            ));
+        }
+        let body = resp
+            .text()
             .await
-            .wrap_err("failed to parse openai response")?;
+            .wrap_err("failed to read openai response body")?;
+        let resp: OpenAiResponse = serde_json::from_str(&body)
+            .wrap_err_with(|| format!("failed to parse openai response: {body}"))?;
 
         resp.choices
             .into_iter()
@@ -114,7 +156,7 @@ impl LlmClient {
             .ok_or_else(|| eyre::eyre!("empty response from LLM"))
     }
 
-    async fn chat_anthropic(&self, messages: &[Message]) -> Result<String> {
+    async fn chat_anthropic_once(&self, messages: &[Message]) -> Result<String> {
         let url = format!("{}/messages", self.base_url);
 
         let anthropic_messages: Vec<AnthropicMessage<'_>> = messages
@@ -127,7 +169,7 @@ impl LlmClient {
 
         let body = AnthropicRequest {
             model: &self.model,
-            max_tokens: 1024,
+            max_tokens: 16384,
             messages: anthropic_messages,
         };
 
@@ -145,13 +187,22 @@ impl LlmClient {
             .send()
             .await
             .wrap_err("failed to send anthropic request")?;
-        let resp = resp
-            .error_for_status()
-            .wrap_err("anthropic request failed")?;
-        let resp: AnthropicResponse = resp
-            .json()
+        let status = resp.status();
+        if !status.is_success() {
+            let body = resp.text().await.unwrap_or_else(|_| "<unreadable>".into());
+            return Err(eyre::eyre!(
+                "anthropic request failed: model={} status={} body={}",
+                self.model,
+                status,
+                body
+            ));
+        }
+        let body = resp
+            .text()
             .await
-            .wrap_err("failed to parse anthropic response")?;
+            .wrap_err("failed to read anthropic response body")?;
+        let resp: AnthropicResponse = serde_json::from_str(&body)
+            .wrap_err_with(|| format!("failed to parse anthropic response: {body}"))?;
 
         resp.content
             .into_iter()

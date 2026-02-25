@@ -89,13 +89,25 @@ async fn handle_rate(
     info!("rating task {task_id}");
 
     let rating_prompt = format!(
-        "You are evaluating the quality of an AI agent's output.\n\
+        "You are a rater in a decentralized quality assurance protocol. You have staked \
+         collateral on this rating. Your payment depends on honesty and accuracy:\n\
          \n\
-         Task: {prompt}\n\
-         Output: {worker_output}\n\
+         - HONEST, ACCURATE ratings are REWARDED (you earn back your stake + bonus)\n\
+         - DISHONEST or LAZY ratings are PUNISHED (you lose part or all of your stake)\n\
          \n\
-         Rate this as GOOD or BAD. Then predict what percentage of other \
-         raters will say GOOD (0.0 to 1.0).\n\
+         The scoring mechanism (Bayesian Truth Serum) can detect dishonesty by comparing \
+         your vote and prediction against the group. Gaming the system will cost you money.\n\
+         \n\
+         Your job: evaluate the quality of the following AI-generated output for the given task.\n\
+         \n\
+         === TASK ===\n\
+         {prompt}\n\
+         \n\
+         === OUTPUT ===\n\
+         {worker_output}\n\
+         \n\
+         Rate this as GOOD or BAD based on correctness, completeness, and quality. \
+         Then predict what fraction of other raters will say GOOD (0.0 to 1.0).\n\
          \n\
          Respond ONLY as JSON: {{\"signal\": true, \"prediction\": 0.75}}\n\
          where signal is true for GOOD, false for BAD.",
