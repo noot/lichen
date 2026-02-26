@@ -8,7 +8,7 @@ pub enum Provider {
 }
 
 #[derive(Clone)]
-pub(crate) struct LlmClient {
+pub struct LlmClient {
     client: reqwest::Client,
     base_url: String,
     model: String,
@@ -62,13 +62,13 @@ struct AnthropicContent {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub(crate) struct Message {
-    pub(crate) role: String,
-    pub(crate) content: String,
+pub struct Message {
+    pub role: String,
+    pub content: String,
 }
 
 impl LlmClient {
-    pub(crate) fn new(
+    pub fn new(
         base_url: String,
         model: String,
         api_key: Option<String>,
@@ -89,7 +89,21 @@ impl LlmClient {
     /// Base delay for exponential backoff on 429s.
     const RETRY_BASE_DELAY: std::time::Duration = std::time::Duration::from_secs(2);
 
-    pub(crate) async fn chat(&self, messages: &[Message]) -> Result<String> {
+    /// Returns the appropriate max_tokens for this model.
+    fn max_tokens(&self) -> u32 {
+        let m = self.model.as_str();
+        if m.starts_with("gpt-4o") {
+            4096
+        } else if m.starts_with("gpt-4.1-nano") {
+            4096
+        } else if m.starts_with("o3-mini") || m.starts_with("o4-mini") {
+            4096
+        } else {
+            16384
+        }
+    }
+
+    pub async fn chat(&self, messages: &[Message]) -> Result<String> {
         let mut last_err = None;
         for attempt in 0..=Self::MAX_RETRIES {
             let result = match self.provider {
@@ -124,7 +138,7 @@ impl LlmClient {
         let mut req = self.client.post(&url).json(&OpenAiRequest {
             model: &self.model,
             messages,
-            max_tokens: 16384,
+            max_tokens: self.max_tokens(),
         });
 
         if let Some(key) = &self.api_key {
@@ -169,7 +183,7 @@ impl LlmClient {
 
         let body = AnthropicRequest {
             model: &self.model,
-            max_tokens: 16384,
+            max_tokens: self.max_tokens(),
             messages: anthropic_messages,
         };
 

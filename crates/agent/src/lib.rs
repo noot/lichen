@@ -5,4 +5,4 @@ mod polling;
 
 pub use agent::Agent;
 pub use cli::{AgentRole, Args};
-pub use llm::Provider;
+pub use llm::{LlmClient, Message, Provider};
