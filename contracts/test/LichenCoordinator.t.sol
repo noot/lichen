@@ -257,4 +257,35 @@ contract LichenCoordinatorTest is Test {
         console.log("Total after:", totalAfter);
         console.log("Diff (wei):", diff);
     }
+
+    function test_workerReputation_tracked() public {
+        // Task 1: approved (all vote good)
+        uint256 t1 = coord.createTask(keccak256("task1"), 2);
+        vm.prank(alice);
+        coord.submitResult(t1, keccak256("output1"));
+        vm.prank(bob);
+        coord.submitRating(t1, true, _pred(80, 100));
+        vm.prank(carol);
+        coord.submitRating(t1, true, _pred(80, 100));
+
+        (uint256 completed1, uint256 approvals1) = coord.getWorkerReputation(alice);
+        assertEq(completed1, 1);
+        assertEq(approvals1, 1);
+
+        // Task 2: rejected (all vote bad)
+        uint256 t2 = coord.createTask(keccak256("task2"), 2);
+        vm.prank(alice);
+        coord.submitResult(t2, keccak256("output2"));
+        vm.prank(bob);
+        coord.submitRating(t2, false, _pred(20, 100));
+        vm.prank(carol);
+        coord.submitRating(t2, false, _pred(20, 100));
+
+        (uint256 completed2, uint256 approvals2) = coord.getWorkerReputation(alice);
+        assertEq(completed2, 2);
+        assertEq(approvals2, 1);
+
+        console.log("Worker tasks:", completed2);
+        console.log("Worker approvals:", approvals2);
+    }
 }

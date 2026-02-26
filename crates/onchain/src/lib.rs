@@ -206,6 +206,19 @@ impl OnchainClient {
         Ok(val)
     }
 
+    /// Get worker reputation (tasksCompleted, approvals).
+    pub async fn get_worker_reputation(&self, worker: Address) -> Result<(u64, u64)> {
+        let result = self
+            .contract
+            .getWorkerReputation(worker)
+            .call()
+            .await
+            .wrap_err("getWorkerReputation call failed")?;
+        let completed: u64 = result.tasksCompleted.try_into().unwrap_or(0);
+        let approvals: u64 = result.approvals.try_into().unwrap_or(0);
+        Ok((completed, approvals))
+    }
+
     /// Check if an address has rated a task.
     pub async fn has_rated(&self, task_id: u64, rater: Address) -> Result<bool> {
         let result = self

@@ -3751,11 +3751,14 @@ name = "simulator"
 version = "0.1.0"
 dependencies = [
  "agent",
+ "alloy",
  "chrono",
  "coordinator",
  "dotenvy",
  "eyre",
+ "onchain",
  "protocol",
+ "reqwest",
  "serde",
  "serde_json",
  "tokio",

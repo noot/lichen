@@ -58,6 +58,13 @@ contract LichenCoordinator {
     /// RBTS scores after scoring (taskId => rater => payment in WAD).
     mapping(uint256 => mapping(address => int256)) public scores;
 
+    /// Worker reputation: tracks cumulative task outcomes per worker.
+    struct WorkerRecord {
+        uint256 tasksCompleted;
+        uint256 approvals;
+    }
+    mapping(address => WorkerRecord) public workerReputation;
+
     /// List of active (non-scored) task IDs for polling.
     uint256[] internal _activeTasks;
     mapping(uint256 => uint256) internal _activeIndex; // taskId => index+1 (0 = not active)
@@ -174,6 +181,11 @@ contract LichenCoordinator {
         return scores[taskId][rater];
     }
 
+    function getWorkerReputation(address worker) external view returns (uint256 tasksCompleted, uint256 approvals) {
+        WorkerRecord storage rec = workerReputation[worker];
+        return (rec.tasksCompleted, rec.approvals);
+    }
+
     // ── Internal: RBTS Scoring ───────────────────────────────────────────
 
     /// @dev Epsilon to avoid log(0), as 64.64 fixed-point.
@@ -233,6 +245,12 @@ contract LichenCoordinator {
         t.accepted = btsAccepted && (approval100 >= 50);
         t.phase = Phase.Scored;
 
+        // Update worker reputation
+        workerReputation[t.worker].tasksCompleted++;
+        if (t.accepted) {
+            workerReputation[t.worker].approvals++;
+        }
+
         // Total collateral pool to redistribute
         uint256 totalPool = n * collateralPerRating;
 
@@ -254,24 +272,58 @@ contract LichenCoordinator {
             sumRaw = sumRaw.add(rawPayments[i]);
         }
 
-        // Zero-sum redistribution: normalize so payouts sum to totalPool.
-        // payout_i = (totalPool / n) + (rawPayments[i] - mean) * (totalPool / n)
-        // Simplified: payout_i = share * (1 + rawPayments[i] - mean)
+        // Zero-sum redistribution matching the off-chain Rust implementation:
+        // 1. Center payments around the mean
+        // 2. Normalize by sum of absolute deviations so full pool is redistributed
+        // 3. Floor negatives to 0, then redistribute clipped amount to positive scorers
         int128 mean = sumRaw.div(nFp);
-        uint256 share = totalPool / n;
 
+        // Compute centered values and sum of absolute deviations
+        int128[] memory centered = new int128[](n);
+        int128 totalAbs = int128(0);
         for (uint256 i = 0; i < n; i++) {
-            int128 deviation = rawPayments[i].sub(mean);
-            // Convert deviation to wei: payout = share + deviation * share
-            // deviation is in 64.64, multiply by share and convert to uint
-            int256 deviationWei = ABDKMath64x64.muli(deviation, int256(share));
-            int256 payout = int256(share) + deviationWei;
+            centered[i] = rawPayments[i].sub(mean);
+            int128 absVal = centered[i] < 0 ? centered[i].neg() : centered[i];
+            totalAbs = totalAbs.add(absVal);
+        }
 
-            // Floor at 0 (can't take more than collateral)
-            if (payout < 0) payout = 0;
+        if (totalAbs == 0) {
+            // All scores identical — return collateral equally
+            uint256 share = totalPool / n;
+            for (uint256 i = 0; i < n; i++) {
+                scores[taskId][r[i].rater] = int256(share);
+                balances[r[i].rater] += share;
+            }
+        } else {
+            // payout_i = (centered[i] / totalAbs) * totalPool
+            // This can be negative, so we do two passes:
+            // Pass 1: compute raw payouts, floor negatives to 0, track clipped amount
+            int256[] memory payouts = new int256[](n);
+            int256 clipped = 0;
+            int256 positiveSum = 0;
 
-            scores[taskId][r[i].rater] = payout;
-            balances[r[i].rater] += uint256(payout);
+            for (uint256 i = 0; i < n; i++) {
+                // centered[i] / totalAbs * totalPool
+                int256 raw = ABDKMath64x64.muli(centered[i].div(totalAbs), int256(totalPool));
+                payouts[i] = raw;
+                if (raw < 0) {
+                    clipped += -raw;  // track how much we floored
+                    payouts[i] = 0;
+                } else {
+                    positiveSum += raw;
+                }
+            }
+
+            // Pass 2: redistribute clipped amount proportionally to positive scorers
+            for (uint256 i = 0; i < n; i++) {
+                if (payouts[i] > 0 && positiveSum > 0) {
+                    // Add proportional share of clipped amount
+                    payouts[i] += (clipped * payouts[i]) / positiveSum;
+                }
+
+                scores[taskId][r[i].rater] = payouts[i];
+                balances[r[i].rater] += uint256(payouts[i]);
+            }
         }
 
         // Remove from active list

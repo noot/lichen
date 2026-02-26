@@ -257,6 +257,30 @@
   },
   {
     "type": "function",
+    "name": "getWorkerReputation",
+    "inputs": [
+      {
+        "name": "worker",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "tasksCompleted",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "approvals",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
     "name": "hasRated",
     "inputs": [
       {
@@ -447,6 +471,30 @@
     ],
     "outputs": [],
     "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "workerReputation",
+    "inputs": [
+      {
+        "name": "",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "tasksCompleted",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "approvals",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
   },
   {
     "type": "event",
