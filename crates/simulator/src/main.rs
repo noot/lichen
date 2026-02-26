@@ -17,13 +17,31 @@ const BETA: f64 = 1.0;
 const HISTORY_WINDOW: usize = 10;
 
 const MODELS: &[&str] = &[
-    "claude-haiku-4-5", "claude-3-5-haiku", "claude-sonnet-4-5", "claude-sonnet-4",
-    "claude-3-7-sonnet", "claude-opus-4-1", "claude-sonnet-4-6",
-    "gpt-4o", "gpt-4o-mini", "gpt-4.1", "gpt-4.1-mini", "gpt-4.1-nano",
-    "gpt-5", "gpt-5-mini", "gpt-5-nano", "gpt-5.2",
-    "gemini-2.0-flash", "gemini-2.5-flash", "gemini-2.5-pro",
-    "gemini-3-flash", "gemini-3-pro", "gemini-3.1-pro",
-    "o3", "o3-mini", "o4-mini",
+    "claude-haiku-4-5",
+    "claude-3-5-haiku",
+    "claude-sonnet-4-5",
+    "claude-sonnet-4",
+    "claude-3-7-sonnet",
+    "claude-opus-4-1",
+    "claude-sonnet-4-6",
+    "gpt-4o",
+    "gpt-4o-mini",
+    "gpt-4.1",
+    "gpt-4.1-mini",
+    "gpt-4.1-nano",
+    "gpt-5",
+    "gpt-5-mini",
+    "gpt-5-nano",
+    "gpt-5.2",
+    "gemini-2.0-flash",
+    "gemini-2.5-flash",
+    "gemini-2.5-pro",
+    "gemini-3-flash",
+    "gemini-3-pro",
+    "gemini-3.1-pro",
+    "o3",
+    "o3-mini",
+    "o4-mini",
 ];
 
 const TASKS: &[&str] = &[
@@ -136,14 +154,25 @@ fn build_rater_prompt(state: &RaterState, task: &str, worker_output: &str) -> St
                 "\nRound {}:\n  Task: {}\n  Your vote: {}, Your prediction: {:.2}\n  \
                  Consensus: {:.0}% GOOD ({}/{}), Avg prediction: {:.2}, BTS accepted: {}\n  \
                  Your payout: {:+.4} → balance: {:.2}\n  Other raters: ",
-                entry.round, entry.task, vote, entry.own_prediction,
-                entry.consensus.approval_pct, entry.consensus.num_good, entry.consensus.num_rated,
-                entry.consensus.avg_prediction, entry.consensus.bts_accepted,
-                entry.payout, entry.balance_after,
+                entry.round,
+                entry.task,
+                vote,
+                entry.own_prediction,
+                entry.consensus.approval_pct,
+                entry.consensus.num_good,
+                entry.consensus.num_rated,
+                entry.consensus.avg_prediction,
+                entry.consensus.bts_accepted,
+                entry.payout,
+                entry.balance_after,
             ));
-            let others: Vec<String> = entry.others.iter().map(|(m, s, p)| {
-                format!("{}: {} (pred={:.2})", m, if *s { "GOOD" } else { "BAD" }, p)
-            }).collect();
+            let others: Vec<String> = entry
+                .others
+                .iter()
+                .map(|(m, s, p)| {
+                    format!("{}: {} (pred={:.2})", m, if *s { "GOOD" } else { "BAD" }, p)
+                })
+                .collect();
             prompt.push_str(&others.join(", "));
             prompt.push('\n');
         }
@@ -219,12 +248,15 @@ async fn main() -> Result<()> {
         Provider::Openai,
     );
 
-    let mut raters: Vec<RaterState> = MODELS.iter().map(|m| RaterState {
-        model: m.to_string(),
-        balance: STARTING_BALANCE,
-        eliminated: false,
-        history: Vec::new(),
-    }).collect();
+    let mut raters: Vec<RaterState> = MODELS
+        .iter()
+        .map(|m| RaterState {
+            model: m.to_string(),
+            balance: STARTING_BALANCE,
+            eliminated: false,
+            history: Vec::new(),
+        })
+        .collect();
 
     let jsonl_path = "lichen-economy-rounds.jsonl";
     let mut jsonl_file = std::fs::File::create(jsonl_path)?;
@@ -235,14 +267,21 @@ async fn main() -> Result<()> {
     let semaphore = Arc::new(tokio::sync::Semaphore::new(6));
 
     println!("=== LICHEN ECONOMY SIMULATOR ===");
-    println!("Raters: {}, Rounds: {}, Starting balance: {}, Max concurrent: 6", MODELS.len(), NUM_ROUNDS, STARTING_BALANCE);
+    println!(
+        "Raters: {}, Rounds: {}, Starting balance: {}, Max concurrent: 6",
+        MODELS.len(),
+        NUM_ROUNDS,
+        STARTING_BALANCE
+    );
     println!();
 
     for round in 1..=NUM_ROUNDS {
         let task_idx = (round - 1) % TASKS.len();
         let task = TASKS[task_idx];
 
-        let active: Vec<usize> = raters.iter().enumerate()
+        let active: Vec<usize> = raters
+            .iter()
+            .enumerate()
             .filter(|(_, r)| !r.eliminated)
             .map(|(i, _)| i)
             .collect();
@@ -252,14 +291,20 @@ async fn main() -> Result<()> {
             break;
         }
 
-        println!("--- Round {round}/{NUM_ROUNDS} ({} active raters) ---", active.len());
+        println!(
+            "--- Round {round}/{NUM_ROUNDS} ({} active raters) ---",
+            active.len()
+        );
         println!("Task: {}", &task[..task.len().min(80)]);
 
         // Worker generates code
-        let worker_output = match worker_client.chat(&[Message {
-            role: "user".to_string(),
-            content: format!("{task}\n\nProvide a complete, working Rust implementation."),
-        }]).await {
+        let worker_output = match worker_client
+            .chat(&[Message {
+                role: "user".to_string(),
+                content: format!("{task}\n\nProvide a complete, working Rust implementation."),
+            }])
+            .await
+        {
             Ok(output) => output,
             Err(e) => {
                 println!("  Worker failed: {e}, skipping round");
@@ -275,44 +320,56 @@ async fn main() -> Result<()> {
             let prompt = build_rater_prompt(&raters[idx], task, &worker_output);
             let url = provider_url.clone();
             let key = provider_key.clone();
-            let client = LlmClient::new(
-                url,
-                model.clone(),
-                Some(key),
-                Provider::Openai,
-            );
+            let client = LlmClient::new(url, model.clone(), Some(key), Provider::Openai);
             let sem = semaphore.clone();
-            handles.push((idx, tokio::spawn(async move {
-                let _permit = sem.acquire().await.unwrap();
-                let result = client.chat(&[Message {
-                    role: "user".to_string(),
-                    content: prompt,
-                }]).await;
-                (model, result)
-            })));
+            handles.push((
+                idx,
+                tokio::spawn(async move {
+                    let _permit = sem.acquire().await.unwrap();
+                    let result = client
+                        .chat(&[Message {
+                            role: "user".to_string(),
+                            content: prompt,
+                        }])
+                        .await;
+                    (model, result)
+                }),
+            ));
         }
 
         let mut responses: Vec<(usize, String, RaterResponse)> = Vec::new();
         for (idx, handle) in handles {
             match handle.await {
-                Ok((model, Ok(raw))) => {
-                    match parse_rater_response(&raw) {
-                        Some(resp) => {
-                            let resp = RaterResponse {
-                                signal: resp.signal,
-                                prediction: resp.prediction.clamp(0.01, 0.99),
-                            };
-                            responses.push((idx, model, resp));
-                        }
-                        None => {
-                            println!("  {model}: failed to parse response, defaulting GOOD/0.5");
-                            responses.push((idx, model, RaterResponse { signal: true, prediction: 0.5 }));
-                        }
+                Ok((model, Ok(raw))) => match parse_rater_response(&raw) {
+                    Some(resp) => {
+                        let resp = RaterResponse {
+                            signal: resp.signal,
+                            prediction: resp.prediction.clamp(0.01, 0.99),
+                        };
+                        responses.push((idx, model, resp));
                     }
-                }
+                    None => {
+                        println!("  {model}: failed to parse response, defaulting GOOD/0.5");
+                        responses.push((
+                            idx,
+                            model,
+                            RaterResponse {
+                                signal: true,
+                                prediction: 0.5,
+                            },
+                        ));
+                    }
+                },
                 Ok((model, Err(e))) => {
                     println!("  {model}: API error ({e}), defaulting GOOD/0.5");
-                    responses.push((idx, model, RaterResponse { signal: true, prediction: 0.5 }));
+                    responses.push((
+                        idx,
+                        model,
+                        RaterResponse {
+                            signal: true,
+                            prediction: 0.5,
+                        },
+                    ));
                 }
                 Err(e) => {
                     println!("  rater task panicked: {e}");
@@ -327,14 +384,15 @@ async fn main() -> Result<()> {
 
         // Build RBTS input
         let task_id = Uuid::new_v4();
-        let submit_ratings: Vec<SubmitRatingRequest> = responses.iter().map(|(_, model, resp)| {
-            SubmitRatingRequest {
+        let submit_ratings: Vec<SubmitRatingRequest> = responses
+            .iter()
+            .map(|(_, model, resp)| SubmitRatingRequest {
                 task_id,
                 agent_id: model.clone(),
                 signal: resp.signal,
                 prediction: resp.prediction,
-            }
-        }).collect();
+            })
+            .collect();
 
         let scores = rbts_score(&submit_ratings, ALPHA, BETA);
         let payouts = zero_sum_payouts(&scores, active.len());
@@ -343,7 +401,8 @@ async fn main() -> Result<()> {
         let num_good = responses.iter().filter(|(_, _, r)| r.signal).count();
         let num_rated = responses.len();
         let approval_pct = (num_good as f64 / num_rated as f64) * 100.0;
-        let avg_prediction = responses.iter().map(|(_, _, r)| r.prediction).sum::<f64>() / num_rated as f64;
+        let avg_prediction =
+            responses.iter().map(|(_, _, r)| r.prediction).sum::<f64>() / num_rated as f64;
         let actual_good_frac = num_good as f64 / num_rated as f64;
         let bts_accepted = actual_good_frac >= avg_prediction;
         if bts_accepted && actual_good_frac >= 0.5 {
@@ -359,18 +418,25 @@ async fn main() -> Result<()> {
             bts_accepted,
         };
 
-        println!("  Consensus: {:.0}% GOOD ({}/{}), avg pred: {:.2}, BTS accepted: {}",
-            approval_pct, num_good, num_rated, avg_prediction, bts_accepted);
+        println!(
+            "  Consensus: {:.0}% GOOD ({}/{}), avg pred: {:.2}, BTS accepted: {}",
+            approval_pct, num_good, num_rated, avg_prediction, bts_accepted
+        );
 
         // Apply payouts and build history
-        let all_votes: Vec<(String, bool, f64)> = responses.iter()
+        let all_votes: Vec<(String, bool, f64)> = responses
+            .iter()
             .map(|(_, m, r)| (m.clone(), r.signal, r.prediction))
             .collect();
 
         let mut rater_records = Vec::new();
         for (idx, model, resp) in &responses {
             let payout = payouts.get(model.as_str()).copied().unwrap_or(0.0);
-            let rbts = scores.iter().find(|s| s.agent_id == *model).map(|s| s.payment).unwrap_or(0.0);
+            let rbts = scores
+                .iter()
+                .find(|s| s.agent_id == *model)
+                .map(|s| s.payment)
+                .unwrap_or(0.0);
             raters[*idx].balance += payout;
 
             if raters[*idx].balance <= 0.0 {
@@ -379,7 +445,8 @@ async fn main() -> Result<()> {
                 println!("  ☠️  {} ELIMINATED (balance: 0.00)", model);
             }
 
-            let others: Vec<(String, bool, f64)> = all_votes.iter()
+            let others: Vec<(String, bool, f64)> = all_votes
+                .iter()
                 .filter(|(m, _, _)| m != model)
                 .cloned()
                 .collect();
@@ -406,8 +473,10 @@ async fn main() -> Result<()> {
             });
 
             let vote = if resp.signal { "GOOD" } else { "BAD" };
-            println!("  {} {} pred={:.2} payout={:+.4} bal={:.2}",
-                model, vote, resp.prediction, payout, raters[*idx].balance);
+            println!(
+                "  {} {} pred={:.2} payout={:+.4} bal={:.2}",
+                model, vote, resp.prediction, payout, raters[*idx].balance
+            );
         }
 
         let record = RoundRecord {
@@ -431,7 +500,8 @@ async fn main() -> Result<()> {
     summary.push_str(&format!("- **Collateral per round:** {}\n\n", COLLATERAL));
 
     // Sort by balance descending
-    let mut standings: Vec<(String, f64, bool)> = raters.iter()
+    let mut standings: Vec<(String, f64, bool)> = raters
+        .iter()
         .map(|r| (r.model.clone(), r.balance, r.eliminated))
         .collect();
     standings.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap());
@@ -440,30 +510,52 @@ async fn main() -> Result<()> {
     summary.push_str("| Rank | Model | Balance | Status |\n");
     summary.push_str("|------|-------|---------|--------|\n");
     for (i, (model, balance, eliminated)) in standings.iter().enumerate() {
-        let status = if *eliminated { "❌ Eliminated" } else { "✅ Active" };
-        summary.push_str(&format!("| {} | {} | {:.2} | {} |\n", i + 1, model, balance, status));
+        let status = if *eliminated {
+            "❌ Eliminated"
+        } else {
+            "✅ Active"
+        };
+        summary.push_str(&format!(
+            "| {} | {} | {:.2} | {} |\n",
+            i + 1,
+            model,
+            balance,
+            status
+        ));
     }
 
     let eliminated_count = raters.iter().filter(|r| r.eliminated).count();
     let active_count = raters.iter().filter(|r| !r.eliminated).count();
     summary.push_str(&format!("\n## Statistics\n\n"));
-    summary.push_str(&format!("- **Rounds completed:** {total_rounds_completed}\n"));
-    summary.push_str(&format!("- **Worker approvals:** {total_approvals}/{total_rounds_completed} ({:.0}%)\n",
-        total_approvals as f64 / total_rounds_completed.max(1) as f64 * 100.0));
+    summary.push_str(&format!(
+        "- **Rounds completed:** {total_rounds_completed}\n"
+    ));
+    summary.push_str(&format!(
+        "- **Worker approvals:** {total_approvals}/{total_rounds_completed} ({:.0}%)\n",
+        total_approvals as f64 / total_rounds_completed.max(1) as f64 * 100.0
+    ));
     summary.push_str(&format!("- **Survived:** {active_count}\n"));
     summary.push_str(&format!("- **Eliminated:** {eliminated_count}\n"));
 
     if let Some(best) = standings.first() {
-        summary.push_str(&format!("- **Top performer:** {} ({:.2})\n", best.0, best.1));
+        summary.push_str(&format!(
+            "- **Top performer:** {} ({:.2})\n",
+            best.0, best.1
+        ));
     }
     if let Some(worst) = standings.last() {
-        summary.push_str(&format!("- **Worst performer:** {} ({:.2})\n", worst.0, worst.1));
+        summary.push_str(&format!(
+            "- **Worst performer:** {} ({:.2})\n",
+            worst.0, worst.1
+        ));
     }
 
     std::fs::write("lichen-economy-summary.md", &summary)?;
     println!("=== SIMULATION COMPLETE ===");
-    println!("Worker approvals: {total_approvals}/{total_rounds_completed} ({:.0}%)",
-        total_approvals as f64 / total_rounds_completed.max(1) as f64 * 100.0);
+    println!(
+        "Worker approvals: {total_approvals}/{total_rounds_completed} ({:.0}%)",
+        total_approvals as f64 / total_rounds_completed.max(1) as f64 * 100.0
+    );
     println!("Results written to {jsonl_path} and lichen-economy-summary.md");
 
     for (i, (model, balance, _)) in standings.iter().enumerate() {

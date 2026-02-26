@@ -1,8 +1,6 @@
 use alloy::primitives::{Address, B256};
 use eyre::Result;
-use protocol::{
-    SubmitRatingRequest, Task, TaskPhase, TaskStatus,
-};
+use protocol::{SubmitRatingRequest, Task, TaskPhase, TaskStatus};
 use uuid::Uuid;
 
 /// The coordinator backend — either the HTTP coordinator binary
@@ -17,11 +15,7 @@ impl Backend {
         Self::Http(client::CoordinatorClient::new(base_url))
     }
 
-    pub fn onchain(
-        rpc_url: &str,
-        contract_address: Address,
-        private_key: &str,
-    ) -> Result<Self> {
+    pub fn onchain(rpc_url: &str, contract_address: Address, private_key: &str) -> Result<Self> {
         Ok(Self::Onchain(onchain::OnchainClient::new(
             rpc_url,
             contract_address,

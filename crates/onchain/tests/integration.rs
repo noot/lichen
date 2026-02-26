@@ -18,7 +18,8 @@ const ALPHA_FIXED: i128 = 1i128 << 64;
 const COLLATERAL: u64 = 1_000_000_000_000_000_000; // 1 ETH in wei
 
 /// Contract bytecode (compiled with forge, extracted from artifacts).
-const CONTRACT_BYTECODE: &str = include_str!("../../../contracts/out/LichenCoordinator.sol/LichenCoordinator.json");
+const CONTRACT_BYTECODE: &str =
+    include_str!("../../../contracts/out/LichenCoordinator.sol/LichenCoordinator.json");
 
 /// Deploy the contract on anvil via a raw provider, return the address.
 async fn deploy_contract(anvil: &AnvilInstance) -> Address {
@@ -41,12 +42,13 @@ async fn deploy_contract(anvil: &AnvilInstance) -> Address {
     deploy_data.extend_from_slice(&constructor_args);
 
     use alloy::network::TransactionBuilder as _;
-    let tx = alloy::rpc::types::TransactionRequest::default()
-        .with_deploy_code(deploy_data);
+    let tx = alloy::rpc::types::TransactionRequest::default().with_deploy_code(deploy_data);
 
     let pending = provider.send_transaction(tx).await.expect("send deploy tx");
     let receipt = pending.get_receipt().await.expect("deploy receipt");
-    receipt.contract_address.expect("no contract address in receipt")
+    receipt
+        .contract_address
+        .expect("no contract address in receipt")
 }
 
 /// Create a client for a given anvil key index.
@@ -341,8 +343,14 @@ async fn test_better_predictor_scores_higher() {
     // Both vote GOOD; client0 predicts 0.95 (accurate), client1 predicts 0.5 (bad)
     let pred_good = OnchainClient::prediction_to_fixed(0.95);
     let pred_bad = OnchainClient::prediction_to_fixed(0.50);
-    client0.submit_rating(task_id, true, pred_good).await.unwrap();
-    client1.submit_rating(task_id, true, pred_bad).await.unwrap();
+    client0
+        .submit_rating(task_id, true, pred_good)
+        .await
+        .unwrap();
+    client1
+        .submit_rating(task_id, true, pred_bad)
+        .await
+        .unwrap();
 
     let score0 = client0.get_score(task_id, signer0.address()).await.unwrap();
     let score1 = client0.get_score(task_id, signer1.address()).await.unwrap();
@@ -385,10 +393,22 @@ async fn test_balances_approximately_zero_sum() {
         .await
         .unwrap();
 
-    client0.submit_rating(task_id, true, OnchainClient::prediction_to_fixed(0.9)).await.unwrap();
-    client1.submit_rating(task_id, true, OnchainClient::prediction_to_fixed(0.9)).await.unwrap();
-    client2.submit_rating(task_id, true, OnchainClient::prediction_to_fixed(0.5)).await.unwrap();
-    client3.submit_rating(task_id, false, OnchainClient::prediction_to_fixed(0.2)).await.unwrap();
+    client0
+        .submit_rating(task_id, true, OnchainClient::prediction_to_fixed(0.9))
+        .await
+        .unwrap();
+    client1
+        .submit_rating(task_id, true, OnchainClient::prediction_to_fixed(0.9))
+        .await
+        .unwrap();
+    client2
+        .submit_rating(task_id, true, OnchainClient::prediction_to_fixed(0.5))
+        .await
+        .unwrap();
+    client3
+        .submit_rating(task_id, false, OnchainClient::prediction_to_fixed(0.2))
+        .await
+        .unwrap();
 
     let bal0 = client0.balance_of(signer0.address()).await.unwrap();
     let bal1 = client0.balance_of(signer1.address()).await.unwrap();

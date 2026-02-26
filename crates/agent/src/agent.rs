@@ -24,10 +24,9 @@ impl Agent {
         let backend = match args.backend {
             BackendMode::Http => Backend::http(&args.coordinator_url),
             BackendMode::Onchain => {
-                let contract_address = args
-                    .contract_address
-                    .as_deref()
-                    .ok_or_else(|| eyre::eyre!("--contract-address required for onchain backend"))?;
+                let contract_address = args.contract_address.as_deref().ok_or_else(|| {
+                    eyre::eyre!("--contract-address required for onchain backend")
+                })?;
                 let private_key = std::env::var("PRIVATE_KEY")
                     .wrap_err("PRIVATE_KEY env var required for onchain backend")?;
                 let addr: alloy::primitives::Address = contract_address
