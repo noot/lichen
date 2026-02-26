@@ -2,6 +2,7 @@ use eyre::{Result, WrapErr as _};
 use protocol::TaskPhase;
 use tracing::{error, info};
 
+use crate::backend::Backend;
 use crate::cli::AgentRole;
 use crate::llm::{LlmClient, Message};
 
@@ -9,9 +10,9 @@ pub(crate) async fn poll_once(
     agent_id: &str,
     role: &AgentRole,
     llm: &LlmClient,
-    coordinator: &client::CoordinatorClient,
+    backend: &Backend,
 ) -> Result<()> {
-    let tasks = coordinator
+    let tasks = backend
         .list_tasks()
         .await
         .wrap_err("failed to list tasks")?;
@@ -19,7 +20,7 @@ pub(crate) async fn poll_once(
     for task in tasks {
         match (role, &task.phase) {
             (AgentRole::Worker, TaskPhase::AwaitingWork) => {
-                handle_work(agent_id, llm, coordinator, &task.task.id, &task.task.prompt).await;
+                handle_work(agent_id, llm, backend, &task.task.id, &task.task.prompt).await;
             }
             (
                 AgentRole::Rater,
@@ -34,7 +35,7 @@ pub(crate) async fn poll_once(
                     handle_rate(
                         agent_id,
                         llm,
-                        coordinator,
+                        backend,
                         &task.task.id,
                         &task.task.prompt,
                         worker_output,
@@ -52,7 +53,7 @@ pub(crate) async fn poll_once(
 async fn handle_work(
     agent_id: &str,
     llm: &LlmClient,
-    coordinator: &client::CoordinatorClient,
+    backend: &Backend,
     task_id: &uuid::Uuid,
     prompt: &str,
 ) {
@@ -72,7 +73,7 @@ async fn handle_work(
     };
 
     info!("agent {agent_id} completed task {task_id}: {output}");
-    match coordinator.submit_result(*task_id, agent_id, &output).await {
+    match backend.submit_result(*task_id, agent_id, &output).await {
         Ok(_) => info!("submitted result for task {task_id}"),
         Err(e) => error!("submit result failed for {task_id}: {e}"),
     }
@@ -81,7 +82,7 @@ async fn handle_work(
 async fn handle_rate(
     agent_id: &str,
     llm: &LlmClient,
-    coordinator: &client::CoordinatorClient,
+    backend: &Backend,
     task_id: &uuid::Uuid,
     prompt: &str,
     worker_output: &str,
@@ -130,7 +131,7 @@ async fn handle_rate(
     let vote = if signal { "good" } else { "bad" };
     info!("agent {agent_id} rated task {task_id}: {vote}, prediction={prediction:.2}");
 
-    match coordinator
+    match backend
         .submit_rating(*task_id, agent_id, signal, prediction)
         .await
     {

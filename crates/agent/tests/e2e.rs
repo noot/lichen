@@ -100,11 +100,14 @@ fn spawn_agent_with_model(
         api_key: Some(config.api_key.clone()),
         provider: config.provider,
         coordinator_url: coordinator_url.to_string(),
+        backend: agent::BackendMode::Http,
+        contract_address: None,
+        rpc_url: "http://localhost:8545".to_string(),
         role,
         poll_interval: 1,
     };
 
-    let agent = Agent::new(args);
+    let agent = Agent::new(args).expect("failed to create agent");
     tokio::spawn(async move {
         if let Err(e) = agent.run(token).await {
             eprintln!("agent error: {e}");
