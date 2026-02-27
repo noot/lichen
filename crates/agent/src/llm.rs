@@ -92,11 +92,11 @@ impl LlmClient {
     /// Returns the appropriate max_tokens for this model.
     fn max_tokens(&self) -> u32 {
         let m = self.model.as_str();
-        if m.starts_with("gpt-4o") {
-            4096
-        } else if m.starts_with("gpt-4.1-nano") {
-            4096
-        } else if m.starts_with("o3-mini") || m.starts_with("o4-mini") {
+        if m.starts_with("gpt-4o")
+            || m.starts_with("gpt-4.1-nano")
+            || m.starts_with("o3-mini")
+            || m.starts_with("o4-mini")
+        {
             4096
         } else {
             16384

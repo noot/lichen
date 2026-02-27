@@ -12,7 +12,7 @@ use tracing::info;
 use uuid::Uuid;
 
 use crate::coordinator::AppState;
-use crate::scoring;
+use protocol::scoring;
 
 /// POST /tasks — create a new task
 pub(crate) async fn create_task(

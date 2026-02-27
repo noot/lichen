@@ -1,4 +1,4 @@
-use protocol::{ScoreResult, SubmitRatingRequest};
+use crate::{ScoreResult, SubmitRatingRequest};
 
 /// small epsilon to avoid log(0)
 const EPS: f64 = 1e-10;
@@ -13,11 +13,7 @@ const EPS: f64 = 1e-10;
 ///   - Payment = alpha * information_score + beta * prediction_score
 ///
 /// Returns zero payments if fewer than 2 responses are provided.
-pub fn rbts_score(
-    responses: &[SubmitRatingRequest],
-    alpha: f64,
-    beta: f64,
-) -> Vec<ScoreResult> {
+pub fn rbts_score(responses: &[SubmitRatingRequest], alpha: f64, beta: f64) -> Vec<ScoreResult> {
     if responses.len() < 2 {
         return responses
             .iter()
