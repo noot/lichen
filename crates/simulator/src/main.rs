@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::io::Write as _;
 use std::sync::Arc;
 
@@ -338,7 +339,7 @@ async fn setup_onchain() -> Result<OnchainSetup> {
 
     // Spawn anvil
     println!("[onchain] Spawning anvil...");
-    let anvil = std::process::Command::new("/home/elizabeth/.foundry/bin/anvil")
+    let anvil = std::process::Command::new("anvil")
         .args([
             "--accounts",
             "30",
@@ -421,6 +422,344 @@ async fn setup_onchain() -> Result<OnchainSetup> {
     })
 }
 
+enum RoundOutcome {
+    Completed,
+    Skipped,
+    StopSimulation,
+}
+
+#[allow(clippy::too_many_arguments)]
+async fn run_round(
+    round: usize,
+    raters: &mut [RaterState],
+    total_approvals: &mut usize,
+    total_rounds_completed: &mut usize,
+    jsonl_file: &mut std::fs::File,
+    llm_worker_client: &LlmClient,
+    provider_url: &str,
+    provider_key: &str,
+    onchain_setup: Option<&OnchainSetup>,
+) -> Result<RoundOutcome> {
+    let task_idx = (round - 1) % TASKS.len();
+    let task = TASKS[task_idx];
+
+    let active: Vec<usize> = raters
+        .iter()
+        .enumerate()
+        .filter(|(_, r)| !r.eliminated)
+        .map(|(i, _)| i)
+        .collect();
+
+    if active.len() < 2 {
+        println!("Round {round}: fewer than 2 active raters, stopping.");
+        return Ok(RoundOutcome::StopSimulation);
+    }
+
+    println!(
+        "--- Round {round}/{NUM_ROUNDS} ({} active raters) ---",
+        active.len()
+    );
+    println!("Task: {}", &task[..task.len().min(80)]);
+
+    let worker_output = match llm_worker_client
+        .chat(&[Message {
+            role: "user".to_string(),
+            content: format!("{task}\n\nProvide a complete, working Rust implementation."),
+        }])
+        .await
+    {
+        Ok(output) => output,
+        Err(e) => {
+            println!("  Worker failed: {e}, skipping round");
+            return Ok(RoundOutcome::Skipped);
+        }
+    };
+    println!("  Worker output: {} chars", worker_output.len());
+
+    let onchain_task_id: Option<u64> = if let Some(setup) = onchain_setup {
+        let prompt_hash = B256::from(keccak256(task.as_bytes()));
+        let output_hash = B256::from(keccak256(worker_output.as_bytes()));
+        let num_raters = active.len() as u8;
+
+        match setup
+            .worker_client
+            .create_task(prompt_hash, num_raters)
+            .await
+        {
+            Ok(tid) => {
+                println!("  [onchain] Task created, id={tid}");
+                match setup.worker_client.submit_result(tid, output_hash).await {
+                    Ok(()) => {
+                        println!("  [onchain] Result submitted for task {tid}");
+                        Some(tid)
+                    }
+                    Err(e) => {
+                        println!("  [onchain] submit_result failed: {e}, skipping round");
+                        return Ok(RoundOutcome::Skipped);
+                    }
+                }
+            }
+            Err(e) => {
+                println!("  [onchain] create_task failed: {e}, skipping round");
+                return Ok(RoundOutcome::Skipped);
+            }
+        }
+    } else {
+        None
+    };
+
+    let worker_rep: Option<(u64, u64)> = if let Some(setup) = onchain_setup {
+        setup
+            .worker_client
+            .get_worker_reputation(setup.worker_address)
+            .await
+            .ok()
+    } else {
+        Some((*total_rounds_completed as u64, *total_approvals as u64))
+    };
+
+    let semaphore = Arc::new(tokio::sync::Semaphore::new(6));
+    let mut futures = futures::stream::FuturesUnordered::new();
+    for &idx in &active {
+        let model = raters[idx].model.clone();
+        let prompt = build_rater_prompt(&raters[idx], task, &worker_output, worker_rep);
+        let url = provider_url.to_owned();
+        let key = provider_key.to_owned();
+        let client = LlmClient::new(url, model.clone(), Some(key), Provider::Openai);
+        let sem = semaphore.clone();
+        futures.push(tokio::spawn(async move {
+            let _permit = sem.acquire().await.unwrap();
+            let result = client
+                .chat(&[Message {
+                    role: "user".to_string(),
+                    content: prompt,
+                }])
+                .await;
+            (idx, model, result)
+        }));
+    }
+
+    let mut responses: Vec<(usize, String, RaterResponse)> = Vec::new();
+    while let Some(result) = futures.next().await {
+        match result {
+            Ok((idx, model, Ok(raw))) => match parse_rater_response(&raw) {
+                Some(resp) => {
+                    let resp = RaterResponse {
+                        signal: resp.signal,
+                        prediction: resp.prediction.clamp(0.01, 0.99),
+                    };
+                    responses.push((idx, model, resp));
+                }
+                None => {
+                    println!("  {model}: failed to parse response, defaulting GOOD/0.5");
+                    responses.push((
+                        idx,
+                        model,
+                        RaterResponse {
+                            signal: true,
+                            prediction: 0.5,
+                        },
+                    ));
+                }
+            },
+            Ok((idx, model, Err(e))) => {
+                println!("  {model}: API error ({e}), defaulting GOOD/0.5");
+                responses.push((
+                    idx,
+                    model,
+                    RaterResponse {
+                        signal: true,
+                        prediction: 0.5,
+                    },
+                ));
+            }
+            Err(e) => {
+                println!("  rater task panicked: {e}");
+            }
+        }
+    }
+
+    if responses.len() < 2 {
+        println!("  Fewer than 2 responses, skipping round");
+        return Ok(RoundOutcome::Skipped);
+    }
+
+    // on-chain: submit ratings via smart contract
+    let mut onchain_balances: Option<HashMap<Address, f64>> = None;
+
+    if let (Some(setup), Some(tid)) = (onchain_setup, onchain_task_id) {
+        for (idx, _model, resp) in &responses {
+            let rater_idx = *idx;
+            if rater_idx >= setup.rater_clients.len() {
+                println!("  [onchain] WARNING: rater_idx={rater_idx} out of bounds, skipping");
+                continue;
+            }
+            let (ref client, _) = setup.rater_clients[rater_idx];
+            let pred_fixed = OnchainClient::prediction_to_fixed(resp.prediction);
+            match client.submit_rating(tid, resp.signal, pred_fixed).await {
+                Ok(()) => {}
+                Err(e) => {
+                    println!("  [onchain] submit_rating failed for rater {rater_idx}: {e}");
+                }
+            }
+        }
+
+        let mut balances = HashMap::new();
+        for (idx, _model, _resp) in &responses {
+            let rater_idx = *idx;
+            if rater_idx >= setup.rater_clients.len() {
+                continue;
+            }
+            let (ref client, addr) = setup.rater_clients[rater_idx];
+            match client.balance_of(addr).await {
+                Ok(wei) => {
+                    let points = wei.to::<u128>() as f64 / ETH_WEI as f64;
+                    if rater_idx == 0 {
+                        println!("  [onchain] rater0 raw_wei={wei} points={points:.6}");
+                    }
+                    balances.insert(addr, points);
+                }
+                Err(e) => {
+                    println!("  [onchain] balance_of failed for rater {idx}: {e}");
+                }
+            }
+        }
+        onchain_balances = Some(balances);
+    }
+
+    let task_uuid = Uuid::new_v4();
+    let submit_ratings: Vec<SubmitRatingRequest> = responses
+        .iter()
+        .map(|(_, model, resp)| SubmitRatingRequest {
+            task_id: task_uuid,
+            agent_id: model.clone(),
+            signal: resp.signal,
+            prediction: resp.prediction,
+        })
+        .collect();
+
+    let scores = rbts_score(&submit_ratings, ALPHA, BETA);
+    let payouts = payouts::zero_sum_payouts(&scores, active.len());
+
+    let num_good = responses.iter().filter(|(_, _, r)| r.signal).count();
+    let num_rated = responses.len();
+    let approval_pct = (num_good as f64 / num_rated as f64) * 100.0;
+    let avg_prediction =
+        responses.iter().map(|(_, _, r)| r.prediction).sum::<f64>() / num_rated as f64;
+    let actual_good_frac = num_good as f64 / num_rated as f64;
+    let bts_accepted = actual_good_frac >= avg_prediction;
+    if bts_accepted && actual_good_frac >= 0.5 {
+        *total_approvals += 1;
+    }
+    *total_rounds_completed += 1;
+
+    let consensus = ConsensusStats {
+        num_good,
+        num_rated,
+        approval_pct,
+        avg_prediction,
+        bts_accepted,
+    };
+
+    println!(
+        "  Consensus: {:.0}% GOOD ({}/{}), avg pred: {:.2}, BTS accepted: {}",
+        approval_pct, num_good, num_rated, avg_prediction, bts_accepted
+    );
+
+    let all_votes: Vec<(String, bool, f64)> = responses
+        .iter()
+        .map(|(_, m, r)| (m.clone(), r.signal, r.prediction))
+        .collect();
+
+    let mut rater_records = Vec::new();
+    for (idx, model, resp) in &responses {
+        let payout = payouts.get(model.as_str()).copied().unwrap_or(0.0);
+        let rbts = scores
+            .iter()
+            .find(|s| s.agent_id == *model)
+            .map(|s| s.payment)
+            .unwrap_or(0.0);
+        raters[*idx].balance += payout;
+
+        let rater_addr = onchain_setup
+            .and_then(|s| s.rater_clients.get(*idx))
+            .map(|(_, addr)| *addr);
+        let (balance_after, eliminated) = if let Some(ref bals) = onchain_balances {
+            if let Some(&points) = rater_addr.and_then(|a| bals.get(&a)) {
+                (points, points < 1.0)
+            } else {
+                raters[*idx].balance += payout;
+                if raters[*idx].balance <= 0.0 {
+                    raters[*idx].balance = 0.0;
+                    (0.0, true)
+                } else {
+                    (raters[*idx].balance, false)
+                }
+            }
+        } else {
+            raters[*idx].balance += payout;
+            if raters[*idx].balance <= 0.0 {
+                raters[*idx].balance = 0.0;
+                (0.0, true)
+            } else {
+                (raters[*idx].balance, false)
+            }
+        };
+
+        raters[*idx].balance = balance_after;
+        if eliminated && !raters[*idx].eliminated {
+            raters[*idx].eliminated = true;
+            println!("  ☠️  {} ELIMINATED (balance: {:.2})", model, balance_after);
+        }
+
+        let others: Vec<(String, bool, f64)> = all_votes
+            .iter()
+            .filter(|(m, _, _)| m != model)
+            .cloned()
+            .collect();
+
+        raters[*idx].history.push(RoundHistoryEntry {
+            round,
+            task: task.to_string(),
+            own_signal: resp.signal,
+            own_prediction: resp.prediction,
+            others,
+            consensus: consensus.clone(),
+            payout,
+            balance_after,
+        });
+
+        rater_records.push(RaterRecord {
+            model: model.clone(),
+            signal: resp.signal,
+            prediction: resp.prediction,
+            rbts_score: rbts,
+            payout,
+            balance_after,
+        });
+
+        let vote = if resp.signal { "GOOD" } else { "BAD" };
+        println!(
+            "  {} {} pred={:.2} payout={:+.4} bal={:.2}",
+            model, vote, resp.prediction, payout, raters[*idx].balance
+        );
+    }
+
+    let record = RoundRecord {
+        round,
+        task: task.to_string(),
+        worker_output: worker_output.clone(),
+        ratings: rater_records,
+        consensus,
+        onchain_task_id,
+    };
+    writeln!(jsonl_file, "{}", serde_json::to_string(&record)?)?;
+    jsonl_file.flush()?;
+    println!();
+
+    Ok(RoundOutcome::Completed)
+}
+
 #[tokio::main]
 async fn main() -> Result<()> {
     tracing_subscriber::fmt::init();
@@ -465,8 +804,6 @@ async fn main() -> Result<()> {
     let mut total_approvals: usize = 0;
     let mut total_rounds_completed: usize = 0;
 
-    let semaphore = Arc::new(tokio::sync::Semaphore::new(6));
-
     println!(
         "=== LICHEN ECONOMY SIMULATOR{} ===",
         if use_onchain { " (ON-CHAIN)" } else { "" }
@@ -479,7 +816,6 @@ async fn main() -> Result<()> {
     );
     println!();
 
-    // Set up on-chain infra if needed
     let onchain_setup = if use_onchain {
         Some(setup_onchain().await?)
     } else {
@@ -489,335 +825,22 @@ async fn main() -> Result<()> {
     let total_gas_used: u64 = 0;
 
     for round in 1..=NUM_ROUNDS {
-        let task_idx = (round - 1) % TASKS.len();
-        let task = TASKS[task_idx];
-
-        let active: Vec<usize> = raters
-            .iter()
-            .enumerate()
-            .filter(|(_, r)| !r.eliminated)
-            .map(|(i, _)| i)
-            .collect();
-
-        if active.len() < 2 {
-            println!("Round {round}: fewer than 2 active raters, stopping.");
-            break;
-        }
-
-        println!(
-            "--- Round {round}/{NUM_ROUNDS} ({} active raters) ---",
-            active.len()
-        );
-        println!("Task: {}", &task[..task.len().min(80)]);
-
-        let worker_output = match llm_worker_client
-            .chat(&[Message {
-                role: "user".to_string(),
-                content: format!("{task}\n\nProvide a complete, working Rust implementation."),
-            }])
-            .await
-        {
-            Ok(output) => output,
-            Err(e) => {
-                println!("  Worker failed: {e}, skipping round");
-                continue;
-            }
-        };
-        println!("  Worker output: {} chars", worker_output.len());
-
-        // On-chain: create task and submit worker result before raters start
-        let onchain_task_id: Option<u64> = if let Some(setup) = &onchain_setup {
-            let prompt_hash = B256::from(keccak256(task.as_bytes()));
-            let output_hash = B256::from(keccak256(worker_output.as_bytes()));
-            let num_raters = active.len() as u8;
-
-            match setup
-                .worker_client
-                .create_task(prompt_hash, num_raters)
-                .await
-            {
-                Ok(tid) => {
-                    println!("  [onchain] Task created, id={tid}");
-                    match setup.worker_client.submit_result(tid, output_hash).await {
-                        Ok(()) => {
-                            println!("  [onchain] Result submitted for task {tid}");
-                            Some(tid)
-                        }
-                        Err(e) => {
-                            println!("  [onchain] submit_result failed: {e}, skipping round");
-                            continue;
-                        }
-                    }
-                }
-                Err(e) => {
-                    println!("  [onchain] create_task failed: {e}, skipping round");
-                    continue;
-                }
-            }
-        } else {
-            None
-        };
-
-        // Fetch worker reputation (on-chain or off-chain tracking)
-        let worker_rep: Option<(u64, u64)> = if let Some(setup) = &onchain_setup {
-            setup
-                .worker_client
-                .get_worker_reputation(setup.worker_address)
-                .await
-                .ok()
-        } else {
-            // Off-chain: use accumulated stats
-            Some((total_rounds_completed as u64, total_approvals as u64))
-        };
-
-        // all raters rate concurrently
-        let mut futures = futures::stream::FuturesUnordered::new();
-        for &idx in &active {
-            let model = raters[idx].model.clone();
-            let prompt = build_rater_prompt(&raters[idx], task, &worker_output, worker_rep);
-            let url = provider_url.clone();
-            let key = provider_key.clone();
-            let client = LlmClient::new(url, model.clone(), Some(key), Provider::Openai);
-            let sem = semaphore.clone();
-            futures.push(tokio::spawn(async move {
-                let _permit = sem.acquire().await.unwrap();
-                let result = client
-                    .chat(&[Message {
-                        role: "user".to_string(),
-                        content: prompt,
-                    }])
-                    .await;
-                (idx, model, result)
-            }));
-        }
-
-        let mut responses: Vec<(usize, String, RaterResponse)> = Vec::new();
-        while let Some(result) = futures.next().await {
-            match result {
-                Ok((idx, model, Ok(raw))) => match parse_rater_response(&raw) {
-                    Some(resp) => {
-                        let resp = RaterResponse {
-                            signal: resp.signal,
-                            prediction: resp.prediction.clamp(0.01, 0.99),
-                        };
-                        responses.push((idx, model, resp));
-                    }
-                    None => {
-                        println!("  {model}: failed to parse response, defaulting GOOD/0.5");
-                        responses.push((
-                            idx,
-                            model,
-                            RaterResponse {
-                                signal: true,
-                                prediction: 0.5,
-                            },
-                        ));
-                    }
-                },
-                Ok((idx, model, Err(e))) => {
-                    println!("  {model}: API error ({e}), defaulting GOOD/0.5");
-                    responses.push((
-                        idx,
-                        model,
-                        RaterResponse {
-                            signal: true,
-                            prediction: 0.5,
-                        },
-                    ));
-                }
-                Err(e) => {
-                    println!("  rater task panicked: {e}");
-                }
-            }
-        }
-
-        if responses.len() < 2 {
-            println!("  Fewer than 2 responses, skipping round");
-            continue;
-        }
-
-        // ── On-chain path: submit ratings via smart contract ──────────────────────
-        let mut onchain_balances: Option<Vec<(usize, f64)>> = None;
-
-        if let (Some(setup), Some(tid)) = (&onchain_setup, onchain_task_id) {
-            // Sequential rating submission (avoids Arc/lifetime complexity)
-            for (idx, _model, resp) in &responses {
-                let rater_idx = *idx;
-                if rater_idx >= setup.rater_clients.len() {
-                    println!("  [onchain] WARNING: rater_idx={rater_idx} out of bounds, skipping");
-                    continue;
-                }
-                let (ref client, _) = setup.rater_clients[rater_idx];
-                let pred_fixed = OnchainClient::prediction_to_fixed(resp.prediction);
-                match client.submit_rating(tid, resp.signal, pred_fixed).await {
-                    Ok(()) => {}
-                    Err(e) => {
-                        println!("  [onchain] submit_rating failed for rater {rater_idx}: {e}");
-                    }
-                }
-            }
-
-            // Read back balances
-            let mut balances = Vec::new();
-            for (idx, _model, _resp) in &responses {
-                let rater_idx = *idx;
-                if rater_idx >= setup.rater_clients.len() {
-                    continue;
-                }
-                let (ref client, addr) = setup.rater_clients[rater_idx];
-                match client.balance_of(addr).await {
-                    Ok(wei) => {
-                        // Convert wei to "points" (1 ETH = 1 point)
-                        let points = wei.to::<u128>() as f64 / ETH_WEI as f64;
-                        if rater_idx == 0 {
-                            println!("  [onchain] rater0 raw_wei={wei} points={points:.6}");
-                        }
-                        balances.push((rater_idx, points));
-                    }
-                    Err(e) => {
-                        println!("  [onchain] balance_of failed for rater {idx}: {e}");
-                    }
-                }
-            }
-            onchain_balances = Some(balances);
-        }
-
-        // ── Off-chain RBTS scoring (always computed for record-keeping; off-chain path uses this for balances) ──
-        let task_uuid = Uuid::new_v4();
-        let submit_ratings: Vec<SubmitRatingRequest> = responses
-            .iter()
-            .map(|(_, model, resp)| SubmitRatingRequest {
-                task_id: task_uuid,
-                agent_id: model.clone(),
-                signal: resp.signal,
-                prediction: resp.prediction,
-            })
-            .collect();
-
-        let scores = rbts_score(&submit_ratings, ALPHA, BETA);
-        let payouts = payouts::zero_sum_payouts(&scores, active.len());
-
-        // consensus stats
-        let num_good = responses.iter().filter(|(_, _, r)| r.signal).count();
-        let num_rated = responses.len();
-        let approval_pct = (num_good as f64 / num_rated as f64) * 100.0;
-        let avg_prediction =
-            responses.iter().map(|(_, _, r)| r.prediction).sum::<f64>() / num_rated as f64;
-        let actual_good_frac = num_good as f64 / num_rated as f64;
-        let bts_accepted = actual_good_frac >= avg_prediction;
-        if bts_accepted && actual_good_frac >= 0.5 {
-            total_approvals += 1;
-        }
-        total_rounds_completed += 1;
-
-        let consensus = ConsensusStats {
-            num_good,
-            num_rated,
-            approval_pct,
-            avg_prediction,
-            bts_accepted,
-        };
-
-        println!(
-            "  Consensus: {:.0}% GOOD ({}/{}), avg pred: {:.2}, BTS accepted: {}",
-            approval_pct, num_good, num_rated, avg_prediction, bts_accepted
-        );
-
-        let all_votes: Vec<(String, bool, f64)> = responses
-            .iter()
-            .map(|(_, m, r)| (m.clone(), r.signal, r.prediction))
-            .collect();
-
-        let mut rater_records = Vec::new();
-        for (idx, model, resp) in &responses {
-            let payout = payouts.get(model.as_str()).copied().unwrap_or(0.0);
-            let rbts = scores
-                .iter()
-                .find(|s| s.agent_id == *model)
-                .map(|s| s.payment)
-                .unwrap_or(0.0);
-            raters[*idx].balance += payout;
-
-            // Determine balance: on-chain reads actual contract balance, else off-chain sim
-            let (balance_after, eliminated) = if let Some(ref bals) = onchain_balances {
-                // On-chain: find this rater's balance from the contract
-                if let Some(&(_, points)) = bals.iter().find(|(ri, _)| *ri == *idx) {
-                    let bal = points;
-                    // Eliminated = can't afford collateral (< 1 ETH = 1 point)
-                    let elim = bal < 1.0;
-                    (bal, elim)
-                } else {
-                    // Fallback to off-chain
-                    raters[*idx].balance += payout;
-                    if raters[*idx].balance <= 0.0 {
-                        raters[*idx].balance = 0.0;
-                        (0.0, true)
-                    } else {
-                        (raters[*idx].balance, false)
-                    }
-                }
-            } else {
-                // Off-chain path
-                raters[*idx].balance += payout;
-                if raters[*idx].balance <= 0.0 {
-                    raters[*idx].balance = 0.0;
-                    (0.0, true)
-                } else {
-                    (raters[*idx].balance, false)
-                }
-            };
-
-            // Update in-memory balance for history/prompts
-            raters[*idx].balance = balance_after;
-            if eliminated && !raters[*idx].eliminated {
-                raters[*idx].eliminated = true;
-                println!("  ☠️  {} ELIMINATED (balance: {:.2})", model, balance_after);
-            }
-
-            let others: Vec<(String, bool, f64)> = all_votes
-                .iter()
-                .filter(|(m, _, _)| m != model)
-                .cloned()
-                .collect();
-
-            raters[*idx].history.push(RoundHistoryEntry {
-                round,
-                task: task.to_string(),
-                own_signal: resp.signal,
-                own_prediction: resp.prediction,
-                others,
-                consensus: consensus.clone(),
-                payout,
-                balance_after,
-            });
-
-            rater_records.push(RaterRecord {
-                model: model.clone(),
-                signal: resp.signal,
-                prediction: resp.prediction,
-                rbts_score: rbts,
-                payout,
-                balance_after,
-            });
-
-            let vote = if resp.signal { "GOOD" } else { "BAD" };
-            println!(
-                "  {} {} pred={:.2} payout={:+.4} bal={:.2}",
-                model, vote, resp.prediction, payout, raters[*idx].balance
-            );
-        }
-
-        let record = RoundRecord {
+        match run_round(
             round,
-            task: task.to_string(),
-            worker_output: worker_output.clone(),
-            ratings: rater_records,
-            consensus,
-            onchain_task_id,
-        };
-        writeln!(jsonl_file, "{}", serde_json::to_string(&record)?)?;
-        jsonl_file.flush()?;
-        println!();
+            &mut raters,
+            &mut total_approvals,
+            &mut total_rounds_completed,
+            &mut jsonl_file,
+            &llm_worker_client,
+            &provider_url,
+            &provider_key,
+            onchain_setup.as_ref(),
+        )
+        .await?
+        {
+            RoundOutcome::Completed | RoundOutcome::Skipped => {}
+            RoundOutcome::StopSimulation => break,
+        }
     }
 
     // write summary

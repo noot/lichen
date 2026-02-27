@@ -24,14 +24,14 @@ contract LichenCoordinatorTest is Test {
     function setUp() public {
         coord = new LichenCoordinator(ALPHA, BETA, COLLATERAL);
 
-        // Fund agents
+        // fund agents
         vm.deal(alice, 100 ether);
         vm.deal(bob, 100 ether);
         vm.deal(carol, 100 ether);
         vm.deal(dave, 100 ether);
         vm.deal(worker, 10 ether);
 
-        // Deposit
+        // deposit
         vm.prank(alice);
         coord.deposit{value: 10 ether}();
         vm.prank(bob);
@@ -42,10 +42,10 @@ contract LichenCoordinatorTest is Test {
         coord.deposit{value: 10 ether}();
     }
 
-    // ── Helpers ──────────────────────────────────────────────────────────
+    // ── helpers ──────────────────────────────────────────────────────────
 
-    /// @dev Convert a prediction like 0.75 to 64.64 fixed-point.
-    ///      Pass numerator and denominator (e.g., 75, 100 for 0.75).
+    /// @dev convert a prediction like 0.75 to 64.64 fixed-point.
+    ///      pass numerator and denominator (e.g., 75, 100 for 0.75).
     function _pred(uint256 num, uint256 denom) internal pure returns (int128) {
         return ABDKMath64x64.divu(num, denom);
     }
@@ -56,7 +56,7 @@ contract LichenCoordinatorTest is Test {
         coord.submitResult(taskId, keccak256("test output"));
     }
 
-    // ── Deposit/Withdraw ─────────────────────────────────────────────────
+    // ── deposit/withdraw ─────────────────────────────────────────────────
 
     function test_deposit() public view {
         assertEq(coord.balances(alice), 10 ether);
@@ -76,7 +76,7 @@ contract LichenCoordinatorTest is Test {
         coord.withdraw(11 ether);
     }
 
-    // ── Task Lifecycle ───────────────────────────────────────────────────
+    // ── task lifecycle ───────────────────────────────────────────────────
 
     function test_createTask() public {
         uint256 taskId = coord.createTask(keccak256("prompt"), 3);
@@ -98,7 +98,7 @@ contract LichenCoordinatorTest is Test {
         uint256 taskId = coord.createTask(keccak256("prompt"), 3);
         vm.prank(worker);
         coord.submitResult(taskId, keccak256("output"));
-        // Try submitting again
+        // try submitting again
         vm.prank(worker);
         vm.expectRevert("not awaiting work");
         coord.submitResult(taskId, keccak256("output2"));
@@ -106,7 +106,7 @@ contract LichenCoordinatorTest is Test {
 
     function test_submitRating_wrongPhase() public {
         uint256 taskId = coord.createTask(keccak256("prompt"), 3);
-        // No result submitted yet
+        // no result submitted yet
         vm.prank(alice);
         vm.expectRevert("not awaiting ratings");
         coord.submitRating(taskId, true, _pred(75, 100));
@@ -129,12 +129,12 @@ contract LichenCoordinatorTest is Test {
         coord.submitRating(taskId, true, _pred(75, 100));
     }
 
-    // ── Scoring ──────────────────────────────────────────────────────────
+    // ── scoring ──────────────────────────────────────────────────────────
 
     function test_autoScore_3raters_allGood() public {
         uint256 taskId = _createAndSubmitWork();
 
-        // All 3 vote GOOD with prediction 0.90
+        // all 3 vote good with prediction 0.90
         vm.prank(alice);
         coord.submitRating(taskId, true, _pred(90, 100));
         vm.prank(bob);
@@ -142,28 +142,28 @@ contract LichenCoordinatorTest is Test {
         vm.prank(carol);
         coord.submitRating(taskId, true, _pred(90, 100));
 
-        // Should be scored now
+        // should be scored now
         (LichenCoordinator.Task memory t,) = coord.getTask(taskId);
         assertTrue(t.phase == LichenCoordinator.Phase.Scored);
         assertTrue(t.accepted);
 
-        // All voted the same with the same prediction — scores should be equal
+        // all voted the same with the same prediction — scores should be equal
         int256 scoreA = coord.getScore(taskId, alice);
         int256 scoreB = coord.getScore(taskId, bob);
         int256 scoreC = coord.getScore(taskId, carol);
         assertEq(scoreA, scoreB);
         assertEq(scoreB, scoreC);
 
-        // Each should get back their collateral (zero-sum, equal scores)
+        // each should get back their collateral (equal scores)
         assertEq(uint256(scoreA), COLLATERAL);
 
-        // Balances should be restored
+        // balances should be restored
         assertEq(coord.balances(alice), 10 ether);
     }
 
     function test_autoScore_surprisinglyPopular() public {
-        // 3 vote GOOD predicting 0.50, 1 votes BAD predicting 0.50
-        // "GOOD" is surprisingly popular → GOOD voters rewarded
+        // 3 vote good predicting 0.50, 1 votes bad predicting 0.50
+        // "good" is surprisingly popular → good voters rewarded
         uint256 taskId = coord.createTask(keccak256("prompt"), 4);
         vm.prank(worker);
         coord.submitResult(taskId, keccak256("output"));
@@ -181,17 +181,17 @@ contract LichenCoordinatorTest is Test {
         assertTrue(t.phase == LichenCoordinator.Phase.Scored);
         assertTrue(t.accepted);
 
-        // GOOD voters should score higher than BAD voter
+        // good voters should score higher than bad voter
         int256 scoreAlice = coord.getScore(taskId, alice);
         int256 scoreDave = coord.getScore(taskId, dave);
         assertTrue(scoreAlice > scoreDave, "good voter should score higher");
 
-        console.log("Good voter payout (wei):", uint256(scoreAlice));
-        console.log("Bad voter payout (wei):", uint256(scoreDave));
+        console.log("good voter payout (wei):", uint256(scoreAlice));
+        console.log("bad voter payout (wei):", uint256(scoreDave));
     }
 
     function test_autoScore_goodPredictionRewarded() public {
-        // Both vote GOOD, but alice predicts 0.95 (accurate) and bob predicts 0.50 (bad)
+        // both vote good, but alice predicts 0.95 (accurate) and bob predicts 0.50 (bad)
         uint256 taskId = coord.createTask(keccak256("prompt"), 2);
         vm.prank(worker);
         coord.submitResult(taskId, keccak256("output"));
@@ -205,8 +205,8 @@ contract LichenCoordinatorTest is Test {
         int256 scoreBob = coord.getScore(taskId, bob);
         assertTrue(scoreAlice > scoreBob, "better predictor should score higher");
 
-        console.log("Good predictor payout:", uint256(scoreAlice));
-        console.log("Bad predictor payout:", uint256(scoreBob));
+        console.log("good predictor payout:", uint256(scoreAlice));
+        console.log("bad predictor payout:", uint256(scoreBob));
     }
 
     function test_activeTasks_removedAfterScoring() public {
@@ -216,7 +216,7 @@ contract LichenCoordinatorTest is Test {
         assertEq(active.length, 1);
         assertEq(active[0], taskId);
 
-        // Score it
+        // score it
         vm.prank(alice);
         coord.submitRating(taskId, true, _pred(90, 100));
         vm.prank(bob);
@@ -229,7 +229,7 @@ contract LichenCoordinatorTest is Test {
     }
 
     function test_balances_zeroSum() public {
-        // Total balances before = 40 ether (4 agents × 10)
+        // total balances before = 40 ether (4 agents x 10)
         uint256 totalBefore = coord.balances(alice) + coord.balances(bob)
             + coord.balances(carol) + coord.balances(dave);
 
@@ -249,17 +249,102 @@ contract LichenCoordinatorTest is Test {
         uint256 totalAfter = coord.balances(alice) + coord.balances(bob)
             + coord.balances(carol) + coord.balances(dave);
 
-        // Should be approximately equal (rounding may cause tiny differences)
+        // pool is fully redistributed — rounding may lose a few wei
         uint256 diff = totalBefore > totalAfter ? totalBefore - totalAfter : totalAfter - totalBefore;
-        assertTrue(diff < 1e15, "balances should be approximately zero-sum");
+        assertTrue(diff <= 4, "pool minus payouts must be near zero");
+    }
 
-        console.log("Total before:", totalBefore);
-        console.log("Total after:", totalAfter);
-        console.log("Diff (wei):", diff);
+    function test_allPayouts_nonNegative() public {
+        uint256 taskId = coord.createTask(keccak256("prompt"), 4);
+        vm.prank(worker);
+        coord.submitResult(taskId, keccak256("output"));
+
+        // mixed signals and predictions
+        vm.prank(alice);
+        coord.submitRating(taskId, true, _pred(90, 100));
+        vm.prank(bob);
+        coord.submitRating(taskId, true, _pred(50, 100));
+        vm.prank(carol);
+        coord.submitRating(taskId, false, _pred(10, 100));
+        vm.prank(dave);
+        coord.submitRating(taskId, false, _pred(30, 100));
+
+        // every rater should have a score >= 0
+        assertTrue(coord.getScore(taskId, alice) >= 0, "alice payout negative");
+        assertTrue(coord.getScore(taskId, bob) >= 0, "bob payout negative");
+        assertTrue(coord.getScore(taskId, carol) >= 0, "carol payout negative");
+        assertTrue(coord.getScore(taskId, dave) >= 0, "dave payout negative");
+    }
+
+    function test_lowestScorer_getsZero() public {
+        // 2 raters: one votes with the majority prediction, one against
+        uint256 taskId = coord.createTask(keccak256("prompt"), 2);
+        vm.prank(worker);
+        coord.submitResult(taskId, keccak256("output"));
+
+        // alice: good signal, accurate prediction
+        vm.prank(alice);
+        coord.submitRating(taskId, true, _pred(95, 100));
+        // bob: good signal, terrible prediction
+        vm.prank(bob);
+        coord.submitRating(taskId, true, _pred(5, 100));
+
+        int256 scoreBob = coord.getScore(taskId, bob);
+        assertEq(scoreBob, 0, "lowest scorer should get zero");
+
+        // alice should get the entire pool
+        int256 scoreAlice = coord.getScore(taskId, alice);
+        // pool = 2 * 1 ether = 2 ether, minus possible rounding dust
+        assertTrue(uint256(scoreAlice) >= 2 ether - 2, "top scorer should get full pool");
+    }
+
+    function test_equalScores_splitEvenly() public {
+        uint256 taskId = _createAndSubmitWork();
+
+        // all 3 vote identically
+        vm.prank(alice);
+        coord.submitRating(taskId, true, _pred(70, 100));
+        vm.prank(bob);
+        coord.submitRating(taskId, true, _pred(70, 100));
+        vm.prank(carol);
+        coord.submitRating(taskId, true, _pred(70, 100));
+
+        int256 a = coord.getScore(taskId, alice);
+        int256 b = coord.getScore(taskId, bob);
+        int256 c = coord.getScore(taskId, carol);
+
+        assertEq(a, b, "equal scores must produce equal payouts");
+        assertEq(b, c, "equal scores must produce equal payouts");
+        assertEq(uint256(a), COLLATERAL, "each gets back their collateral");
+    }
+
+    function test_higherScore_getsMore_shiftToMin() public {
+        // 3 raters with different predictions, same signal. the one with the
+        // best prediction (closest to actual good frac = 1.0) should get the most.
+        uint256 taskId = _createAndSubmitWork();
+
+        vm.prank(alice);
+        coord.submitRating(taskId, true, _pred(95, 100)); // best prediction
+        vm.prank(bob);
+        coord.submitRating(taskId, true, _pred(70, 100)); // ok prediction
+        vm.prank(carol);
+        coord.submitRating(taskId, true, _pred(40, 100)); // worst prediction
+
+        int256 a = coord.getScore(taskId, alice);
+        int256 b = coord.getScore(taskId, bob);
+        int256 c = coord.getScore(taskId, carol);
+
+        assertTrue(a > b, "alice (best predictor) should score higher than bob");
+        assertTrue(b > c, "bob should score higher than carol (worst predictor)");
+
+        // pool fully distributed (minus rounding dust)
+        uint256 total = uint256(a) + uint256(b) + uint256(c);
+        uint256 pool = 3 * COLLATERAL;
+        assertTrue(pool - total <= 3, "pool must be fully distributed");
     }
 
     function test_workerReputation_tracked() public {
-        // Task 1: approved (all vote good)
+        // task 1: approved (all vote good)
         uint256 t1 = coord.createTask(keccak256("task1"), 2);
         vm.prank(alice);
         coord.submitResult(t1, keccak256("output1"));
@@ -272,7 +357,7 @@ contract LichenCoordinatorTest is Test {
         assertEq(completed1, 1);
         assertEq(approvals1, 1);
 
-        // Task 2: rejected (all vote bad)
+        // task 2: rejected (all vote bad)
         uint256 t2 = coord.createTask(keccak256("task2"), 2);
         vm.prank(alice);
         coord.submitResult(t2, keccak256("output2"));
@@ -285,7 +370,7 @@ contract LichenCoordinatorTest is Test {
         assertEq(completed2, 2);
         assertEq(approvals2, 1);
 
-        console.log("Worker tasks:", completed2);
-        console.log("Worker approvals:", approvals2);
+        console.log("worker tasks:", completed2);
+        console.log("worker approvals:", approvals2);
     }
 }
