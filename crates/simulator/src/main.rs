@@ -1,13 +1,13 @@
-use std::collections::HashMap;
 use std::io::Write as _;
 use std::sync::Arc;
 
 use agent::{LlmClient, Message, Provider};
 use alloy::primitives::{keccak256, Address, B256, U256};
 use alloy::signers::local::PrivateKeySigner;
-use coordinator::scoring::rbts_score;
 use eyre::{Result, WrapErr as _};
+use futures::stream::StreamExt as _;
 use onchain::OnchainClient;
+use protocol::scoring::rbts_score;
 use protocol::SubmitRatingRequest;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
@@ -90,7 +90,7 @@ const MODELS: &[&str] = &[
 ];
 
 const TASKS: &[&str] = &[
-    // Easy
+    // easy
     "Write a Rust function to reverse a string.",
     "Write a Rust function to check if a number is prime.",
     "Write a Rust FizzBuzz implementation.",
@@ -101,7 +101,7 @@ const TASKS: &[&str] = &[
     "Write a Rust function to compute fibonacci numbers.",
     "Implement binary search in Rust.",
     "Write a Rust function to flatten a nested list.",
-    // Medium
+    // medium
     "Implement an LRU cache in Rust.",
     "Write Rust code to serialize and deserialize a binary tree.",
     "Implement a trie data structure in Rust.",
@@ -112,7 +112,7 @@ const TASKS: &[&str] = &[
     "Write an arithmetic expression evaluator in Rust.",
     "Implement a basic regex matcher in Rust.",
     "Implement the longest common subsequence algorithm in Rust.",
-    // Hard
+    // hard
     "Implement a lock-free stack in Rust using atomics.",
     "Implement a B-tree in Rust.",
     "Implement the Raft leader election protocol in Rust.",
@@ -123,7 +123,7 @@ const TASKS: &[&str] = &[
     "Implement Lamport timestamps for distributed ordering in Rust.",
     "Implement a skip list in Rust.",
     "Solve the N-queens problem in Rust.",
-    // Impossible
+    // impossible
     "Write a single Rust expression that sorts a vector, reverses it, and computes median and standard deviation.",
     "Write a quantum computing simulator in Rust in under 50 lines.",
 ];
@@ -247,7 +247,7 @@ fn build_rater_prompt(
     prompt.push_str(&format!(
         "\nIf your balance hits 0, you're eliminated. Honest, accurate ratings are REWARDED.\n\
          Dishonest or lazy ratings are PUNISHED via Bayesian Truth Serum scoring.\n\
-         Study your history carefully. Learn from rounds where you lost money.\n\n\
+         Study your history carefully.\n\n\
          === TASK ===\n{task}\n\n\
          === WORKER OUTPUT ===\n{worker_output}\n\n\
          Rate this as GOOD or BAD based on correctness, completeness, and quality.\n\
@@ -272,26 +272,7 @@ fn parse_rater_response(raw: &str) -> Option<RaterResponse> {
     None
 }
 
-fn zero_sum_payouts(scores: &[protocol::ScoreResult], active_count: usize) -> HashMap<String, f64> {
-    let pool = active_count as f64 * COLLATERAL;
-    let n = scores.len() as f64;
-    let mean = scores.iter().map(|s| s.payment).sum::<f64>() / n;
-    let centered: Vec<f64> = scores.iter().map(|s| s.payment - mean).collect();
-    let total_abs: f64 = centered.iter().map(|x| x.abs()).sum();
-
-    let mut payouts = HashMap::new();
-    if total_abs < 1e-12 {
-        for s in scores {
-            payouts.insert(s.agent_id.clone(), 0.0);
-        }
-    } else {
-        for (i, s) in scores.iter().enumerate() {
-            let payout = centered[i] / total_abs * pool;
-            payouts.insert(s.agent_id.clone(), payout);
-        }
-    }
-    payouts
-}
+mod payouts;
 
 /// Deploy LichenCoordinator on the already-running anvil node.
 /// Returns deployed contract address.
@@ -347,7 +328,6 @@ async fn deploy_contract(rpc_url: &str, deployer_key: &str) -> Result<Address> {
 /// Key index 0 = worker, keys 1..=25 = raters
 struct OnchainSetup {
     _anvil: std::process::Child,
-    contract_address: Address,
     worker_client: OnchainClient,
     worker_address: Address,
     rater_clients: Vec<(OnchainClient, Address)>, // (client, address) for each rater
@@ -415,10 +395,10 @@ async fn setup_onchain() -> Result<OnchainSetup> {
 
     // Create rater clients (keys 1..=25)
     let mut rater_clients = Vec::new();
-    for i in 1..=25 {
-        let signer: PrivateKeySigner = ANVIL_KEYS[i].parse().wrap_err("bad rater key")?;
+    for key in &ANVIL_KEYS[1..=25] {
+        let signer: PrivateKeySigner = key.parse().wrap_err("bad rater key")?;
         let addr = signer.address();
-        let client = OnchainClient::new(ANVIL_RPC, contract_address, ANVIL_KEYS[i])?;
+        let client = OnchainClient::new(ANVIL_RPC, contract_address, key)?;
         rater_clients.push((client, addr));
     }
 
@@ -435,7 +415,6 @@ async fn setup_onchain() -> Result<OnchainSetup> {
 
     Ok(OnchainSetup {
         _anvil: anvil,
-        contract_address,
         worker_client,
         worker_address,
         rater_clients,
@@ -472,15 +451,6 @@ async fn main() -> Result<()> {
             history: Vec::new(),
         })
         .collect();
-
-    // Validate: exactly 25 MODELS for 25 rater keys (keys 1..=25)
-    if use_onchain && MODELS.len() != 25 {
-        eyre::bail!(
-            "On-chain mode requires exactly 25 models but got {}. \
-             Keys 1..=25 map 1:1 to MODELS.",
-            MODELS.len()
-        );
-    }
 
     let (jsonl_path, summary_path) = if use_onchain {
         (
@@ -540,7 +510,6 @@ async fn main() -> Result<()> {
         );
         println!("Task: {}", &task[..task.len().min(80)]);
 
-        // Worker generates code (same LLM call regardless of on-chain or off-chain)
         let worker_output = match llm_worker_client
             .chat(&[Message {
                 role: "user".to_string(),
@@ -591,21 +560,18 @@ async fn main() -> Result<()> {
 
         // Fetch worker reputation (on-chain or off-chain tracking)
         let worker_rep: Option<(u64, u64)> = if let Some(setup) = &onchain_setup {
-            match setup
+            setup
                 .worker_client
                 .get_worker_reputation(setup.worker_address)
                 .await
-            {
-                Ok(rep) => Some(rep),
-                Err(_) => None,
-            }
+                .ok()
         } else {
             // Off-chain: use accumulated stats
             Some((total_rounds_completed as u64, total_approvals as u64))
         };
 
-        // All raters rate concurrently (LLM calls)
-        let mut handles = Vec::new();
+        // all raters rate concurrently
+        let mut futures = futures::stream::FuturesUnordered::new();
         for &idx in &active {
             let model = raters[idx].model.clone();
             let prompt = build_rater_prompt(&raters[idx], task, &worker_output, worker_rep);
@@ -613,25 +579,22 @@ async fn main() -> Result<()> {
             let key = provider_key.clone();
             let client = LlmClient::new(url, model.clone(), Some(key), Provider::Openai);
             let sem = semaphore.clone();
-            handles.push((
-                idx,
-                tokio::spawn(async move {
-                    let _permit = sem.acquire().await.unwrap();
-                    let result = client
-                        .chat(&[Message {
-                            role: "user".to_string(),
-                            content: prompt,
-                        }])
-                        .await;
-                    (model, result)
-                }),
-            ));
+            futures.push(tokio::spawn(async move {
+                let _permit = sem.acquire().await.unwrap();
+                let result = client
+                    .chat(&[Message {
+                        role: "user".to_string(),
+                        content: prompt,
+                    }])
+                    .await;
+                (idx, model, result)
+            }));
         }
 
         let mut responses: Vec<(usize, String, RaterResponse)> = Vec::new();
-        for (idx, handle) in handles {
-            match handle.await {
-                Ok((model, Ok(raw))) => match parse_rater_response(&raw) {
+        while let Some(result) = futures.next().await {
+            match result {
+                Ok((idx, model, Ok(raw))) => match parse_rater_response(&raw) {
                     Some(resp) => {
                         let resp = RaterResponse {
                             signal: resp.signal,
@@ -651,7 +614,7 @@ async fn main() -> Result<()> {
                         ));
                     }
                 },
-                Ok((model, Err(e))) => {
+                Ok((idx, model, Err(e))) => {
                     println!("  {model}: API error ({e}), defaulting GOOD/0.5");
                     responses.push((
                         idx,
@@ -732,9 +695,9 @@ async fn main() -> Result<()> {
             .collect();
 
         let scores = rbts_score(&submit_ratings, ALPHA, BETA);
-        let payouts = zero_sum_payouts(&scores, active.len());
+        let payouts = payouts::zero_sum_payouts(&scores, active.len());
 
-        // Consensus stats
+        // consensus stats
         let num_good = responses.iter().filter(|(_, _, r)| r.signal).count();
         let num_rated = responses.len();
         let approval_pct = (num_good as f64 / num_rated as f64) * 100.0;
@@ -773,6 +736,7 @@ async fn main() -> Result<()> {
                 .find(|s| s.agent_id == *model)
                 .map(|s| s.payment)
                 .unwrap_or(0.0);
+            raters[*idx].balance += payout;
 
             // Determine balance: on-chain reads actual contract balance, else off-chain sim
             let (balance_after, eliminated) = if let Some(ref bals) = onchain_balances {
@@ -839,7 +803,7 @@ async fn main() -> Result<()> {
             let vote = if resp.signal { "GOOD" } else { "BAD" };
             println!(
                 "  {} {} pred={:.2} payout={:+.4} bal={:.2}",
-                model, vote, resp.prediction, payout, balance_after
+                model, vote, resp.prediction, payout, raters[*idx].balance
             );
         }
 
@@ -856,9 +820,9 @@ async fn main() -> Result<()> {
         println!();
     }
 
-    // Write summary
-    let mode_label = if use_onchain { " (On-Chain)" } else { "" };
-    let mut summary = format!("# Lichen Economy Simulation Summary{mode_label}\n\n");
+    // write summary
+    let mut summary = String::new();
+    summary.push_str("# Lichen Economy Simulation Summary\n\n");
     summary.push_str(&format!("- **Rounds:** {}\n", NUM_ROUNDS));
     summary.push_str(&format!("- **Starting raters:** {}\n", MODELS.len()));
     summary.push_str(&format!("- **Starting balance:** {}\n", STARTING_BALANCE));
@@ -869,6 +833,7 @@ async fn main() -> Result<()> {
     }
     summary.push('\n');
 
+    // sort by balance descending
     let mut standings: Vec<(String, f64, bool)> = raters
         .iter()
         .map(|r| (r.model.clone(), r.balance, r.eliminated))

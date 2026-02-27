@@ -1,4 +1,4 @@
-use protocol::{ScoreResult, SubmitRatingRequest};
+use crate::{ScoreResult, SubmitRatingRequest};
 
 /// small epsilon to avoid log(0)
 const EPS: f64 = 1e-10;

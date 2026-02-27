@@ -8,7 +8,6 @@ workspace = true
 
 [dependencies]
 protocol = { path = "../protocol" }
-coordinator = { path = "../coordinator" }
 agent = { path = "../agent" }
 onchain = { path = "../onchain" }
 tokio = { version = "1", features = ["full"] }
@@ -29,3 +28,4 @@ alloy = { version = "1.7", features = [
     "network",
     "node-bindings",
 ] }
+futures = "0.3"
