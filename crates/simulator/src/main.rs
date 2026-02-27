@@ -16,7 +16,7 @@ use uuid::Uuid;
 const WORKER_MODEL: &str = "gpt-4.1";
 const STARTING_BALANCE: f64 = 100.0;
 const COLLATERAL: f64 = 1.0;
-const NUM_ROUNDS: usize = 100;
+const DEFAULT_NUM_ROUNDS: usize = 100;
 const ALPHA: f64 = 1.0;
 const BETA: f64 = 1.0;
 const HISTORY_WINDOW: usize = 10;
@@ -434,6 +434,7 @@ enum RoundOutcome {
 #[allow(clippy::too_many_arguments, clippy::arithmetic_side_effects)]
 async fn run_round(
     round: usize,
+    num_rounds: usize,
     raters: &mut [RaterState],
     total_approvals: &mut usize,
     total_rounds_completed: &mut usize,
@@ -459,7 +460,7 @@ async fn run_round(
     }
 
     println!(
-        "--- Round {round}/{NUM_ROUNDS} ({} active raters) ---",
+        "--- Round {round}/{num_rounds} ({} active raters) ---",
         active.len()
     );
     println!("Task: {}", &task[..task.len().min(80)]);
@@ -772,9 +773,15 @@ async fn main() -> Result<()> {
     tracing_subscriber::fmt::init();
     dotenvy::dotenv().ok();
 
-    // Parse --onchain flag
+    // Parse CLI flags
     let args: Vec<String> = std::env::args().collect();
     let use_onchain = args.iter().any(|a| a == "--onchain");
+    let num_rounds = args
+        .iter()
+        .position(|a| a == "--rounds")
+        .and_then(|i| args.get(i + 1))
+        .and_then(|v| v.parse::<usize>().ok())
+        .unwrap_or(DEFAULT_NUM_ROUNDS);
 
     let provider_url = std::env::var("LLM_API_URL")
         .wrap_err("LLM_API_URL not set — add it to .env or environment")?;
@@ -816,9 +823,8 @@ async fn main() -> Result<()> {
         if use_onchain { " (ON-CHAIN)" } else { "" }
     );
     println!(
-        "Raters: {}, Rounds: {}, Starting balance: {}, Max concurrent: 6",
+        "Raters: {}, Rounds: {num_rounds}, Starting balance: {}, Max concurrent: 6",
         MODELS.len(),
-        NUM_ROUNDS,
         STARTING_BALANCE
     );
     println!();
@@ -831,9 +837,10 @@ async fn main() -> Result<()> {
 
     let total_gas_used: u64 = 0;
 
-    for round in 1..=NUM_ROUNDS {
+    for round in 1..=num_rounds {
         match run_round(
             round,
+            num_rounds,
             &mut raters,
             &mut total_approvals,
             &mut total_rounds_completed,
@@ -853,7 +860,7 @@ async fn main() -> Result<()> {
     // write summary
     let mut summary = String::new();
     summary.push_str("# Lichen Economy Simulation Summary\n\n");
-    summary.push_str(&format!("- **Rounds:** {}\n", NUM_ROUNDS));
+    summary.push_str(&format!("- **Rounds:** {num_rounds}\n"));
     summary.push_str(&format!("- **Starting raters:** {}\n", MODELS.len()));
     summary.push_str(&format!("- **Starting balance:** {}\n", STARTING_BALANCE));
     summary.push_str(&format!("- **Collateral per round:** {}\n", COLLATERAL));
