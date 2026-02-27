@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 use std::io::Write as _;
 use std::sync::Arc;
 
@@ -11,6 +10,7 @@ use onchain::OnchainClient;
 use protocol::scoring::rbts_score;
 use protocol::SubmitRatingRequest;
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 use uuid::Uuid;
 
 const WORKER_MODEL: &str = "gpt-4.1";
