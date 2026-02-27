@@ -258,6 +258,7 @@ fn build_rater_prompt(
     prompt
 }
 
+#[allow(clippy::arithmetic_side_effects)]
 fn parse_rater_response(raw: &str) -> Option<RaterResponse> {
     let text = raw.trim();
     if let Ok(r) = serde_json::from_str::<RaterResponse>(text) {
@@ -334,6 +335,7 @@ struct OnchainSetup {
     rater_clients: Vec<(OnchainClient, Address)>, // (client, address) for each rater
 }
 
+#[allow(clippy::arithmetic_side_effects)]
 async fn setup_onchain() -> Result<OnchainSetup> {
     use std::time::Duration;
 
@@ -406,7 +408,8 @@ async fn setup_onchain() -> Result<OnchainSetup> {
     // Each rater deposits 100 ETH
     println!("[onchain] Depositing 100 ETH for each rater...");
     for (client, _addr) in &rater_clients {
-        let amount = U256::from(100u64 * ETH_WEI);
+        #[allow(clippy::arithmetic_side_effects)]
+        let amount = U256::from(100u128 * ETH_WEI as u128);
         client
             .deposit(amount)
             .await
@@ -428,7 +431,7 @@ enum RoundOutcome {
     StopSimulation,
 }
 
-#[allow(clippy::too_many_arguments)]
+#[allow(clippy::too_many_arguments, clippy::arithmetic_side_effects)]
 async fn run_round(
     round: usize,
     raters: &mut [RaterState],
@@ -479,7 +482,10 @@ async fn run_round(
     let onchain_task_id: Option<u64> = if let Some(setup) = onchain_setup {
         let prompt_hash = B256::from(keccak256(task.as_bytes()));
         let output_hash = B256::from(keccak256(worker_output.as_bytes()));
-        let num_raters = active.len() as u8;
+        let num_raters: u8 = active
+            .len()
+            .try_into()
+            .wrap_err("active rater count exceeds u8::MAX")?;
 
         match setup
             .worker_client
@@ -761,6 +767,7 @@ async fn run_round(
 }
 
 #[tokio::main]
+#[allow(clippy::arithmetic_side_effects)]
 async fn main() -> Result<()> {
     tracing_subscriber::fmt::init();
     dotenvy::dotenv().ok();

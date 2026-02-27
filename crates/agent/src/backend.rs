@@ -1,5 +1,5 @@
 use alloy::primitives::{Address, B256};
-use eyre::Result;
+use eyre::{Result, WrapErr as _};
 use protocol::{SubmitRatingRequest, Task, TaskPhase, TaskStatus};
 use uuid::Uuid;
 
@@ -28,7 +28,9 @@ impl Backend {
             Self::Http(c) => c.create_task(prompt, num_raters).await,
             Self::Onchain(c) => {
                 let prompt_hash = B256::from(alloy::primitives::keccak256(prompt.as_bytes()));
-                let task_id = c.create_task(prompt_hash, num_raters as u8).await?;
+                let num_raters_u8 =
+                    u8::try_from(num_raters).wrap_err("num_raters exceeds u8::MAX")?;
+                let task_id = c.create_task(prompt_hash, num_raters_u8).await?;
                 Ok(TaskStatus {
                     task: Task {
                         id: task_id_to_uuid(task_id),

@@ -142,6 +142,7 @@ async fn handle_rate(
 
 fn parse_rating(raw: &str) -> Option<(bool, f64)> {
     let start = raw.find('{')?;
+    #[allow(clippy::arithmetic_side_effects)]
     let end = raw.rfind('}')? + 1;
     let json_str = &raw[start..end];
 

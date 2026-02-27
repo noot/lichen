@@ -233,6 +233,11 @@ impl OnchainClient {
     // ── Helpers ──────────────────────────────────────────────────────
 
     /// Convert a f64 prediction (0.0 to 1.0) to 64.64 fixed-point.
+    #[allow(
+        clippy::cast_possible_truncation,
+        clippy::cast_precision_loss,
+        clippy::arithmetic_side_effects
+    )]
     pub fn prediction_to_fixed(prediction: f64) -> i128 {
         (prediction * (1i128 << 64) as f64) as i128
     }
