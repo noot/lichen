@@ -62,32 +62,53 @@ const ANVIL_KEYS: &[&str] = &[
     "0x233c86e887ac435d7f7dc64979d7758d69320906a0d340d2b6518b0fd20aa998",
 ];
 
-const MODELS: &[&str] = &[
-    "claude-haiku-4-5",
-    "claude-3-5-haiku",
-    "claude-sonnet-4-5",
-    "claude-sonnet-4",
-    "claude-3-7-sonnet",
-    "claude-opus-4-1",
-    "claude-sonnet-4-6",
-    "gpt-4o",
-    "gpt-4o-mini",
-    "gpt-4.1",
-    "gpt-4.1-mini",
-    "gpt-4.1-nano",
-    "gpt-5",
-    "gpt-5-mini",
-    "gpt-5-nano",
-    "gpt-5.2",
-    "gemini-2.0-flash",
-    "gemini-2.5-flash",
-    "gemini-2.5-pro",
-    "gemini-3-flash",
-    "gemini-3-pro",
-    "gemini-3.1-pro",
-    "o3",
-    "o3-mini",
-    "o4-mini",
+/// Default rater lineup: (label, model, starting_balance)
+/// Labels allow the same model to appear multiple times with different configs.
+const RATERS_DEFAULT: &[(&str, &str, f64)] = &[
+    ("claude-haiku-4-5", "claude-haiku-4-5", 100.0),
+    ("claude-3-5-haiku", "claude-3-5-haiku", 100.0),
+    ("claude-sonnet-4-5", "claude-sonnet-4-5", 100.0),
+    ("claude-sonnet-4", "claude-sonnet-4", 100.0),
+    ("claude-3-7-sonnet", "claude-3-7-sonnet", 100.0),
+    ("claude-opus-4-1", "claude-opus-4-1", 100.0),
+    ("claude-sonnet-4-6", "claude-sonnet-4-6", 100.0),
+    ("gpt-4o", "gpt-4o", 100.0),
+    ("gpt-4o-mini", "gpt-4o-mini", 100.0),
+    ("gpt-4.1", "gpt-4.1", 100.0),
+    ("gpt-4.1-mini", "gpt-4.1-mini", 100.0),
+    ("gpt-4.1-nano", "gpt-4.1-nano", 100.0),
+    ("gpt-5", "gpt-5", 100.0),
+    ("gpt-5-mini", "gpt-5-mini", 100.0),
+    ("gpt-5.2", "gpt-5.2", 100.0),
+    ("gemini-2.0-flash", "gemini-2.0-flash", 100.0),
+    ("gemini-2.5-flash", "gemini-2.5-flash", 100.0),
+    ("gemini-2.5-pro", "gemini-2.5-pro", 100.0),
+    ("gemini-3-flash", "gemini-3-flash", 100.0),
+    ("gemini-3-pro", "gemini-3-pro", 100.0),
+    ("gemini-3.1-pro", "gemini-3.1-pro", 100.0),
+    ("o3", "o3", 100.0),
+    ("o4-mini", "o4-mini", 100.0),
+];
+
+/// Bankroll fork experiment: same model at different starting balances
+const RATERS_BANKROLL: &[(&str, &str, f64)] = &[
+    // Duplicated models at 50/100/200 (confirmed balance-sensitive)
+    ("gpt-4.1:poor", "gpt-4.1", 50.0),
+    ("gpt-4.1:default", "gpt-4.1", 100.0),
+    ("gpt-4.1:rich", "gpt-4.1", 200.0),
+    ("gemini-2.0-flash:poor", "gemini-2.0-flash", 50.0),
+    ("gemini-2.0-flash:default", "gemini-2.0-flash", 100.0),
+    ("gemini-2.0-flash:rich", "gemini-2.0-flash", 200.0),
+    ("claude-3-7-sonnet:poor", "claude-3-7-sonnet", 50.0),
+    ("claude-3-7-sonnet:default", "claude-3-7-sonnet", 100.0),
+    ("claude-3-7-sonnet:rich", "claude-3-7-sonnet", 200.0),
+    // Controls at default balance
+    ("gpt-5", "gpt-5", 100.0),
+    ("claude-sonnet-4-6", "claude-sonnet-4-6", 100.0),
+    ("gemini-2.5-pro", "gemini-2.5-pro", 100.0),
+    ("gemini-3.1-pro", "gemini-3.1-pro", 100.0),
+    ("o4-mini", "o4-mini", 100.0),
+    ("gpt-5.2", "gpt-5.2", 100.0),
 ];
 
 const TASKS: &[&str] = &[
@@ -166,6 +187,7 @@ struct RaterResponse {
 }
 
 struct RaterState {
+    label: String,
     model: String,
     balance: f64,
     eliminated: bool,
@@ -443,9 +465,10 @@ async fn run_round(
     provider_url: &str,
     provider_key: &str,
     onchain_setup: Option<&OnchainSetup>,
+    stationary_task: Option<&str>,
 ) -> Result<RoundOutcome> {
     let task_idx = (round - 1) % TASKS.len();
-    let task = TASKS[task_idx];
+    let task = stationary_task.unwrap_or(TASKS[task_idx]);
 
     let active: Vec<usize> = raters
         .iter()
@@ -528,6 +551,7 @@ async fn run_round(
     let semaphore = Arc::new(tokio::sync::Semaphore::new(6));
     let mut futures = futures::stream::FuturesUnordered::new();
     for &idx in &active {
+        let label = raters[idx].label.clone();
         let model = raters[idx].model.clone();
         let prompt = build_rater_prompt(&raters[idx], task, &worker_output, worker_rep);
         let url = provider_url.to_owned();
@@ -542,26 +566,28 @@ async fn run_round(
                     content: prompt,
                 }])
                 .await;
-            (idx, model, result)
+            (idx, label, model, result)
         }));
     }
 
-    let mut responses: Vec<(usize, String, RaterResponse)> = Vec::new();
+    // (idx, label, model, response) — label is unique identity, model is the LLM to call
+    let mut responses: Vec<(usize, String, String, RaterResponse)> = Vec::new();
     while let Some(result) = futures.next().await {
         match result {
-            Ok((idx, model, Ok(raw))) => match parse_rater_response(&raw) {
+            Ok((idx, label, _model, Ok(raw))) => match parse_rater_response(&raw) {
                 Some(resp) => {
                     let resp = RaterResponse {
                         signal: resp.signal,
                         prediction: resp.prediction.clamp(0.01, 0.99),
                     };
-                    responses.push((idx, model, resp));
+                    responses.push((idx, label, raters[idx].model.clone(), resp));
                 }
                 None => {
-                    println!("  {model}: failed to parse response, defaulting GOOD/0.5");
+                    println!("  {label}: failed to parse response, defaulting GOOD/0.5");
                     responses.push((
                         idx,
-                        model,
+                        label,
+                        raters[idx].model.clone(),
                         RaterResponse {
                             signal: true,
                             prediction: 0.5,
@@ -569,11 +595,12 @@ async fn run_round(
                     ));
                 }
             },
-            Ok((idx, model, Err(e))) => {
-                println!("  {model}: API error ({e}), defaulting GOOD/0.5");
+            Ok((idx, label, _model, Err(e))) => {
+                println!("  {label}: API error ({e}), defaulting GOOD/0.5");
                 responses.push((
                     idx,
-                    model,
+                    label,
+                    raters[idx].model.clone(),
                     RaterResponse {
                         signal: true,
                         prediction: 0.5,
@@ -595,7 +622,7 @@ async fn run_round(
     let mut onchain_balances: Option<HashMap<Address, f64>> = None;
 
     if let (Some(setup), Some(tid)) = (onchain_setup, onchain_task_id) {
-        for (idx, _model, resp) in &responses {
+        for (idx, _label, _model, resp) in &responses {
             let rater_idx = *idx;
             if rater_idx >= setup.rater_clients.len() {
                 println!("  [onchain] WARNING: rater_idx={rater_idx} out of bounds, skipping");
@@ -612,7 +639,7 @@ async fn run_round(
         }
 
         let mut balances = HashMap::new();
-        for (idx, _model, _resp) in &responses {
+        for (idx, _label, _model, _resp) in &responses {
             let rater_idx = *idx;
             if rater_idx >= setup.rater_clients.len() {
                 continue;
@@ -637,9 +664,9 @@ async fn run_round(
     let task_uuid = Uuid::new_v4();
     let submit_ratings: Vec<SubmitRatingRequest> = responses
         .iter()
-        .map(|(_, model, resp)| SubmitRatingRequest {
+        .map(|(_, label, _, resp)| SubmitRatingRequest {
             task_id: task_uuid,
-            agent_id: model.clone(),
+            agent_id: label.clone(),
             signal: resp.signal,
             prediction: resp.prediction,
         })
@@ -648,11 +675,11 @@ async fn run_round(
     let scores = rbts_score(&submit_ratings, ALPHA, BETA);
     let payouts = payouts::zero_sum_payouts(&scores, active.len());
 
-    let num_good = responses.iter().filter(|(_, _, r)| r.signal).count();
+    let num_good = responses.iter().filter(|(_, _, _, r)| r.signal).count();
     let num_rated = responses.len();
     let approval_pct = (num_good as f64 / num_rated as f64) * 100.0;
     let avg_prediction =
-        responses.iter().map(|(_, _, r)| r.prediction).sum::<f64>() / num_rated as f64;
+        responses.iter().map(|(_, _, _, r)| r.prediction).sum::<f64>() / num_rated as f64;
     let actual_good_frac = num_good as f64 / num_rated as f64;
     let bts_accepted = actual_good_frac >= avg_prediction;
     if bts_accepted && actual_good_frac >= 0.5 {
@@ -675,15 +702,15 @@ async fn run_round(
 
     let all_votes: Vec<(String, bool, f64)> = responses
         .iter()
-        .map(|(_, m, r)| (m.clone(), r.signal, r.prediction))
+        .map(|(_, label, _, r)| (label.clone(), r.signal, r.prediction))
         .collect();
 
     let mut rater_records = Vec::new();
-    for (idx, model, resp) in &responses {
-        let payout = payouts.get(model.as_str()).copied().unwrap_or(0.0);
+    for (idx, label, _model, resp) in &responses {
+        let payout = payouts.get(label.as_str()).copied().unwrap_or(0.0);
         let rbts = scores
             .iter()
-            .find(|s| s.agent_id == *model)
+            .find(|s| s.agent_id == *label)
             .map(|s| s.payment)
             .unwrap_or(0.0);
         raters[*idx].balance += payout;
@@ -716,12 +743,12 @@ async fn run_round(
         raters[*idx].balance = balance_after;
         if eliminated && !raters[*idx].eliminated {
             raters[*idx].eliminated = true;
-            println!("  ☠️  {} ELIMINATED (balance: {:.2})", model, balance_after);
+            println!("  ☠️  {} ELIMINATED (balance: {:.2})", label, balance_after);
         }
 
         let others: Vec<(String, bool, f64)> = all_votes
             .iter()
-            .filter(|(m, _, _)| m != model)
+            .filter(|(l, _, _)| l != label)
             .cloned()
             .collect();
 
@@ -737,7 +764,7 @@ async fn run_round(
         });
 
         rater_records.push(RaterRecord {
-            model: model.clone(),
+            model: label.clone(),
             signal: resp.signal,
             prediction: resp.prediction,
             rbts_score: rbts,
@@ -748,7 +775,7 @@ async fn run_round(
         let vote = if resp.signal { "GOOD" } else { "BAD" };
         println!(
             "  {} {} pred={:.2} payout={:+.4} bal={:.2}",
-            model, vote, resp.prediction, payout, raters[*idx].balance
+            label, vote, resp.prediction, payout, raters[*idx].balance
         );
     }
 
@@ -776,6 +803,8 @@ async fn main() -> Result<()> {
     // Parse CLI flags
     let args: Vec<String> = std::env::args().collect();
     let use_onchain = args.iter().any(|a| a == "--onchain");
+    let use_bankroll = args.iter().any(|a| a == "--bankroll");
+    let use_stationary = args.iter().any(|a| a == "--stationary");
     let num_rounds = args
         .iter()
         .position(|a| a == "--rounds")
@@ -795,17 +824,34 @@ async fn main() -> Result<()> {
         Provider::Openai,
     );
 
-    let mut raters: Vec<RaterState> = MODELS
+    let rater_config = if use_bankroll {
+        RATERS_BANKROLL
+    } else {
+        RATERS_DEFAULT
+    };
+
+    let mut raters: Vec<RaterState> = rater_config
         .iter()
-        .map(|m| RaterState {
-            model: m.to_string(),
-            balance: STARTING_BALANCE,
+        .map(|(label, model, balance)| RaterState {
+            label: label.to_string(),
+            model: model.to_string(),
+            balance: *balance,
             eliminated: false,
             history: Vec::new(),
         })
         .collect();
 
-    let (jsonl_path, summary_path) = if use_onchain {
+    let (jsonl_path, summary_path) = if use_stationary {
+        (
+            "lichen-economy-rounds-stationary.jsonl",
+            "lichen-economy-summary-stationary.md",
+        )
+    } else if use_bankroll {
+        (
+            "lichen-economy-rounds-bankroll.jsonl",
+            "lichen-economy-summary-bankroll.md",
+        )
+    } else if use_onchain {
         (
             "lichen-economy-rounds-onchain.jsonl",
             "lichen-economy-summary-onchain.md",
@@ -818,14 +864,19 @@ async fn main() -> Result<()> {
     let mut total_approvals: usize = 0;
     let mut total_rounds_completed: usize = 0;
 
+    let mode_tag = if use_stationary {
+        " (STATIONARY REGIME)"
+    } else if use_bankroll {
+        " (BANKROLL FORK)"
+    } else if use_onchain {
+        " (ON-CHAIN)"
+    } else {
+        ""
+    };
+    println!("=== LICHEN ECONOMY SIMULATOR{mode_tag} ===");
     println!(
-        "=== LICHEN ECONOMY SIMULATOR{} ===",
-        if use_onchain { " (ON-CHAIN)" } else { "" }
-    );
-    println!(
-        "Raters: {}, Rounds: {num_rounds}, Starting balance: {}, Max concurrent: 6",
-        MODELS.len(),
-        STARTING_BALANCE
+        "Raters: {}, Rounds: {num_rounds}, Max concurrent: 6",
+        raters.len()
     );
     println!();
 
@@ -836,6 +887,12 @@ async fn main() -> Result<()> {
     };
 
     let total_gas_used: u64 = 0;
+
+    let stationary_task: Option<&str> = if use_stationary {
+        Some("Write a Rust function to reverse a string.")
+    } else {
+        None
+    };
 
     for round in 1..=num_rounds {
         match run_round(
@@ -849,6 +906,7 @@ async fn main() -> Result<()> {
             &provider_url,
             &provider_key,
             onchain_setup.as_ref(),
+            stationary_task,
         )
         .await?
         {
@@ -861,7 +919,13 @@ async fn main() -> Result<()> {
     let mut summary = String::new();
     summary.push_str("# Lichen Economy Simulation Summary\n\n");
     summary.push_str(&format!("- **Rounds:** {num_rounds}\n"));
-    summary.push_str(&format!("- **Starting raters:** {}\n", MODELS.len()));
+    summary.push_str(&format!("- **Starting raters:** {}\n", raters.len()));
+    if use_stationary {
+        summary.push_str("- **Mode:** Stationary regime (same task every round)\n");
+        summary.push_str("- **Task:** Write a Rust function to reverse a string.\n");
+    } else if use_bankroll {
+        summary.push_str("- **Mode:** Bankroll fork experiment (varied starting balances)\n");
+    }
     summary.push_str(&format!("- **Starting balance:** {}\n", STARTING_BALANCE));
     summary.push_str(&format!("- **Collateral per round:** {}\n", COLLATERAL));
     if use_onchain {
@@ -873,7 +937,7 @@ async fn main() -> Result<()> {
     // sort by balance descending
     let mut standings: Vec<(String, f64, bool)> = raters
         .iter()
-        .map(|r| (r.model.clone(), r.balance, r.eliminated))
+        .map(|r| (r.label.clone(), r.balance, r.eliminated))
         .collect();
     standings.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap());
 

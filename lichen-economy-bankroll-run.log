@@ -1,0 +1,716 @@
+    Finished `release` profile [optimized] target(s) in 0.26s
+     Running `target/release/simulator --bankroll --rounds 30`
+=== LICHEN ECONOMY SIMULATOR (BANKROLL FORK) ===
+Raters: 15, Rounds: 30, Max concurrent: 6
+
+--- Round 1/30 (15 active raters) ---
+Task: Write a Rust function to reverse a string.
+  Worker output: 943 chars
+  Consensus: 100% GOOD (15/15), avg pred: 0.89, BTS accepted: true
+  gpt-4.1:poor GOOD pred=0.95 payout=+1.3284 bal=52.66
+  gpt-4.1:rich GOOD pred=0.95 payout=+1.3284 bal=202.66
+  gemini-2.0-flash:poor GOOD pred=0.75 payout=+0.0000 bal=50.00
+  gemini-2.0-flash:default GOOD pred=0.75 payout=+0.0000 bal=100.00
+  gemini-2.0-flash:rich GOOD pred=0.75 payout=+0.0000 bal=200.00
+  gpt-4.1:default GOOD pred=0.95 payout=+1.3284 bal=102.66
+  claude-3-7-sonnet:default GOOD pred=0.95 payout=+1.3284 bal=102.66
+  claude-3-7-sonnet:poor GOOD pred=0.95 payout=+1.3284 bal=52.66
+  claude-3-7-sonnet:rich GOOD pred=0.95 payout=+1.3284 bal=202.66
+  claude-sonnet-4-6 GOOD pred=0.85 payout=+0.8856 bal=101.77
+  gpt-5.2 GOOD pred=0.90 payout=+1.1624 bal=102.32
+  o4-mini GOOD pred=0.90 payout=+1.1624 bal=102.32
+  gpt-5 GOOD pred=0.90 payout=+1.1624 bal=102.32
+  gemini-3.1-pro GOOD pred=0.95 payout=+1.3284 bal=102.66
+  gemini-2.5-pro GOOD pred=0.95 payout=+1.3284 bal=102.66
+
+--- Round 2/30 (15 active raters) ---
+Task: Write a Rust function to check if a number is prime.
+  Worker output: 1043 chars
+  Consensus: 100% GOOD (15/15), avg pred: 0.95, BTS accepted: true
+  gpt-4.1:poor GOOD pred=0.98 payout=+1.6187 bal=55.89
+  gpt-4.1:default GOOD pred=0.95 payout=+1.0522 bal=104.76
+  gemini-2.0-flash:default GOOD pred=0.95 payout=+1.0522 bal=102.10
+  gpt-4.1:rich GOOD pred=0.95 payout=+1.0522 bal=204.76
+  gemini-2.0-flash:poor GOOD pred=0.95 payout=+1.0522 bal=52.10
+  gemini-2.0-flash:rich GOOD pred=0.95 payout=+1.0522 bal=202.10
+  claude-3-7-sonnet:default GOOD pred=0.95 payout=+1.0522 bal=104.76
+  claude-3-7-sonnet:poor GOOD pred=0.95 payout=+1.0522 bal=54.76
+  claude-sonnet-4-6 GOOD pred=0.95 payout=+1.0522 bal=103.88
+  claude-3-7-sonnet:rich GOOD pred=0.92 payout=+0.0000 bal=202.66
+  gpt-5.2 GOOD pred=0.95 payout=+1.0522 bal=104.43
+  gemini-3.1-pro GOOD pred=0.95 payout=+1.0522 bal=104.76
+  o4-mini GOOD pred=0.95 payout=+1.0522 bal=104.43
+  gemini-2.5-pro GOOD pred=0.95 payout=+1.0522 bal=104.76
+  gpt-5 GOOD pred=0.94 payout=+0.7554 bal=103.84
+
+--- Round 3/30 (15 active raters) ---
+Task: Write a Rust FizzBuzz implementation.
+  Worker output: 799 chars
+[2m2026-02-28T04:42:56.832141Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mclaude-3-7-sonnet [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+[2m2026-02-28T04:42:57.045855Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mclaude-3-7-sonnet [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+[2m2026-02-28T04:42:57.066434Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mclaude-3-7-sonnet [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+[2m2026-02-28T04:42:57.207694Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-5 [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+[2m2026-02-28T04:42:57.237698Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mclaude-sonnet-4-6 [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+[2m2026-02-28T04:42:57.469115Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgemini-2.5-pro [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+[2m2026-02-28T04:42:59.110165Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mclaude-3-7-sonnet [3mattempt[0m[2m=[0m2 [3mdelay_ms[0m[2m=[0m4000
+[2m2026-02-28T04:42:59.331821Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mclaude-3-7-sonnet [3mattempt[0m[2m=[0m2 [3mdelay_ms[0m[2m=[0m4000
+[2m2026-02-28T04:42:59.475172Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-5 [3mattempt[0m[2m=[0m2 [3mdelay_ms[0m[2m=[0m4000
+[2m2026-02-28T04:42:59.498763Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mclaude-sonnet-4-6 [3mattempt[0m[2m=[0m2 [3mdelay_ms[0m[2m=[0m4000
+[2m2026-02-28T04:42:59.547568Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mclaude-3-7-sonnet [3mattempt[0m[2m=[0m2 [3mdelay_ms[0m[2m=[0m4000
+[2m2026-02-28T04:42:59.824510Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgemini-2.5-pro [3mattempt[0m[2m=[0m2 [3mdelay_ms[0m[2m=[0m4000
+  Consensus: 100% GOOD (15/15), avg pred: 0.96, BTS accepted: true
+  gpt-4.1:poor GOOD pred=0.98 payout=+2.1575 bal=60.21
+  gpt-4.1:rich GOOD pred=0.98 payout=+2.1575 bal=209.08
+  gemini-2.0-flash:poor GOOD pred=0.95 payout=+0.0000 bal=52.10
+  gemini-2.0-flash:default GOOD pred=0.95 payout=+0.0000 bal=102.10
+  gemini-2.0-flash:rich GOOD pred=0.95 payout=+0.0000 bal=202.10
+  gpt-4.1:default GOOD pred=0.98 payout=+2.1575 bal=109.08
+  claude-sonnet-4-6 GOOD pred=0.97 payout=+1.6438 bal=107.16
+  claude-3-7-sonnet:poor GOOD pred=0.95 payout=+0.0000 bal=54.76
+  claude-3-7-sonnet:default GOOD pred=0.95 payout=+0.0000 bal=104.76
+  gpt-5.2 GOOD pred=0.97 payout=+1.6438 bal=107.72
+  gpt-5 GOOD pred=0.96 payout=+0.9247 bal=105.68
+  claude-3-7-sonnet:rich GOOD pred=0.98 payout=+2.1575 bal=206.97
+  o4-mini GOOD pred=0.95 payout=+0.0000 bal=104.43
+  gemini-3.1-pro GOOD pred=0.98 payout=+2.1575 bal=109.08
+  gemini-2.5-pro GOOD pred=0.95 payout=+0.0000 bal=104.76
+
+--- Round 4/30 (15 active raters) ---
+Task: Write a Rust function to find the max element in a slice.
+  Worker output: 983 chars
+  Consensus: 100% GOOD (15/15), avg pred: 0.96, BTS accepted: true
+  gpt-4.1:default GOOD pred=0.98 payout=+1.9444 bal=112.97
+  gpt-4.1:poor GOOD pred=0.98 payout=+1.9444 bal=64.10
+  gemini-2.0-flash:default GOOD pred=0.95 payout=+0.0000 bal=102.10
+  gpt-4.1:rich GOOD pred=0.98 payout=+1.9444 bal=212.97
+  gemini-2.0-flash:poor GOOD pred=0.95 payout=+0.0000 bal=52.10
+  gemini-2.0-flash:rich GOOD pred=0.95 payout=+0.0000 bal=202.10
+  claude-3-7-sonnet:poor GOOD pred=0.95 payout=+0.0000 bal=54.76
+  claude-3-7-sonnet:default GOOD pred=0.95 payout=+0.0000 bal=104.76
+  claude-3-7-sonnet:rich GOOD pred=0.97 payout=+1.4815 bal=209.93
+  claude-sonnet-4-6 GOOD pred=0.97 payout=+1.4815 bal=110.13
+  gpt-5.2 GOOD pred=0.97 payout=+1.4815 bal=110.68
+  o4-mini GOOD pred=0.95 payout=+0.0000 bal=104.43
+  gemini-3.1-pro GOOD pred=0.98 payout=+1.9444 bal=112.97
+  gpt-5 GOOD pred=0.96 payout=+0.8333 bal=107.35
+  gemini-2.5-pro GOOD pred=0.98 payout=+1.9444 bal=108.65
+
+--- Round 5/30 (15 active raters) ---
+Task: Write a Rust function to count vowels in a string.
+[2m2026-02-28T04:43:34.600749Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-4.1 [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+[2m2026-02-28T04:43:36.899018Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-4.1 [3mattempt[0m[2m=[0m2 [3mdelay_ms[0m[2m=[0m4000
+[2m2026-02-28T04:43:41.176738Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-4.1 [3mattempt[0m[2m=[0m3 [3mdelay_ms[0m[2m=[0m8000
+[2m2026-02-28T04:43:49.427169Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-4.1 [3mattempt[0m[2m=[0m4 [3mdelay_ms[0m[2m=[0m16000
+  Worker output: 1033 chars
+  Consensus: 100% GOOD (15/15), avg pred: 0.96, BTS accepted: true
+  gpt-4.1:poor GOOD pred=0.98 payout=+1.9811 bal=68.06
+  gemini-2.0-flash:default GOOD pred=0.95 payout=+0.0000 bal=102.10
+  gemini-2.0-flash:rich GOOD pred=0.95 payout=+0.0000 bal=202.10
+  gemini-2.0-flash:poor GOOD pred=0.95 payout=+0.0000 bal=52.10
+  gpt-4.1:rich GOOD pred=0.98 payout=+1.9811 bal=216.93
+  gpt-4.1:default GOOD pred=0.98 payout=+1.9811 bal=116.93
+  claude-3-7-sonnet:poor GOOD pred=0.95 payout=+0.0000 bal=54.76
+  claude-3-7-sonnet:rich GOOD pred=0.96 payout=+0.8491 bal=211.63
+  claude-3-7-sonnet:default GOOD pred=0.97 payout=+1.5094 bal=107.78
+  gpt-5.2 GOOD pred=0.96 payout=+0.8491 bal=112.38
+  claude-sonnet-4-6 GOOD pred=0.97 payout=+1.5094 bal=113.15
+  gemini-3.1-pro GOOD pred=0.98 payout=+1.9811 bal=116.93
+  gpt-5 GOOD pred=0.96 payout=+0.8491 bal=109.05
+  o4-mini GOOD pred=0.95 payout=+0.0000 bal=104.43
+  gemini-2.5-pro GOOD pred=0.97 payout=+1.5094 bal=111.67
+
+--- Round 6/30 (15 active raters) ---
+Task: Implement a stack data structure in Rust.
+  Worker output: 1985 chars
+[2m2026-02-28T04:44:29.657124Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgemini-3.1-pro [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+[2m2026-02-28T04:44:29.948950Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-5.2 [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+[2m2026-02-28T04:44:31.955136Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgemini-3.1-pro [3mattempt[0m[2m=[0m2 [3mdelay_ms[0m[2m=[0m4000
+[2m2026-02-28T04:44:32.210028Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-5.2 [3mattempt[0m[2m=[0m2 [3mdelay_ms[0m[2m=[0m4000
+[2m2026-02-28T04:44:36.224804Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgemini-3.1-pro [3mattempt[0m[2m=[0m3 [3mdelay_ms[0m[2m=[0m8000
+[2m2026-02-28T04:44:36.503056Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-5.2 [3mattempt[0m[2m=[0m3 [3mdelay_ms[0m[2m=[0m8000
+[2m2026-02-28T04:44:44.491462Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgemini-3.1-pro [3mattempt[0m[2m=[0m4 [3mdelay_ms[0m[2m=[0m16000
+[2m2026-02-28T04:44:44.751238Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-5.2 [3mattempt[0m[2m=[0m4 [3mdelay_ms[0m[2m=[0m16000
+  Consensus: 100% GOOD (15/15), avg pred: 0.97, BTS accepted: true
+  gpt-4.1:default GOOD pred=0.98 payout=+1.7898 bal=120.51
+  gpt-4.1:rich GOOD pred=0.98 payout=+1.7898 bal=220.51
+  gemini-2.0-flash:poor GOOD pred=0.95 payout=+0.0000 bal=52.10
+  gemini-2.0-flash:rich GOOD pred=0.95 payout=+0.0000 bal=202.10
+  gemini-2.0-flash:default GOOD pred=0.95 payout=+0.0000 bal=102.10
+  gpt-4.1:poor GOOD pred=0.99 payout=+2.0455 bal=72.15
+  claude-3-7-sonnet:poor GOOD pred=0.97 payout=+1.3636 bal=57.49
+  claude-sonnet-4-6 GOOD pred=0.97 payout=+1.3636 bal=115.87
+  claude-3-7-sonnet:rich GOOD pred=0.97 payout=+1.3636 bal=214.36
+  claude-3-7-sonnet:default GOOD pred=0.95 payout=+0.0000 bal=107.78
+  o4-mini GOOD pred=0.95 payout=+0.0000 bal=104.43
+  gpt-5 GOOD pred=0.97 payout=+1.3636 bal=111.78
+  gemini-2.5-pro GOOD pred=0.96 payout=+0.7670 bal=113.20
+  gpt-5.2 GOOD pred=0.97 payout=+1.3636 bal=115.11
+  gemini-3.1-pro GOOD pred=0.98 payout=+1.7898 bal=120.51
+
+--- Round 7/30 (15 active raters) ---
+Task: Write a Rust function to check if a string is a palindrome.
+  Worker output: 1350 chars
+  gemini-2.0-flash:rich: failed to parse response, defaulting GOOD/0.5
+  Consensus: 100% GOOD (15/15), avg pred: 0.94, BTS accepted: true
+  gpt-4.1:default GOOD pred=0.98 payout=+1.0745 bal=122.66
+  gpt-4.1:rich GOOD pred=0.98 payout=+1.0745 bal=222.66
+  gemini-2.0-flash:default GOOD pred=0.95 payout=+1.0654 bal=104.24
+  gemini-2.0-flash:poor GOOD pred=0.95 payout=+1.0654 bal=54.24
+  gemini-2.0-flash:rich GOOD pred=0.50 payout=+0.0000 bal=202.10
+  gpt-4.1:poor GOOD pred=0.99 payout=+1.0758 bal=74.30
+  claude-sonnet-4-6 GOOD pred=0.97 payout=+1.0723 bal=118.02
+  claude-3-7-sonnet:default GOOD pred=0.95 payout=+1.0654 bal=109.91
+  claude-3-7-sonnet:rich GOOD pred=0.98 payout=+1.0745 bal=216.51
+  claude-3-7-sonnet:poor GOOD pred=0.98 payout=+1.0745 bal=59.64
+  gpt-5.2 GOOD pred=0.96 payout=+1.0693 bal=117.24
+  o4-mini GOOD pred=0.97 payout=+1.0723 bal=106.57
+  gemini-3.1-pro GOOD pred=0.98 payout=+1.0745 bal=122.66
+  gpt-5 GOOD pred=0.96 payout=+1.0693 bal=113.92
+  gemini-2.5-pro GOOD pred=0.97 payout=+1.0723 bal=115.35
+
+--- Round 8/30 (15 active raters) ---
+Task: Write a Rust function to compute fibonacci numbers.
+  Worker output: 1019 chars
+[2m2026-02-28T04:45:33.341870Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgemini-2.5-pro [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+[2m2026-02-28T04:45:33.636133Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgemini-3.1-pro [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+[2m2026-02-28T04:45:33.956984Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mo4-mini [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+[2m2026-02-28T04:45:34.296060Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-5.2 [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+[2m2026-02-28T04:45:35.642100Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgemini-2.5-pro [3mattempt[0m[2m=[0m2 [3mdelay_ms[0m[2m=[0m4000
+[2m2026-02-28T04:45:35.963182Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgemini-3.1-pro [3mattempt[0m[2m=[0m2 [3mdelay_ms[0m[2m=[0m4000
+[2m2026-02-28T04:45:36.302111Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mo4-mini [3mattempt[0m[2m=[0m2 [3mdelay_ms[0m[2m=[0m4000
+[2m2026-02-28T04:45:36.618970Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-5.2 [3mattempt[0m[2m=[0m2 [3mdelay_ms[0m[2m=[0m4000
+[2m2026-02-28T04:45:39.921708Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgemini-2.5-pro [3mattempt[0m[2m=[0m3 [3mdelay_ms[0m[2m=[0m8000
+[2m2026-02-28T04:45:40.306514Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgemini-3.1-pro [3mattempt[0m[2m=[0m3 [3mdelay_ms[0m[2m=[0m8000
+[2m2026-02-28T04:45:40.578512Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mo4-mini [3mattempt[0m[2m=[0m3 [3mdelay_ms[0m[2m=[0m8000
+[2m2026-02-28T04:45:40.920184Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-5.2 [3mattempt[0m[2m=[0m3 [3mdelay_ms[0m[2m=[0m8000
+[2m2026-02-28T04:45:48.198071Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgemini-2.5-pro [3mattempt[0m[2m=[0m4 [3mdelay_ms[0m[2m=[0m16000
+[2m2026-02-28T04:45:48.583770Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgemini-3.1-pro [3mattempt[0m[2m=[0m4 [3mdelay_ms[0m[2m=[0m16000
+[2m2026-02-28T04:45:48.830120Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mo4-mini [3mattempt[0m[2m=[0m4 [3mdelay_ms[0m[2m=[0m16000
+[2m2026-02-28T04:45:49.215126Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-5.2 [3mattempt[0m[2m=[0m4 [3mdelay_ms[0m[2m=[0m16000
+  Consensus: 100% GOOD (15/15), avg pred: 0.97, BTS accepted: true
+  gpt-4.1:poor GOOD pred=0.99 payout=+1.8750 bal=78.05
+  gpt-4.1:rich GOOD pred=0.98 payout=+1.6406 bal=225.94
+  gemini-2.0-flash:poor GOOD pred=0.95 payout=+0.0000 bal=54.24
+  gemini-2.0-flash:default GOOD pred=0.95 payout=+0.0000 bal=104.24
+  gemini-2.0-flash:rich GOOD pred=0.95 payout=+0.0000 bal=202.10
+  gpt-4.1:default GOOD pred=0.98 payout=+1.6406 bal=125.94
+  claude-3-7-sonnet:default GOOD pred=0.97 payout=+1.2500 bal=112.41
+  claude-3-7-sonnet:poor GOOD pred=0.97 payout=+1.2500 bal=62.14
+  claude-sonnet-4-6 GOOD pred=0.97 payout=+1.2500 bal=120.52
+  claude-3-7-sonnet:rich GOOD pred=0.97 payout=+1.2500 bal=219.01
+  gpt-5 GOOD pred=0.96 payout=+0.7031 bal=115.32
+  gpt-5.2 GOOD pred=0.97 payout=+1.2500 bal=119.74
+  o4-mini GOOD pred=0.95 payout=+0.0000 bal=106.57
+  gemini-3.1-pro GOOD pred=0.98 payout=+1.6406 bal=125.94
+  gemini-2.5-pro GOOD pred=0.97 payout=+1.2500 bal=117.85
+
+--- Round 9/30 (15 active raters) ---
+Task: Implement binary search in Rust.
+  Worker output: 1341 chars
+  Consensus: 100% GOOD (15/15), avg pred: 0.97, BTS accepted: true
+  gemini-2.0-flash:default GOOD pred=0.95 payout=+0.0000 bal=104.24
+  gpt-4.1:rich GOOD pred=0.98 payout=+1.5291 bal=229.00
+  gpt-4.1:default GOOD pred=0.98 payout=+1.5291 bal=129.00
+  gemini-2.0-flash:poor GOOD pred=0.95 payout=+0.0000 bal=54.24
+  gemini-2.0-flash:rich GOOD pred=0.95 payout=+0.0000 bal=202.10
+  gpt-4.1:poor GOOD pred=0.98 payout=+1.5291 bal=81.11
+  claude-3-7-sonnet:poor GOOD pred=0.98 payout=+1.5291 bal=65.20
+  claude-3-7-sonnet:default GOOD pred=0.97 payout=+1.1650 bal=114.74
+  claude-3-7-sonnet:rich GOOD pred=0.98 payout=+1.5291 bal=222.07
+  gpt-5.2 GOOD pred=0.97 payout=+1.1650 bal=122.07
+  claude-sonnet-4-6 GOOD pred=0.97 payout=+1.1650 bal=122.85
+  gpt-5 GOOD pred=0.97 payout=+1.1650 bal=117.65
+  o4-mini GOOD pred=0.95 payout=+0.0000 bal=106.57
+  gemini-3.1-pro GOOD pred=0.98 payout=+1.5291 bal=129.00
+  gemini-2.5-pro GOOD pred=0.97 payout=+1.1650 bal=120.18
+
+--- Round 10/30 (15 active raters) ---
+Task: Write a Rust function to flatten a nested list.
+  Worker output: 1282 chars
+[2m2026-02-28T04:46:42.258858Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-5 [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+[2m2026-02-28T04:46:42.309871Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mclaude-sonnet-4-6 [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+[2m2026-02-28T04:46:42.410127Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgemini-2.5-pro [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+[2m2026-02-28T04:46:43.697708Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgemini-3.1-pro [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+[2m2026-02-28T04:46:44.106881Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mo4-mini [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+[2m2026-02-28T04:46:44.107764Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-5.2 [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+[2m2026-02-28T04:46:44.521154Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-5 [3mattempt[0m[2m=[0m2 [3mdelay_ms[0m[2m=[0m4000
+[2m2026-02-28T04:46:44.589999Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mclaude-sonnet-4-6 [3mattempt[0m[2m=[0m2 [3mdelay_ms[0m[2m=[0m4000
+[2m2026-02-28T04:46:44.682258Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgemini-2.5-pro [3mattempt[0m[2m=[0m2 [3mdelay_ms[0m[2m=[0m4000
+[2m2026-02-28T04:46:46.052565Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgemini-3.1-pro [3mattempt[0m[2m=[0m2 [3mdelay_ms[0m[2m=[0m4000
+[2m2026-02-28T04:46:46.372903Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mo4-mini [3mattempt[0m[2m=[0m2 [3mdelay_ms[0m[2m=[0m4000
+[2m2026-02-28T04:46:46.399094Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-5.2 [3mattempt[0m[2m=[0m2 [3mdelay_ms[0m[2m=[0m4000
+[2m2026-02-28T04:46:48.788949Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-5 [3mattempt[0m[2m=[0m3 [3mdelay_ms[0m[2m=[0m8000
+[2m2026-02-28T04:46:48.871368Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mclaude-sonnet-4-6 [3mattempt[0m[2m=[0m3 [3mdelay_ms[0m[2m=[0m8000
+[2m2026-02-28T04:46:48.931154Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgemini-2.5-pro [3mattempt[0m[2m=[0m3 [3mdelay_ms[0m[2m=[0m8000
+[2m2026-02-28T04:46:50.322207Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgemini-3.1-pro [3mattempt[0m[2m=[0m3 [3mdelay_ms[0m[2m=[0m8000
+[2m2026-02-28T04:46:50.659315Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-5.2 [3mattempt[0m[2m=[0m3 [3mdelay_ms[0m[2m=[0m8000
+[2m2026-02-28T04:46:50.670682Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mo4-mini [3mattempt[0m[2m=[0m3 [3mdelay_ms[0m[2m=[0m8000
+[2m2026-02-28T04:46:57.215087Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-5 [3mattempt[0m[2m=[0m4 [3mdelay_ms[0m[2m=[0m16000
+[2m2026-02-28T04:46:57.215127Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgemini-2.5-pro [3mattempt[0m[2m=[0m4 [3mdelay_ms[0m[2m=[0m16000
+[2m2026-02-28T04:46:57.215165Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mclaude-sonnet-4-6 [3mattempt[0m[2m=[0m4 [3mdelay_ms[0m[2m=[0m16000
+[2m2026-02-28T04:46:58.599057Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgemini-3.1-pro [3mattempt[0m[2m=[0m4 [3mdelay_ms[0m[2m=[0m16000
+[2m2026-02-28T04:46:58.956112Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-5.2 [3mattempt[0m[2m=[0m4 [3mdelay_ms[0m[2m=[0m16000
+[2m2026-02-28T04:46:58.956242Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mo4-mini [3mattempt[0m[2m=[0m4 [3mdelay_ms[0m[2m=[0m16000
+  Consensus: 100% GOOD (15/15), avg pred: 0.97, BTS accepted: true
+  gemini-2.0-flash:poor GOOD pred=0.95 payout=+0.0000 bal=54.24
+  gpt-4.1:poor GOOD pred=0.98 payout=+1.6845 bal=84.48
+  gemini-2.0-flash:default GOOD pred=0.95 payout=+0.0000 bal=104.24
+  gpt-4.1:rich GOOD pred=0.98 payout=+1.6845 bal=232.36
+  gemini-2.0-flash:rich GOOD pred=0.95 payout=+0.0000 bal=202.10
+  gpt-4.1:default GOOD pred=0.98 payout=+1.6845 bal=132.36
+  claude-3-7-sonnet:poor GOOD pred=0.97 payout=+1.2834 bal=67.76
+  claude-3-7-sonnet:default GOOD pred=0.96 payout=+0.7219 bal=116.18
+  claude-3-7-sonnet:rich GOOD pred=0.98 payout=+1.6845 bal=225.44
+  claude-sonnet-4-6 GOOD pred=0.97 payout=+1.2834 bal=125.41
+  gpt-5.2 GOOD pred=0.96 payout=+0.7219 bal=123.52
+  gpt-5 GOOD pred=0.97 payout=+1.2834 bal=120.22
+  o4-mini GOOD pred=0.95 payout=+0.0000 bal=106.57
+  gemini-3.1-pro GOOD pred=0.98 payout=+1.6845 bal=132.36
+  gemini-2.5-pro GOOD pred=0.97 payout=+1.2834 bal=122.74
+
+--- Round 11/30 (15 active raters) ---
+Task: Implement an LRU cache in Rust.
+  Worker output: 3391 chars
+  Consensus: 73% GOOD (11/15), avg pred: 0.76, BTS accepted: false
+  gemini-2.0-flash:poor GOOD pred=0.95 payout=+0.9232 bal=56.08
+  gemini-2.0-flash:default GOOD pred=0.75 payout=+1.1630 bal=106.56
+  gpt-4.1:poor GOOD pred=0.75 payout=+1.1630 bal=86.81
+  gemini-2.0-flash:rich GOOD pred=0.75 payout=+1.1630 bal=204.43
+  gpt-4.1:default BAD pred=0.35 payout=+0.7066 bal=133.78
+  gpt-4.1:rich GOOD pred=0.85 payout=+1.0945 bal=234.55
+  claude-3-7-sonnet:poor BAD pred=0.65 payout=+1.4260 bal=70.61
+  claude-3-7-sonnet:default BAD pred=0.20 payout=+0.0000 bal=116.18
+  claude-3-7-sonnet:rich GOOD pred=0.90 payout=+1.0217 bal=227.48
+  gpt-5.2 BAD pred=0.62 payout=+1.3956 bal=126.31
+  o4-mini GOOD pred=0.95 payout=+0.9232 bal=108.42
+  claude-sonnet-4-6 GOOD pred=0.92 payout=+0.9854 bal=127.38
+  gemini-3.1-pro GOOD pred=0.95 payout=+0.9232 bal=134.21
+  gemini-2.5-pro GOOD pred=0.92 payout=+0.9854 bal=124.72
+  gpt-5 GOOD pred=0.82 payout=+1.1259 bal=122.47
+
+--- Round 12/30 (15 active raters) ---
+Task: Write Rust code to serialize and deserialize a binary tree.
+  Worker output: 3901 chars
+  Consensus: 100% GOOD (15/15), avg pred: 0.93, BTS accepted: true
+  gpt-4.1:default GOOD pred=0.98 payout=+1.1576 bal=136.09
+  gemini-2.0-flash:poor GOOD pred=0.75 payout=+0.0000 bal=56.08
+  gpt-4.1:rich GOOD pred=0.90 payout=+0.9786 bal=236.51
+  gemini-2.0-flash:default GOOD pred=0.95 payout=+1.1184 bal=108.80
+  gpt-4.1:poor GOOD pred=0.95 payout=+1.1184 bal=89.04
+  gemini-2.0-flash:rich GOOD pred=0.95 payout=+1.1184 bal=206.67
+  claude-3-7-sonnet:rich GOOD pred=0.97 payout=+1.1483 bal=229.78
+  claude-3-7-sonnet:default GOOD pred=0.97 payout=+1.1483 bal=118.48
+  claude-3-7-sonnet:poor GOOD pred=0.97 payout=+1.1483 bal=72.91
+  gpt-5.2 GOOD pred=0.93 payout=+1.0737 bal=128.46
+  o4-mini GOOD pred=0.95 payout=+1.1184 bal=110.66
+  claude-sonnet-4-6 GOOD pred=0.82 payout=+0.5611 bal=128.51
+  gemini-3.1-pro GOOD pred=0.95 payout=+1.1184 bal=136.45
+  gemini-2.5-pro GOOD pred=0.93 payout=+1.0737 bal=126.86
+  gpt-5 GOOD pred=0.95 payout=+1.1184 bal=124.71
+
+--- Round 13/30 (15 active raters) ---
+Task: Implement a trie data structure in Rust.
+  Worker output: 3237 chars
+  claude-3-7-sonnet:default: failed to parse response, defaulting GOOD/0.5
+  Consensus: 80% GOOD (12/15), avg pred: 0.85, BTS accepted: false
+  gpt-4.1:default GOOD pred=0.98 payout=+0.5823 bal=137.26
+  gpt-4.1:rich GOOD pred=0.97 payout=+0.6177 bal=237.75
+  gemini-2.0-flash:poor GOOD pred=0.75 payout=+0.8846 bal=57.85
+  gemini-2.0-flash:rich GOOD pred=0.75 payout=+0.8846 bal=208.44
+  gemini-2.0-flash:default GOOD pred=0.95 payout=+0.6824 bal=110.16
+  gpt-4.1:poor GOOD pred=0.98 payout=+0.5823 bal=90.21
+  claude-3-7-sonnet:poor GOOD pred=0.97 payout=+0.6177 bal=74.15
+  claude-3-7-sonnet:default GOOD pred=0.50 payout=+0.0000 bal=118.48
+  claude-3-7-sonnet:rich GOOD pred=0.97 payout=+0.6177 bal=231.01
+  gpt-5.2 BAD pred=0.72 payout=+2.6855 bal=133.83
+  o4-mini GOOD pred=0.97 payout=+0.6177 bal=111.89
+  claude-sonnet-4-6 BAD pred=0.55 payout=+2.1184 bal=132.74
+  gemini-3.1-pro GOOD pred=0.96 payout=+0.6511 bal=137.75
+  gemini-2.5-pro GOOD pred=0.94 payout=+0.7117 bal=128.29
+  gpt-5 BAD pred=0.82 payout=+2.7462 bal=130.20
+
+--- Round 14/30 (15 active raters) ---
+Task: Write a Rust function to generate all permutations of a list.
+  Worker output: 1451 chars
+[2m2026-02-28T04:49:40.763006Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mo4-mini [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+[2m2026-02-28T04:49:40.869973Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-5.2 [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+[2m2026-02-28T04:49:43.115609Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mo4-mini [3mattempt[0m[2m=[0m2 [3mdelay_ms[0m[2m=[0m4000
+[2m2026-02-28T04:49:43.132152Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-5.2 [3mattempt[0m[2m=[0m2 [3mdelay_ms[0m[2m=[0m4000
+[2m2026-02-28T04:49:47.416593Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mo4-mini [3mattempt[0m[2m=[0m3 [3mdelay_ms[0m[2m=[0m8000
+[2m2026-02-28T04:49:47.484702Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-5.2 [3mattempt[0m[2m=[0m3 [3mdelay_ms[0m[2m=[0m8000
+[2m2026-02-28T04:49:55.814022Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mo4-mini [3mattempt[0m[2m=[0m4 [3mdelay_ms[0m[2m=[0m16000
+[2m2026-02-28T04:49:55.814168Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-5.2 [3mattempt[0m[2m=[0m4 [3mdelay_ms[0m[2m=[0m16000
+  Consensus: 100% GOOD (15/15), avg pred: 0.93, BTS accepted: true
+  gpt-4.1:poor GOOD pred=0.90 payout=+0.9774 bal=92.16
+  gpt-4.1:rich GOOD pred=0.90 payout=+0.9774 bal=239.70
+  gemini-2.0-flash:poor GOOD pred=0.95 payout=+1.1170 bal=60.08
+  gemini-2.0-flash:default GOOD pred=0.95 payout=+1.1170 bal=112.40
+  gemini-2.0-flash:rich GOOD pred=0.75 payout=+0.0000 bal=208.44
+  gpt-4.1:default GOOD pred=0.95 payout=+1.1170 bal=139.49
+  claude-3-7-sonnet:poor GOOD pred=0.97 payout=+1.1468 bal=76.44
+  claude-3-7-sonnet:rich GOOD pred=0.96 payout=+1.1338 bal=233.28
+  claude-3-7-sonnet:default GOOD pred=0.98 payout=+1.1561 bal=120.79
+  gemini-3.1-pro GOOD pred=0.95 payout=+1.1170 bal=139.98
+  claude-sonnet-4-6 GOOD pred=0.95 payout=+1.1170 bal=134.98
+  gpt-5 GOOD pred=0.96 payout=+1.1338 bal=132.47
+  gpt-5.2 GOOD pred=0.97 payout=+1.1468 bal=136.12
+  o4-mini GOOD pred=0.95 payout=+1.1170 bal=114.13
+  gemini-2.5-pro GOOD pred=0.83 payout=+0.6255 bal=129.54
+
+--- Round 15/30 (15 active raters) ---
+Task: Implement Dijkstra's shortest path algorithm in Rust.
+  Worker output: 3439 chars
+  claude-sonnet-4-6: failed to parse response, defaulting GOOD/0.5
+  Consensus: 100% GOOD (15/15), avg pred: 0.93, BTS accepted: true
+  gpt-4.1:poor GOOD pred=0.98 payout=+1.0765 bal=94.32
+  gemini-2.0-flash:poor GOOD pred=0.95 payout=+1.0675 bal=62.22
+  gemini-2.0-flash:default GOOD pred=0.95 payout=+1.0675 bal=114.53
+  gpt-4.1:default GOOD pred=0.97 payout=+1.0744 bal=141.64
+  gpt-4.1:rich GOOD pred=0.98 payout=+1.0765 bal=241.85
+  gemini-2.0-flash:rich GOOD pred=0.95 payout=+1.0675 bal=210.57
+  claude-3-7-sonnet:poor GOOD pred=0.95 payout=+1.0675 bal=78.57
+  claude-3-7-sonnet:default GOOD pred=0.97 payout=+1.0744 bal=122.94
+  claude-3-7-sonnet:rich GOOD pred=0.95 payout=+1.0675 bal=235.41
+  gpt-5.2 GOOD pred=0.96 payout=+1.0713 bal=138.26
+  o4-mini GOOD pred=0.96 payout=+1.0713 bal=116.27
+  claude-sonnet-4-6 GOOD pred=0.50 payout=+0.0000 bal=134.98
+  gemini-3.1-pro GOOD pred=0.98 payout=+1.0765 bal=142.14
+  gpt-5 GOOD pred=0.97 payout=+1.0744 bal=134.62
+  gemini-2.5-pro GOOD pred=0.95 payout=+1.0675 bal=131.67
+
+--- Round 16/30 (15 active raters) ---
+Task: Implement a token bucket rate limiter in Rust.
+  Worker output: 2568 chars
+  Consensus: 100% GOOD (15/15), avg pred: 0.95, BTS accepted: true
+  gpt-4.1:default GOOD pred=0.98 payout=+1.5901 bal=144.82
+  gemini-2.0-flash:poor GOOD pred=0.95 payout=+1.0336 bal=64.29
+  gpt-4.1:poor GOOD pred=0.97 payout=+1.4576 bal=97.23
+  gemini-2.0-flash:default GOOD pred=0.95 payout=+1.0336 bal=116.60
+  gpt-4.1:rich GOOD pred=0.95 payout=+1.0336 bal=243.92
+  gemini-2.0-flash:rich GOOD pred=0.95 payout=+1.0336 bal=212.64
+  claude-3-7-sonnet:poor GOOD pred=0.95 payout=+1.0336 bal=80.64
+  claude-3-7-sonnet:rich GOOD pred=0.95 payout=+1.0336 bal=237.48
+  claude-3-7-sonnet:default GOOD pred=0.98 payout=+1.5901 bal=126.12
+  gpt-5.2 GOOD pred=0.93 payout=+0.3975 bal=139.06
+  o4-mini GOOD pred=0.95 payout=+1.0336 bal=118.34
+  gpt-5 GOOD pred=0.94 payout=+0.7420 bal=136.10
+  gemini-3.1-pro GOOD pred=0.98 payout=+1.5901 bal=145.32
+  claude-sonnet-4-6 GOOD pred=0.92 payout=+0.0000 bal=134.98
+  gemini-2.5-pro GOOD pred=0.93 payout=+0.3975 bal=132.47
+
+--- Round 17/30 (15 active raters) ---
+Task: Implement a bounded blocking queue in Rust.
+  Worker output: 2867 chars
+[2m2026-02-28T04:51:38.433223Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-5.2 [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+[2m2026-02-28T04:51:40.780209Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-5.2 [3mattempt[0m[2m=[0m2 [3mdelay_ms[0m[2m=[0m4000
+[2m2026-02-28T04:51:45.082646Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-5.2 [3mattempt[0m[2m=[0m3 [3mdelay_ms[0m[2m=[0m8000
+[2m2026-02-28T04:51:53.375099Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-5.2 [3mattempt[0m[2m=[0m4 [3mdelay_ms[0m[2m=[0m16000
+  Consensus: 100% GOOD (15/15), avg pred: 0.96, BTS accepted: true
+  gpt-4.1:poor GOOD pred=0.95 payout=+0.0000 bal=97.23
+  gemini-2.0-flash:poor GOOD pred=0.95 payout=+0.0000 bal=64.29
+  gpt-4.1:default GOOD pred=0.98 payout=+2.3507 bal=149.52
+  gpt-4.1:rich GOOD pred=0.98 payout=+2.3507 bal=248.62
+  gemini-2.0-flash:rich GOOD pred=0.95 payout=+0.0000 bal=212.64
+  gemini-2.0-flash:default GOOD pred=0.95 payout=+0.0000 bal=116.60
+  claude-3-7-sonnet:poor GOOD pred=0.98 payout=+2.3507 bal=85.34
+  claude-3-7-sonnet:rich GOOD pred=0.97 payout=+1.7910 bal=241.06
+  claude-3-7-sonnet:default GOOD pred=0.95 payout=+0.0000 bal=126.12
+  o4-mini GOOD pred=0.95 payout=+0.0000 bal=118.34
+  gemini-3.1-pro GOOD pred=0.98 payout=+2.3507 bal=150.02
+  claude-sonnet-4-6 GOOD pred=0.95 payout=+0.0000 bal=134.98
+  gpt-5 GOOD pred=0.96 payout=+1.0075 bal=138.12
+  gemini-2.5-pro GOOD pred=0.96 payout=+1.0075 bal=134.48
+  gpt-5.2 GOOD pred=0.97 payout=+1.7910 bal=142.64
+
+--- Round 18/30 (15 active raters) ---
+Task: Write an arithmetic expression evaluator in Rust.
+  Worker output: 6353 chars
+  Consensus: 100% GOOD (15/15), avg pred: 0.96, BTS accepted: true
+  gpt-4.1:default GOOD pred=0.97 payout=+1.8161 bal=153.15
+  gemini-2.0-flash:poor GOOD pred=0.95 payout=+0.7399 bal=65.77
+  gemini-2.0-flash:rich GOOD pred=0.95 payout=+0.7399 bal=214.12
+  gpt-4.1:poor GOOD pred=0.95 payout=+0.7399 bal=98.71
+  gemini-2.0-flash:default GOOD pred=0.95 payout=+0.7399 bal=118.08
+  gpt-4.1:rich GOOD pred=0.95 payout=+0.7399 bal=250.10
+  claude-3-7-sonnet:poor GOOD pred=0.97 payout=+1.8161 bal=88.98
+  claude-3-7-sonnet:default GOOD pred=0.95 payout=+0.7399 bal=127.60
+  claude-3-7-sonnet:rich GOOD pred=0.97 payout=+1.8161 bal=244.70
+  gpt-5.2 GOOD pred=0.95 payout=+0.7399 bal=144.12
+  o4-mini GOOD pred=0.95 payout=+0.7399 bal=119.82
+  claude-sonnet-4-6 GOOD pred=0.95 payout=+0.7399 bal=136.46
+  gpt-5 GOOD pred=0.94 payout=+0.0000 bal=138.12
+  gemini-3.1-pro GOOD pred=0.98 payout=+2.1525 bal=154.32
+  gemini-2.5-pro GOOD pred=0.95 payout=+0.7399 bal=135.96
+
+--- Round 19/30 (15 active raters) ---
+Task: Implement a basic regex matcher in Rust.
+  Worker output: 1999 chars
+[2m2026-02-28T04:52:54.436301Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mo4-mini [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+[2m2026-02-28T04:52:54.471883Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgemini-3.1-pro [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+[2m2026-02-28T04:52:54.595134Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-5.2 [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+[2m2026-02-28T04:52:56.695317Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mo4-mini [3mattempt[0m[2m=[0m2 [3mdelay_ms[0m[2m=[0m4000
+[2m2026-02-28T04:52:56.735122Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgemini-3.1-pro [3mattempt[0m[2m=[0m2 [3mdelay_ms[0m[2m=[0m4000
+[2m2026-02-28T04:52:56.867506Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-5.2 [3mattempt[0m[2m=[0m2 [3mdelay_ms[0m[2m=[0m4000
+  Consensus: 100% GOOD (15/15), avg pred: 0.92, BTS accepted: true
+  gemini-2.0-flash:poor GOOD pred=0.75 payout=+0.0000 bal=65.77
+  gemini-2.0-flash:default GOOD pred=0.75 payout=+0.0000 bal=118.08
+  gpt-4.1:rich GOOD pred=0.95 payout=+1.2390 bal=252.58
+  gemini-2.0-flash:rich GOOD pred=0.75 payout=+0.0000 bal=214.12
+  gpt-4.1:default GOOD pred=0.98 payout=+1.2824 bal=155.72
+  gpt-4.1:poor GOOD pred=0.98 payout=+1.2824 bal=101.28
+  claude-3-7-sonnet:default GOOD pred=0.95 payout=+1.2390 bal=130.08
+  claude-3-7-sonnet:rich GOOD pred=0.97 payout=+1.2720 bal=247.24
+  claude-3-7-sonnet:poor GOOD pred=0.95 payout=+1.2390 bal=91.45
+  gpt-5 GOOD pred=0.97 payout=+1.2720 bal=140.66
+  claude-sonnet-4-6 GOOD pred=0.95 payout=+1.2390 bal=138.94
+  gpt-5.2 GOOD pred=0.93 payout=+1.1894 bal=146.50
+  o4-mini GOOD pred=0.96 payout=+1.2576 bal=122.33
+  gemini-3.1-pro GOOD pred=0.97 payout=+1.2720 bal=156.87
+  gemini-2.5-pro GOOD pred=0.94 payout=+1.2163 bal=138.39
+
+--- Round 20/30 (15 active raters) ---
+Task: Implement the longest common subsequence algorithm in Rust.
+  Worker output: 1898 chars
+  Consensus: 100% GOOD (15/15), avg pred: 0.96, BTS accepted: true
+  gemini-2.0-flash:poor GOOD pred=0.95 payout=+0.8780 bal=67.52
+  gpt-4.1:rich GOOD pred=0.97 payout=+1.4634 bal=255.51
+  gemini-2.0-flash:default GOOD pred=0.95 payout=+0.8780 bal=119.83
+  gemini-2.0-flash:rich GOOD pred=0.95 payout=+0.8780 bal=215.87
+  gpt-4.1:default GOOD pred=0.93 payout=+0.0000 bal=155.72
+  gpt-4.1:poor GOOD pred=0.98 payout=+1.6463 bal=104.57
+  claude-3-7-sonnet:rich GOOD pred=0.95 payout=+0.8780 bal=249.00
+  claude-3-7-sonnet:default GOOD pred=0.96 payout=+1.2073 bal=132.49
+  claude-3-7-sonnet:poor GOOD pred=0.97 payout=+1.4634 bal=94.38
+  gpt-5.2 GOOD pred=0.96 payout=+1.2073 bal=148.91
+  claude-sonnet-4-6 GOOD pred=0.96 payout=+1.2073 bal=141.35
+  o4-mini GOOD pred=0.93 payout=+0.0000 bal=122.33
+  gemini-3.1-pro GOOD pred=0.96 payout=+1.2073 bal=159.28
+  gpt-5 GOOD pred=0.95 payout=+0.8780 bal=142.42
+  gemini-2.5-pro GOOD pred=0.96 payout=+1.2073 bal=140.81
+
+--- Round 21/30 (15 active raters) ---
+Task: Implement a lock-free stack in Rust using atomics.
+  Worker output: 5931 chars
+  Consensus: 53% GOOD (8/15), avg pred: 0.59, BTS accepted: false
+  gpt-4.1:poor GOOD pred=0.80 payout=+0.7426 bal=106.05
+  gpt-4.1:rich BAD pred=0.40 payout=+1.8495 bal=259.21
+  gemini-2.0-flash:poor GOOD pred=0.75 payout=+0.8927 bal=69.31
+  gpt-4.1:default GOOD pred=0.80 payout=+0.7426 bal=157.20
+  gemini-2.0-flash:default GOOD pred=0.75 payout=+0.8927 bal=121.62
+  gemini-2.0-flash:rich GOOD pred=0.85 payout=+0.5615 bal=217.00
+  claude-3-7-sonnet:poor GOOD pred=0.95 payout=+0.1060 bal=94.59
+  claude-3-7-sonnet:rich GOOD pred=0.97 payout=+0.0000 bal=249.00
+  claude-3-7-sonnet:default GOOD pred=0.95 payout=+0.1060 bal=132.71
+  gpt-5.2 BAD pred=0.20 payout=+1.2698 bal=151.45
+  o4-mini BAD pred=0.20 payout=+1.2698 bal=124.87
+  claude-sonnet-4-6 BAD pred=0.35 payout=+1.7511 bal=144.85
+  gemini-3.1-pro BAD pred=0.35 payout=+1.7511 bal=162.78
+  gpt-5 BAD pred=0.18 payout=+1.1845 bal=144.78
+  gemini-2.5-pro BAD pred=0.42 payout=+1.8801 bal=144.57
+
+--- Round 22/30 (15 active raters) ---
+Task: Implement a B-tree in Rust.
+  Worker output: 4905 chars
+  claude-sonnet-4-6: failed to parse response, defaulting GOOD/0.5
+  Consensus: 80% GOOD (12/15), avg pred: 0.79, BTS accepted: true
+  gpt-4.1:poor GOOD pred=0.85 payout=+1.1596 bal=108.37
+  gemini-2.0-flash:poor GOOD pred=0.85 payout=+1.1596 bal=71.63
+  gemini-2.0-flash:rich GOOD pred=0.95 payout=+1.0911 bal=219.18
+  gemini-2.0-flash:default GOOD pred=0.90 payout=+1.1339 bal=123.89
+  gpt-4.1:default GOOD pred=0.85 payout=+1.1596 bal=159.52
+  gpt-4.1:rich GOOD pred=0.85 payout=+1.1596 bal=261.53
+  claude-3-7-sonnet:default GOOD pred=0.97 payout=+1.0692 bal=134.85
+  claude-3-7-sonnet:poor GOOD pred=0.96 payout=+1.0805 bal=96.75
+  claude-3-7-sonnet:rich GOOD pred=0.95 payout=+1.0911 bal=251.18
+  gpt-5.2 BAD pred=0.62 payout=+0.9247 bal=153.30
+  claude-sonnet-4-6 GOOD pred=0.50 payout=+0.8600 bal=146.57
+  o4-mini GOOD pred=0.90 payout=+1.1339 bal=127.14
+  gemini-3.1-pro BAD pred=0.25 payout=+0.0000 bal=162.78
+  gemini-2.5-pro BAD pred=0.55 payout=+0.8217 bal=146.21
+  gpt-5 GOOD pred=0.86 payout=+1.1558 bal=147.10
+
+--- Round 23/30 (15 active raters) ---
+Task: Implement the Raft leader election protocol in Rust.
+  Worker output: 11337 chars
+  claude-sonnet-4-6: failed to parse response, defaulting GOOD/0.5
+  Consensus: 73% GOOD (11/15), avg pred: 0.80, BTS accepted: false
+  gpt-4.1:poor GOOD pred=0.95 payout=+0.1199 bal=108.61
+  gemini-2.0-flash:poor GOOD pred=0.85 payout=+0.5605 bal=72.75
+  gemini-2.0-flash:default GOOD pred=0.75 payout=+0.7368 bal=125.36
+  gpt-4.1:rich GOOD pred=0.95 payout=+0.1199 bal=261.76
+  gemini-2.0-flash:rich GOOD pred=0.85 payout=+0.5605 bal=220.30
+  gpt-4.1:default GOOD pred=0.90 payout=+0.3732 bal=160.27
+  claude-3-7-sonnet:poor GOOD pred=0.95 payout=+0.1199 bal=96.99
+  claude-3-7-sonnet:default GOOD pred=0.97 payout=+0.0000 bal=134.85
+  claude-3-7-sonnet:rich GOOD pred=0.92 payout=+0.2798 bal=251.74
+  gpt-5.2 BAD pred=0.78 payout=+3.1883 bal=159.68
+  o4-mini GOOD pred=0.87 payout=+0.4935 bal=128.13
+  claude-sonnet-4-6 GOOD pred=0.50 payout=+0.0207 bal=146.61
+  gemini-3.1-pro BAD pred=0.45 payout=+2.1558 bal=167.10
+  gpt-5 BAD pred=0.66 payout=+3.1460 bal=153.39
+  gemini-2.5-pro BAD pred=0.65 payout=+3.1253 bal=152.46
+
+--- Round 24/30 (15 active raters) ---
+Task: Implement Batcher's odd-even mergesort in Rust.
+  Worker output: 2870 chars
+  claude-sonnet-4-6: failed to parse response, defaulting GOOD/0.5
+  Consensus: 60% GOOD (9/15), avg pred: 0.68, BTS accepted: false
+  gemini-2.0-flash:poor GOOD pred=0.75 payout=+0.6666 bal=74.08
+  gemini-2.0-flash:default GOOD pred=0.75 payout=+0.6666 bal=126.69
+  gemini-2.0-flash:rich GOOD pred=0.85 payout=+0.4000 bal=221.10
+  gpt-4.1:rich GOOD pred=0.80 payout=+0.5500 bal=262.86
+  gpt-4.1:poor BAD pred=0.60 payout=+2.0083 bal=112.63
+  gpt-4.1:default GOOD pred=0.78 payout=+0.6006 bal=161.47
+  claude-3-7-sonnet:rich GOOD pred=0.90 payout=+0.2167 bal=252.17
+  claude-3-7-sonnet:poor GOOD pred=0.95 payout=+0.0000 bal=96.99
+  claude-3-7-sonnet:default GOOD pred=0.85 payout=+0.4000 bal=135.65
+  gpt-5.2 BAD pred=0.70 payout=+1.9416 bal=163.56
+  gemini-3.1-pro BAD pred=0.45 payout=+1.8583 bal=170.81
+  claude-sonnet-4-6 GOOD pred=0.50 payout=+0.7500 bal=148.11
+  o4-mini BAD pred=0.30 payout=+1.4083 bal=130.94
+  gpt-5 BAD pred=0.70 payout=+1.9416 bal=157.27
+  gemini-2.5-pro BAD pred=0.35 payout=+1.5916 bal=155.65
+
+--- Round 25/30 (15 active raters) ---
+Task: Implement a persistent (immutable) red-black tree in Rust.
+  Worker output: 9242 chars
+  Consensus: 60% GOOD (9/15), avg pred: 0.74, BTS accepted: false
+  gemini-2.0-flash:poor GOOD pred=0.75 payout=+0.4686 bal=75.02
+  gpt-4.1:poor GOOD pred=0.85 payout=+0.2812 bal=113.19
+  gemini-2.0-flash:default GOOD pred=0.75 payout=+0.4686 bal=127.63
+  gemini-2.0-flash:rich GOOD pred=0.75 payout=+0.4686 bal=222.04
+  gpt-4.1:default GOOD pred=0.85 payout=+0.2812 bal=162.03
+  gpt-4.1:rich GOOD pred=0.75 payout=+0.4686 bal=263.80
+  claude-3-7-sonnet:poor GOOD pred=0.85 payout=+0.2812 bal=97.56
+  claude-3-7-sonnet:default GOOD pred=0.85 payout=+0.2812 bal=136.21
+  claude-3-7-sonnet:rich GOOD pred=0.95 payout=+0.0000 bal=252.17
+  gpt-5.2 BAD pred=0.72 payout=+2.0155 bal=167.59
+  claude-sonnet-4-6 BAD pred=0.45 payout=+1.9775 bal=152.07
+  gemini-3.1-pro BAD pred=0.45 payout=+1.9775 bal=174.77
+  o4-mini BAD pred=0.75 payout=+1.9775 bal=134.90
+  gemini-2.5-pro BAD pred=0.75 payout=+1.9775 bal=159.60
+  gpt-5 BAD pred=0.64 payout=+2.0754 bal=161.42
+
+--- Round 26/30 (15 active raters) ---
+Task: Implement a tri-color garbage collector in Rust.
+  Worker output: 5686 chars
+  claude-3-7-sonnet:poor: failed to parse response, defaulting GOOD/0.5
+  claude-sonnet-4-6: failed to parse response, defaulting GOOD/0.5
+  Consensus: 73% GOOD (11/15), avg pred: 0.71, BTS accepted: true
+  gpt-4.1:poor GOOD pred=0.77 payout=+1.2806 bal=115.75
+  gpt-4.1:rich GOOD pred=0.85 payout=+1.1618 bal=266.13
+  gemini-2.0-flash:poor GOOD pred=0.75 payout=+1.2910 bal=77.60
+  gemini-2.0-flash:default GOOD pred=0.75 payout=+1.2910 bal=130.21
+  gemini-2.0-flash:rich GOOD pred=0.75 payout=+1.2910 bal=224.62
+  gpt-4.1:default GOOD pred=0.83 payout=+1.2031 bal=164.44
+  claude-3-7-sonnet:poor GOOD pred=0.50 payout=+0.7662 bal=99.09
+  claude-3-7-sonnet:rich GOOD pred=0.83 payout=+1.2031 bal=254.58
+  claude-3-7-sonnet:default GOOD pred=0.75 payout=+1.2910 bal=138.79
+  gpt-5.2 BAD pred=0.70 payout=+0.7670 bal=169.13
+  o4-mini GOOD pred=0.85 payout=+1.1618 bal=137.22
+  gemini-3.1-pro BAD pred=0.45 payout=+0.0000 bal=174.77
+  claude-sonnet-4-6 GOOD pred=0.50 payout=+0.7662 bal=153.60
+  gpt-5 BAD pred=0.72 payout=+0.7761 bal=162.97
+  gemini-2.5-pro BAD pred=0.68 payout=+0.7502 bal=161.10
+
+--- Round 27/30 (15 active raters) ---
+Task: Write a basic SQL SELECT parser in Rust.
+  Worker output: 5648 chars
+  claude-3-7-sonnet:rich: failed to parse response, defaulting GOOD/0.5
+  Consensus: 93% GOOD (14/15), avg pred: 0.79, BTS accepted: true
+  gemini-2.0-flash:default GOOD pred=0.75 payout=+1.0623 bal=132.34
+  gpt-4.1:poor GOOD pred=0.85 payout=+1.1053 bal=117.96
+  gemini-2.0-flash:poor GOOD pred=0.75 payout=+1.0623 bal=79.73
+  gemini-2.0-flash:rich GOOD pred=0.75 payout=+1.0623 bal=226.74
+  gpt-4.1:default GOOD pred=0.85 payout=+1.1053 bal=166.65
+  claude-3-7-sonnet:default GOOD pred=0.85 payout=+1.1053 bal=141.00
+  gpt-4.1:rich GOOD pred=0.83 payout=+1.0992 bal=268.32
+  claude-3-7-sonnet:poor GOOD pred=0.92 payout=+1.1162 bal=101.32
+  claude-3-7-sonnet:rich GOOD pred=0.50 payout=+0.8137 bal=256.20
+  o4-mini GOOD pred=0.80 payout=+1.0878 bal=139.40
+  gpt-5.2 GOOD pred=0.86 payout=+1.1078 bal=171.34
+  gemini-3.1-pro GOOD pred=0.90 payout=+1.1147 bal=177.00
+  claude-sonnet-4-6 GOOD pred=0.75 payout=+1.0623 bal=155.73
+  gpt-5 GOOD pred=0.82 payout=+1.0958 bal=165.17
+  gemini-2.5-pro BAD pred=0.72 payout=+0.0000 bal=161.10
+
+--- Round 28/30 (15 active raters) ---
+Task: Implement Lamport timestamps for distributed ordering in Rust.
+  Worker output: 3341 chars
+  Consensus: 100% GOOD (15/15), avg pred: 0.87, BTS accepted: true
+  gemini-2.0-flash:poor GOOD pred=0.85 payout=+0.9485 bal=81.62
+  gpt-4.1:rich GOOD pred=0.80 payout=+0.5335 bal=269.39
+  gemini-2.0-flash:default GOOD pred=0.85 payout=+0.9485 bal=134.24
+  gpt-4.1:default GOOD pred=0.80 payout=+0.5335 bal=167.72
+  gpt-4.1:poor GOOD pred=0.95 payout=+1.4227 bal=120.81
+  gemini-2.0-flash:rich GOOD pred=0.85 payout=+0.9485 bal=228.64
+  claude-3-7-sonnet:poor GOOD pred=0.85 payout=+0.9485 bal=103.22
+  claude-3-7-sonnet:default GOOD pred=0.95 payout=+1.4227 bal=143.85
+  claude-3-7-sonnet:rich GOOD pred=0.82 payout=+0.7137 bal=257.63
+  gpt-5.2 GOOD pred=0.90 payout=+1.2449 bal=173.83
+  o4-mini GOOD pred=0.90 payout=+1.2449 bal=141.89
+  gemini-3.1-pro GOOD pred=0.95 payout=+1.4227 bal=179.84
+  claude-sonnet-4-6 GOOD pred=0.75 payout=+0.0000 bal=155.73
+  gpt-5 GOOD pred=0.90 payout=+1.2449 bal=167.66
+  gemini-2.5-pro GOOD pred=0.95 payout=+1.4227 bal=163.95
+
+--- Round 29/30 (15 active raters) ---
+Task: Implement a skip list in Rust.
+  Worker output: 6927 chars
+[2m2026-02-28T05:02:59.636237Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mo4-mini [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+[2m2026-02-28T05:02:59.822498Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-5.2 [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+  Consensus: 67% GOOD (10/15), avg pred: 0.78, BTS accepted: false
+  gemini-2.0-flash:poor GOOD pred=0.75 payout=+0.2982 bal=82.22
+  gemini-2.0-flash:default GOOD pred=0.75 payout=+0.2982 bal=134.83
+  gpt-4.1:poor GOOD pred=0.82 payout=+0.1546 bal=121.12
+  gemini-2.0-flash:rich GOOD pred=0.85 payout=+0.0670 bal=228.78
+  gpt-4.1:rich GOOD pred=0.85 payout=+0.0670 bal=269.53
+  gpt-4.1:default GOOD pred=0.85 payout=+0.0670 bal=167.85
+  claude-3-7-sonnet:rich GOOD pred=0.85 payout=+0.0670 bal=257.77
+  claude-3-7-sonnet:poor GOOD pred=0.87 payout=+0.0000 bal=103.22
+  claude-3-7-sonnet:default GOOD pred=0.85 payout=+0.0670 bal=143.98
+  gpt-5.2 BAD pred=0.72 payout=+2.7979 bal=179.43
+  claude-sonnet-4-6 BAD pred=0.55 payout=+2.7046 bal=161.13
+  o4-mini GOOD pred=0.85 payout=+0.0670 bal=142.02
+  gemini-3.1-pro BAD pred=0.65 payout=+2.8202 bal=185.48
+  gemini-2.5-pro BAD pred=0.70 payout=+2.8130 bal=169.57
+  gpt-5 BAD pred=0.78 payout=+2.7113 bal=173.08
+
+--- Round 30/30 (15 active raters) ---
+Task: Solve the N-queens problem in Rust.
+  Worker output: 2813 chars
+  Consensus: 93% GOOD (14/15), avg pred: 0.88, BTS accepted: true
+  gpt-4.1:default GOOD pred=0.85 payout=+1.0700 bal=169.99
+  gemini-2.0-flash:poor GOOD pred=0.75 payout=+0.9804 bal=84.18
+  gpt-4.1:poor GOOD pred=0.95 payout=+1.0924 bal=123.30
+  gemini-2.0-flash:default GOOD pred=0.85 payout=+1.0700 bal=136.97
+  gemini-2.0-flash:rich GOOD pred=0.85 payout=+1.0700 bal=230.92
+  gpt-4.1:rich GOOD pred=0.92 payout=+1.0927 bal=271.71
+  claude-3-7-sonnet:poor GOOD pred=0.92 payout=+1.0927 bal=105.40
+  claude-3-7-sonnet:rich GOOD pred=0.89 payout=+1.0870 bal=259.94
+  claude-3-7-sonnet:default GOOD pred=0.95 payout=+1.0924 bal=146.16
+  gpt-5.2 GOOD pred=0.84 payout=+1.0640 bal=181.56
+  o4-mini GOOD pred=0.90 payout=+1.0896 bal=144.20
+  claude-sonnet-4-6 GOOD pred=0.78 payout=+1.0143 bal=163.16
+  gemini-3.1-pro GOOD pred=0.95 payout=+1.0924 bal=187.67
+  gemini-2.5-pro GOOD pred=0.95 payout=+1.0924 bal=171.76
+  gpt-5 BAD pred=0.86 payout=+0.0000 bal=173.08
+
+=== SIMULATION COMPLETE ===
+Worker approvals: 23/30 (77%)
+Results written to lichen-economy-rounds-bankroll.jsonl and lichen-economy-summary-bankroll.md
+  #1: gpt-4.1:rich — 271.71
+  #2: claude-3-7-sonnet:rich — 259.94
+  #3: gemini-2.0-flash:rich — 230.92
+  #4: gemini-3.1-pro — 187.67
+  #5: gpt-5.2 — 181.56
+  #6: gpt-5 — 173.08
+  #7: gemini-2.5-pro — 171.76
+  #8: gpt-4.1:default — 169.99
+  #9: claude-sonnet-4-6 — 163.16
+  #10: claude-3-7-sonnet:default — 146.16
+  #11: o4-mini — 144.20
+  #12: gemini-2.0-flash:default — 136.97
+  #13: gpt-4.1:poor — 123.30
+  #14: claude-3-7-sonnet:poor — 105.40
+  #15: gemini-2.0-flash:poor — 84.18
