@@ -111,11 +111,25 @@ impl OnchainClient {
 
     // ── Task Lifecycle ───────────────────────────────────────────────
 
-    /// Create a new task. Returns the on-chain task ID.
-    pub async fn create_task(&self, prompt_hash: B256, num_raters: u8) -> Result<u64> {
+    /// Create a new task with prompt and output hashes. Returns the on-chain task ID.
+    /// The deadline is set to block.timestamp + timeout_seconds.
+    pub async fn create_task(
+        &self,
+        prompt_hash: B256,
+        output_hash: B256,
+        max_raters: u8,
+        min_raters: u8,
+        timeout_seconds: U256,
+    ) -> Result<u64> {
         let receipt = self
             .contract
-            .createTask(prompt_hash, num_raters)
+            .createTask(
+                prompt_hash,
+                output_hash,
+                max_raters,
+                min_raters,
+                timeout_seconds,
+            )
             .send()
             .await
             .wrap_err("createTask tx failed")?
@@ -133,19 +147,6 @@ impl OnchainClient {
         eyre::bail!("TaskCreated event not found in receipt")
     }
 
-    /// Submit worker output for a task.
-    pub async fn submit_result(&self, task_id: u64, output_hash: B256) -> Result<()> {
-        self.contract
-            .submitResult(U256::from(task_id), output_hash)
-            .send()
-            .await
-            .wrap_err("submitResult tx failed")?
-            .watch()
-            .await
-            .wrap_err("submitResult tx not confirmed")?;
-        Ok(())
-    }
-
     /// Submit a rating. `prediction` is a 64.64 fixed-point value.
     pub async fn submit_rating(
         &self,
@@ -161,6 +162,34 @@ impl OnchainClient {
             .watch()
             .await
             .wrap_err("submitRating tx not confirmed")?;
+        Ok(())
+    }
+
+    /// Finalize a task after timeout if minRaters have been reached.
+    /// Can be called by anyone.
+    pub async fn finalize_task(&self, task_id: u64) -> Result<()> {
+        self.contract
+            .finalizeTask(U256::from(task_id))
+            .send()
+            .await
+            .wrap_err("finalizeTask tx failed")?
+            .watch()
+            .await
+            .wrap_err("finalizeTask tx not confirmed")?;
+        Ok(())
+    }
+
+    /// Cancel an under-subscribed task after deadline.
+    /// Refunds collateral to any raters who submitted.
+    pub async fn cancel_task(&self, task_id: u64) -> Result<()> {
+        self.contract
+            .cancelTask(U256::from(task_id))
+            .send()
+            .await
+            .wrap_err("cancelTask tx failed")?
+            .watch()
+            .await
+            .wrap_err("cancelTask tx not confirmed")?;
         Ok(())
     }
 
@@ -192,6 +221,17 @@ impl OnchainClient {
             .iter()
             .map(|id| (*id).try_into().unwrap_or(0u64))
             .collect())
+    }
+
+    /// Get ratings for a task.
+    pub async fn get_ratings(&self, task_id: u64) -> Result<Vec<LichenCoordinator::Rating>> {
+        let result = self
+            .contract
+            .getRatings(U256::from(task_id))
+            .call()
+            .await
+            .wrap_err("getRatings call failed")?;
+        Ok(result)
     }
 
     /// Get the RBTS score/payout for a rater on a task.
@@ -227,6 +267,39 @@ impl OnchainClient {
             .call()
             .await
             .wrap_err("hasRated call failed")?;
+        Ok(result)
+    }
+
+    /// Get the RBTS alpha parameter (64.64 fixed-point).
+    pub async fn alpha(&self) -> Result<i128> {
+        let result = self
+            .contract
+            .alpha()
+            .call()
+            .await
+            .wrap_err("alpha call failed")?;
+        Ok(result)
+    }
+
+    /// Get the RBTS beta parameter (64.64 fixed-point).
+    pub async fn beta(&self) -> Result<i128> {
+        let result = self
+            .contract
+            .beta()
+            .call()
+            .await
+            .wrap_err("beta call failed")?;
+        Ok(result)
+    }
+
+    /// Get the collateral required per rating (in wei).
+    pub async fn collateral_per_rating(&self) -> Result<U256> {
+        let result = self
+            .contract
+            .collateralPerRating()
+            .call()
+            .await
+            .wrap_err("collateralPerRating call failed")?;
         Ok(result)
     }
 

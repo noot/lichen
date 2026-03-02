@@ -128,13 +128,19 @@ async fn test_create_task_and_get() {
     let client = client_for(&anvil, ANVIL_KEY_0, addr);
 
     let prompt_hash = B256::from(keccak256(b"write fizzbuzz"));
-    let task_id = client.create_task(prompt_hash, 3).await.unwrap();
+    let output_hash = B256::from(keccak256(b"fn fizzbuzz() { ... }"));
+    let task_id = client
+        .create_task(prompt_hash, output_hash, 3, 2, U256::from(3600))
+        .await
+        .unwrap();
     assert_eq!(task_id, 0); // first task
 
     let (task, ratings) = client.get_task(task_id).await.unwrap();
     assert_eq!(task.promptHash, prompt_hash);
-    assert_eq!(task.numRatersRequired, 3);
-    assert_eq!(task.phase, 0); // AwaitingWork
+    assert_eq!(task.outputHash, output_hash);
+    assert_eq!(task.maxRaters, 3);
+    assert_eq!(task.minRaters, 2);
+    assert_eq!(task.phase, 0); // AwaitingRatings
     assert!(ratings.is_empty());
 }
 
@@ -147,11 +153,23 @@ async fn test_active_tasks() {
     assert!(client.get_active_tasks().await.unwrap().is_empty());
 
     let id0 = client
-        .create_task(B256::from(keccak256(b"task0")), 2)
+        .create_task(
+            B256::from(keccak256(b"task0")),
+            B256::from(keccak256(b"output0")),
+            2,
+            2,
+            U256::from(3600),
+        )
         .await
         .unwrap();
     let id1 = client
-        .create_task(B256::from(keccak256(b"task1")), 2)
+        .create_task(
+            B256::from(keccak256(b"task1")),
+            B256::from(keccak256(b"output1")),
+            2,
+            2,
+            U256::from(3600),
+        )
         .await
         .unwrap();
 
@@ -162,55 +180,51 @@ async fn test_active_tasks() {
 }
 
 #[tokio::test]
-async fn test_submit_result() {
-    let anvil = Anvil::new().spawn();
-    let addr = deploy_contract(&anvil).await;
-    let client = client_for(&anvil, ANVIL_KEY_0, addr);
-
-    let task_id = client
-        .create_task(B256::from(keccak256(b"prompt")), 2)
-        .await
-        .unwrap();
-
-    let output_hash = B256::from(keccak256(b"fn fizzbuzz() { ... }"));
-    client.submit_result(task_id, output_hash).await.unwrap();
-
-    let (task, _) = client.get_task(task_id).await.unwrap();
-    assert_eq!(task.phase, 1); // AwaitingRatings
-    assert_eq!(task.outputHash, output_hash);
-}
-
-#[tokio::test]
 async fn test_submit_rating_and_has_rated() {
     let anvil = Anvil::new().spawn();
     let addr = deploy_contract(&anvil).await;
 
-    // Use key 0 to create task + submit result
-    let client0 = client_for(&anvil, ANVIL_KEY_0, addr);
-    client0.deposit(U256::from(10 * COLLATERAL)).await.unwrap();
-
-    let task_id = client0
-        .create_task(B256::from(keccak256(b"prompt")), 3)
+    // Use key 1 as worker, key 0 as rater (worker can't rate own task)
+    let client_worker = client_for(&anvil, ANVIL_KEY_1, addr);
+    let client_rater = client_for(&anvil, ANVIL_KEY_0, addr);
+    client_rater
+        .deposit(U256::from(10 * COLLATERAL))
         .await
         .unwrap();
-    client0
-        .submit_result(task_id, B256::from(keccak256(b"output")))
+
+    let task_id = client_worker
+        .create_task(
+            B256::from(keccak256(b"prompt")),
+            B256::from(keccak256(b"output")),
+            3,
+            2,
+            U256::from(3600),
+        )
         .await
         .unwrap();
 
     // Rate with key 0
     let signer0: PrivateKeySigner = ANVIL_KEY_0.parse().unwrap();
     let pred = OnchainClient::prediction_to_fixed(0.8);
-    client0.submit_rating(task_id, true, pred).await.unwrap();
+    client_rater
+        .submit_rating(task_id, true, pred)
+        .await
+        .unwrap();
 
-    assert!(client0.has_rated(task_id, signer0.address()).await.unwrap());
+    assert!(client_rater
+        .has_rated(task_id, signer0.address())
+        .await
+        .unwrap());
 
-    // Key 1 hasn't rated yet
-    let signer1: PrivateKeySigner = ANVIL_KEY_1.parse().unwrap();
-    assert!(!client0.has_rated(task_id, signer1.address()).await.unwrap());
+    // Key 2 hasn't rated yet
+    let signer2: PrivateKeySigner = ANVIL_KEY_2.parse().unwrap();
+    assert!(!client_rater
+        .has_rated(task_id, signer2.address())
+        .await
+        .unwrap());
 
     // Check ratings
-    let (_, ratings) = client0.get_task(task_id).await.unwrap();
+    let (_, ratings) = client_rater.get_task(task_id).await.unwrap();
     assert_eq!(ratings.len(), 1);
     assert!(ratings[0].signal);
 }
@@ -220,6 +234,8 @@ async fn test_full_lifecycle_auto_scores() {
     let anvil = Anvil::new().spawn();
     let addr = deploy_contract(&anvil).await;
 
+    // Use key 3 as worker, keys 0-2 as raters
+    let client_worker = client_for(&anvil, ANVIL_KEY_3, addr);
     let client0 = client_for(&anvil, ANVIL_KEY_0, addr);
     let client1 = client_for(&anvil, ANVIL_KEY_1, addr);
     let client2 = client_for(&anvil, ANVIL_KEY_2, addr);
@@ -233,13 +249,15 @@ async fn test_full_lifecycle_auto_scores() {
     let signer1: PrivateKeySigner = ANVIL_KEY_1.parse().unwrap();
     let signer2: PrivateKeySigner = ANVIL_KEY_2.parse().unwrap();
 
-    // Create task and submit work
-    let task_id = client0
-        .create_task(B256::from(keccak256(b"implement quicksort")), 3)
-        .await
-        .unwrap();
-    client0
-        .submit_result(task_id, B256::from(keccak256(b"fn quicksort() { ... }")))
+    // Create task with output
+    let task_id = client_worker
+        .create_task(
+            B256::from(keccak256(b"implement quicksort")),
+            B256::from(keccak256(b"fn quicksort() { ... }")),
+            3,
+            3,
+            U256::from(3600),
+        )
         .await
         .unwrap();
 
@@ -251,7 +269,7 @@ async fn test_full_lifecycle_auto_scores() {
 
     // Task should be scored now
     let (task, _) = client0.get_task(task_id).await.unwrap();
-    assert_eq!(task.phase, 2); // Scored
+    assert_eq!(task.phase, 1); // Scored
     assert!(task.accepted);
 
     // Active tasks should be empty
@@ -275,6 +293,14 @@ async fn test_surprisingly_popular_rewards() {
     let anvil = Anvil::new().spawn();
     let addr = deploy_contract(&anvil).await;
 
+    // Create a new worker account (anvil account 4) for task creation
+    let client_worker = OnchainClient::new(
+        &anvil.endpoint(),
+        addr,
+        "0x47e179ec197488593b187f80a00eb0da91f1b9d0b13f8733639f19c30a34926a",
+    )
+    .unwrap();
+
     let client0 = client_for(&anvil, ANVIL_KEY_0, addr);
     let client1 = client_for(&anvil, ANVIL_KEY_1, addr);
     let client2 = client_for(&anvil, ANVIL_KEY_2, addr);
@@ -288,12 +314,14 @@ async fn test_surprisingly_popular_rewards() {
     let signer0: PrivateKeySigner = ANVIL_KEY_0.parse().unwrap();
     let signer3: PrivateKeySigner = ANVIL_KEY_3.parse().unwrap();
 
-    let task_id = client0
-        .create_task(B256::from(keccak256(b"task")), 4)
-        .await
-        .unwrap();
-    client0
-        .submit_result(task_id, B256::from(keccak256(b"output")))
+    let task_id = client_worker
+        .create_task(
+            B256::from(keccak256(b"task")),
+            B256::from(keccak256(b"output")),
+            4,
+            4,
+            U256::from(3600),
+        )
         .await
         .unwrap();
 
@@ -322,6 +350,8 @@ async fn test_better_predictor_scores_higher() {
     let anvil = Anvil::new().spawn();
     let addr = deploy_contract(&anvil).await;
 
+    // Use key 2 as worker
+    let client_worker = client_for(&anvil, ANVIL_KEY_2, addr);
     let client0 = client_for(&anvil, ANVIL_KEY_0, addr);
     let client1 = client_for(&anvil, ANVIL_KEY_1, addr);
 
@@ -331,12 +361,14 @@ async fn test_better_predictor_scores_higher() {
     let signer0: PrivateKeySigner = ANVIL_KEY_0.parse().unwrap();
     let signer1: PrivateKeySigner = ANVIL_KEY_1.parse().unwrap();
 
-    let task_id = client0
-        .create_task(B256::from(keccak256(b"task")), 2)
-        .await
-        .unwrap();
-    client0
-        .submit_result(task_id, B256::from(keccak256(b"output")))
+    let task_id = client_worker
+        .create_task(
+            B256::from(keccak256(b"task")),
+            B256::from(keccak256(b"output")),
+            2,
+            2,
+            U256::from(3600),
+        )
         .await
         .unwrap();
 
@@ -365,6 +397,14 @@ async fn test_balances_approximately_zero_sum() {
     let anvil = Anvil::new().spawn();
     let addr = deploy_contract(&anvil).await;
 
+    // Use a different key as worker
+    let client_worker = OnchainClient::new(
+        &anvil.endpoint(),
+        addr,
+        "0x47e179ec197488593b187f80a00eb0da91f1b9d0b13f8733639f19c30a34926a",
+    )
+    .unwrap();
+
     let client0 = client_for(&anvil, ANVIL_KEY_0, addr);
     let client1 = client_for(&anvil, ANVIL_KEY_1, addr);
     let client2 = client_for(&anvil, ANVIL_KEY_2, addr);
@@ -383,13 +423,15 @@ async fn test_balances_approximately_zero_sum() {
 
     let total_before = U256::from(COLLATERAL) * U256::from(40);
 
-    // Create + work + rate with mixed votes
-    let task_id = client0
-        .create_task(B256::from(keccak256(b"task")), 4)
-        .await
-        .unwrap();
-    client0
-        .submit_result(task_id, B256::from(keccak256(b"output")))
+    // Create task with mixed votes
+    let task_id = client_worker
+        .create_task(
+            B256::from(keccak256(b"task")),
+            B256::from(keccak256(b"output")),
+            4,
+            4,
+            U256::from(3600),
+        )
         .await
         .unwrap();
 
@@ -427,4 +469,133 @@ async fn test_balances_approximately_zero_sum() {
         diff < U256::from(COLLATERAL / 1000),
         "not zero-sum: before={total_before}, after={total_after}, diff={diff}"
     );
+}
+
+#[tokio::test]
+async fn test_finalize_task_after_deadline() {
+    let anvil = Anvil::new().spawn();
+    let addr = deploy_contract(&anvil).await;
+
+    let client_worker = client_for(&anvil, ANVIL_KEY_3, addr);
+    let client0 = client_for(&anvil, ANVIL_KEY_0, addr);
+    let client1 = client_for(&anvil, ANVIL_KEY_1, addr);
+
+    client0.deposit(U256::from(10 * COLLATERAL)).await.unwrap();
+    client1.deposit(U256::from(10 * COLLATERAL)).await.unwrap();
+
+    // Create task with timeout of 1 second
+    let task_id = client_worker
+        .create_task(
+            B256::from(keccak256(b"task")),
+            B256::from(keccak256(b"output")),
+            4,             // max raters
+            2,             // min raters
+            U256::from(1), // 1 second timeout
+        )
+        .await
+        .unwrap();
+
+    // Only 2 raters submit (meets min but not max)
+    let pred = OnchainClient::prediction_to_fixed(0.8);
+    client0.submit_rating(task_id, true, pred).await.unwrap();
+    client1.submit_rating(task_id, true, pred).await.unwrap();
+
+    // Wait for deadline to pass
+    tokio::time::sleep(tokio::time::Duration::from_secs(2)).await;
+
+    // Should be able to finalize now
+    client0.finalize_task(task_id).await.unwrap();
+
+    let (task, _) = client0.get_task(task_id).await.unwrap();
+    assert_eq!(task.phase, 1); // Scored
+    assert!(task.accepted);
+}
+
+#[tokio::test]
+async fn test_cancel_task_insufficient_raters() {
+    let anvil = Anvil::new().spawn();
+    let addr = deploy_contract(&anvil).await;
+
+    let client_worker = client_for(&anvil, ANVIL_KEY_3, addr);
+    let client0 = client_for(&anvil, ANVIL_KEY_0, addr);
+
+    client0.deposit(U256::from(10 * COLLATERAL)).await.unwrap();
+
+    // Create task with timeout of 1 second
+    let task_id = client_worker
+        .create_task(
+            B256::from(keccak256(b"task")),
+            B256::from(keccak256(b"output")),
+            4,             // max raters
+            3,             // min raters
+            U256::from(1), // 1 second timeout
+        )
+        .await
+        .unwrap();
+
+    // Only 1 rater submits (doesn't meet min)
+    let pred = OnchainClient::prediction_to_fixed(0.8);
+    client0.submit_rating(task_id, true, pred).await.unwrap();
+
+    // Wait for deadline to pass
+    tokio::time::sleep(tokio::time::Duration::from_secs(2)).await;
+
+    // Check balance before cancel
+    let signer0: PrivateKeySigner = ANVIL_KEY_0.parse().unwrap();
+    let bal_before = client0.balance_of(signer0.address()).await.unwrap();
+    assert_eq!(bal_before, U256::from(9 * COLLATERAL)); // 10 - 1 locked
+
+    // Should be able to cancel now
+    client0.cancel_task(task_id).await.unwrap();
+
+    let (task, _) = client0.get_task(task_id).await.unwrap();
+    assert_eq!(task.phase, 2); // Cancelled
+
+    // Collateral should be refunded
+    let bal_after = client0.balance_of(signer0.address()).await.unwrap();
+    assert_eq!(bal_after, U256::from(10 * COLLATERAL));
+}
+
+#[tokio::test]
+async fn test_get_ratings_and_parameters() {
+    let anvil = Anvil::new().spawn();
+    let addr = deploy_contract(&anvil).await;
+    let client = client_for(&anvil, ANVIL_KEY_0, addr);
+
+    // Test parameter getters
+    let alpha = client.alpha().await.unwrap();
+    assert_eq!(alpha, ALPHA_FIXED); // 1 << 64
+
+    let beta = client.beta().await.unwrap();
+    assert_eq!(beta, ALPHA_FIXED); // same as alpha in our test setup
+
+    let collateral = client.collateral_per_rating().await.unwrap();
+    assert_eq!(collateral, U256::from(COLLATERAL));
+
+    // Create task and submit rating
+    client.deposit(U256::from(10 * COLLATERAL)).await.unwrap();
+    let client_worker = client_for(&anvil, ANVIL_KEY_1, addr);
+
+    let task_id = client_worker
+        .create_task(
+            B256::from(keccak256(b"task")),
+            B256::from(keccak256(b"output")),
+            2,
+            2,
+            U256::from(3600),
+        )
+        .await
+        .unwrap();
+
+    let pred = OnchainClient::prediction_to_fixed(0.75);
+    client.submit_rating(task_id, true, pred).await.unwrap();
+
+    // Test getRatings
+    let ratings = client.get_ratings(task_id).await.unwrap();
+    assert_eq!(ratings.len(), 1);
+    assert!(ratings[0].signal);
+    assert_eq!(ratings[0].prediction, pred);
+
+    let signer0: PrivateKeySigner = ANVIL_KEY_0.parse().unwrap();
+    assert_eq!(ratings[0].rater, signer0.address());
 }

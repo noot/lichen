@@ -13,7 +13,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use uuid::Uuid;
 
-const WORKER_MODEL: &str = "gpt-4.1";
+const WORKER_MODEL: &str = "claude-sonnet-4-6";
 const STARTING_BALANCE: f64 = 100.0;
 const COLLATERAL: f64 = 1.0;
 const DEFAULT_NUM_ROUNDS: usize = 100;
@@ -713,30 +713,39 @@ async fn run_round(
             .find(|s| s.agent_id == *label)
             .map(|s| s.payment)
             .unwrap_or(0.0);
-        raters[*idx].balance += payout;
+
+        // Off-chain balance update: deduct collateral, then add payout (mirrors on-chain logic)
+        raters[*idx].balance = raters[*idx].balance - COLLATERAL + payout;
 
         let rater_addr = onchain_setup
             .and_then(|s| s.rater_clients.get(*idx))
             .map(|(_, addr)| *addr);
         let (balance_after, eliminated) = if let Some(ref bals) = onchain_balances {
-            if let Some(&points) = rater_addr.and_then(|a| bals.get(&a)) {
-                (points, points < 1.0)
+            let onchain_bal = rater_addr.and_then(|a| bals.get(&a)).copied();
+            if let Some(onchain_points) = onchain_bal {
+                // Verify off-chain matches on-chain
+                let offchain_bal = raters[*idx].balance;
+                if (offchain_bal - onchain_points).abs() > 0.01 {
+                    println!(
+                        "  ⚠️  BALANCE MISMATCH {}: offchain={:.4} onchain={:.4} (diff={:.4})",
+                        label, offchain_bal, onchain_points, offchain_bal - onchain_points
+                    );
+                }
+                (onchain_points, onchain_points < 1.0)
             } else {
-                raters[*idx].balance += payout;
-                if raters[*idx].balance <= 0.0 {
-                    raters[*idx].balance = 0.0;
+                let bal = raters[*idx].balance;
+                if bal <= 0.0 {
                     (0.0, true)
                 } else {
-                    (raters[*idx].balance, false)
+                    (bal, false)
                 }
             }
         } else {
-            raters[*idx].balance += payout;
-            if raters[*idx].balance <= 0.0 {
-                raters[*idx].balance = 0.0;
+            let bal = raters[*idx].balance;
+            if bal <= 0.0 {
                 (0.0, true)
             } else {
-                (raters[*idx].balance, false)
+                (bal, false)
             }
         };
 
@@ -811,6 +820,11 @@ async fn main() -> Result<()> {
         .and_then(|i| args.get(i + 1))
         .and_then(|v| v.parse::<usize>().ok())
         .unwrap_or(DEFAULT_NUM_ROUNDS);
+    let custom_rater_count = args
+        .iter()
+        .position(|a| a == "--raters")
+        .and_then(|i| args.get(i + 1))
+        .and_then(|v| v.parse::<usize>().ok());
 
     let provider_url = std::env::var("LLM_API_URL")
         .wrap_err("LLM_API_URL not set — add it to .env or environment")?;
@@ -830,18 +844,45 @@ async fn main() -> Result<()> {
         RATERS_DEFAULT
     };
 
-    let mut raters: Vec<RaterState> = rater_config
-        .iter()
-        .map(|(label, model, balance)| RaterState {
-            label: label.to_string(),
-            model: model.to_string(),
-            balance: *balance,
-            eliminated: false,
-            history: Vec::new(),
-        })
-        .collect();
+    let mut raters: Vec<RaterState> = if let Some(n) = custom_rater_count {
+        // Generate N raters by cycling through the model pool
+        let models: Vec<(&str, &str)> = RATERS_DEFAULT.iter().map(|(l, m, _)| (*l, *m)).collect();
+        (0..n)
+            .map(|i| {
+                let (base_label, model) = models[i % models.len()];
+                let label = if n > models.len() {
+                    format!("{}:{}", base_label, i / models.len())
+                } else {
+                    base_label.to_string()
+                };
+                RaterState {
+                    label,
+                    model: model.to_string(),
+                    balance: STARTING_BALANCE,
+                    eliminated: false,
+                    history: Vec::new(),
+                }
+            })
+            .collect()
+    } else {
+        rater_config
+            .iter()
+            .map(|(label, model, balance)| RaterState {
+                label: label.to_string(),
+                model: model.to_string(),
+                balance: *balance,
+                eliminated: false,
+                history: Vec::new(),
+            })
+            .collect()
+    };
 
-    let (jsonl_path, summary_path) = if use_stationary {
+    let (jsonl_path, summary_path) = if custom_rater_count.is_some() {
+        (
+            "lichen-economy-rounds-marketplace.jsonl",
+            "lichen-economy-summary-marketplace.md",
+        )
+    } else if use_stationary {
         (
             "lichen-economy-rounds-stationary.jsonl",
             "lichen-economy-summary-stationary.md",

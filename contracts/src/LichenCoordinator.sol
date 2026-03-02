@@ -7,22 +7,26 @@ import {ABDKMath64x64} from "abdk/ABDKMath64x64.sol";
 /// @notice on-chain coordinator for the Lichen RBTS protocol.
 ///         manages task lifecycle, collects ratings, computes RBTS scores,
 ///         and redistributes staked ETH among raters.
+///         supports an open rater marketplace where any registered rater
+///         can self-select which tasks to rate.
 contract LichenCoordinator {
     using ABDKMath64x64 for int128;
 
     // ── types ────────────────────────────────────────────────────────────
 
     enum Phase {
-        AwaitingWork,
         AwaitingRatings,
-        Scored
+        Scored,
+        Cancelled
     }
 
     struct Task {
         bytes32 promptHash;
         address worker;
         bytes32 outputHash;
-        uint8 numRatersRequired;
+        uint8 maxRaters;
+        uint8 minRaters;
+        uint256 deadline;
         Phase phase;
         bool accepted;
     }
@@ -65,7 +69,7 @@ contract LichenCoordinator {
     }
     mapping(address => WorkerRecord) public workerReputation;
 
-    /// list of active (non-scored) task IDs for polling.
+    /// list of active (non-scored, non-cancelled) task IDs for polling.
     uint256[] internal _activeTasks;
     mapping(uint256 => uint256) internal _activeIndex; // taskId => index+1 (0 = not active)
 
@@ -73,10 +77,17 @@ contract LichenCoordinator {
 
     event Deposited(address indexed agent, uint256 amount);
     event Withdrawn(address indexed agent, uint256 amount);
-    event TaskCreated(uint256 indexed taskId, bytes32 promptHash, uint8 numRaters);
-    event ResultSubmitted(uint256 indexed taskId, address indexed worker, bytes32 outputHash);
-    event RatingSubmitted(uint256 indexed taskId, address indexed rater, bool signal);
-    event TaskScored(uint256 indexed taskId, bool accepted);
+    event TaskCreated(
+        uint256 indexed taskId,
+        address indexed worker,
+        bytes32 promptHash,
+        uint8 maxRaters,
+        uint8 minRaters,
+        uint256 deadline
+    );
+    event RatingSubmitted(uint256 indexed taskId, address indexed rater, bool signal, uint256 ratingCount);
+    event TaskFinalized(uint256 indexed taskId, uint256 raterCount, bool accepted);
+    event TaskCancelled(uint256 indexed taskId);
 
     // ── constructor ──────────────────────────────────────────────────────
 
@@ -107,38 +118,55 @@ contract LichenCoordinator {
 
     // ── task lifecycle ───────────────────────────────────────────────────
 
-    function createTask(bytes32 promptHash, uint8 numRaters) external returns (uint256 taskId) {
-        require(numRaters >= 2, "need >= 2 raters");
+    /// @notice Create a task and submit the worker output in one call.
+    ///         Any registered rater can then self-select to rate this task.
+    /// @param promptHash Hash of the task prompt.
+    /// @param outputHash Hash of the worker's output.
+    /// @param maxRaters  Maximum number of raters (first-come-first-served).
+    /// @param minRaters  Minimum raters needed for valid scoring after timeout.
+    /// @param timeout    Seconds until deadline (block.timestamp + timeout).
+    function createTask(
+        bytes32 promptHash,
+        bytes32 outputHash,
+        uint8 maxRaters,
+        uint8 minRaters,
+        uint256 timeout
+    ) external returns (uint256 taskId) {
+        require(maxRaters >= 2, "need >= 2 max raters");
+        require(minRaters >= 2, "need >= 2 min raters");
+        require(minRaters <= maxRaters, "min > max");
+        require(timeout > 0, "zero timeout");
+
         taskId = nextTaskId++;
         tasks[taskId] = Task({
             promptHash: promptHash,
-            worker: address(0),
-            outputHash: bytes32(0),
-            numRatersRequired: numRaters,
-            phase: Phase.AwaitingWork,
+            worker: msg.sender,
+            outputHash: outputHash,
+            maxRaters: maxRaters,
+            minRaters: minRaters,
+            deadline: block.timestamp + timeout,
+            phase: Phase.AwaitingRatings,
             accepted: false
         });
+
         // add to active list
         _activeTasks.push(taskId);
         _activeIndex[taskId] = _activeTasks.length; // 1-indexed
-        emit TaskCreated(taskId, promptHash, numRaters);
+
+        emit TaskCreated(taskId, msg.sender, promptHash, maxRaters, minRaters, block.timestamp + timeout);
     }
 
-    function submitResult(uint256 taskId, bytes32 outputHash) external {
-        // TODO: do we want to specify a worker in `createTask`,
-        // or have the worker put up collateral to submit?
-        Task storage t = tasks[taskId];
-        require(t.phase == Phase.AwaitingWork, "not awaiting work");
-        t.worker = msg.sender;
-        t.outputHash = outputHash;
-        t.phase = Phase.AwaitingRatings;
-        emit ResultSubmitted(taskId, msg.sender, outputHash);
-    }
-
+    /// @notice Submit a rating for an open task. First-come-first-served up to maxRaters.
+    /// @param taskId    The task to rate.
+    /// @param signal    true = good, false = bad.
+    /// @param prediction Predicted fraction of "good" votes (64.64 fixed-point, [0, 1]).
     function submitRating(uint256 taskId, bool signal, int128 prediction) external {
         Task storage t = tasks[taskId];
         require(t.phase == Phase.AwaitingRatings, "not awaiting ratings");
         require(!hasRated[taskId][msg.sender], "already rated");
+        require(msg.sender != t.worker, "worker cannot rate own task");
+        require(ratings[taskId].length < t.maxRaters, "max raters reached");
+        require(block.timestamp <= t.deadline, "deadline passed");
         require(prediction >= 0 && prediction <= ABDKMath64x64.fromUInt(1), "prediction out of range");
         require(balances[msg.sender] >= collateralPerRating, "insufficient collateral");
 
@@ -152,14 +180,57 @@ contract LichenCoordinator {
             signal: signal,
             prediction: prediction
         }));
-        emit RatingSubmitted(taskId, msg.sender, signal);
 
-        // auto-score when all ratings are in
-        // TODO: the last submitter ends up paying a lot more gas;
-        // should probably put this separately (but then who calls it?)
-        if (ratings[taskId].length >= t.numRatersRequired) {
+        uint256 count = ratings[taskId].length;
+        emit RatingSubmitted(taskId, msg.sender, signal, count);
+
+        // auto-score when maxRaters reached
+        if (count >= t.maxRaters) {
             _score(taskId);
         }
+    }
+
+    /// @notice Finalize a task after timeout if minRaters have been reached.
+    ///         Can be called by anyone. Also handles auto-finalization if maxRaters reached.
+    /// @param taskId The task to finalize.
+    function finalizeTask(uint256 taskId) external {
+        Task storage t = tasks[taskId];
+        require(t.phase == Phase.AwaitingRatings, "not awaiting ratings");
+
+        uint256 count = ratings[taskId].length;
+
+        if (count >= t.maxRaters) {
+            // maxRaters reached — score immediately
+            _score(taskId);
+        } else if (count >= t.minRaters && block.timestamp > t.deadline) {
+            // minRaters met and deadline passed — score with what we have
+            _score(taskId);
+        } else {
+            revert("finalization conditions not met");
+        }
+    }
+
+    /// @notice Cancel an under-subscribed task after deadline.
+    ///         Refunds collateral to any raters who submitted.
+    /// @param taskId The task to cancel.
+    function cancelTask(uint256 taskId) external {
+        Task storage t = tasks[taskId];
+        require(t.phase == Phase.AwaitingRatings, "not awaiting ratings");
+        require(block.timestamp > t.deadline, "deadline not passed");
+
+        uint256 count = ratings[taskId].length;
+        require(count < t.minRaters, "enough raters to finalize");
+
+        // refund collateral to raters who submitted
+        Rating[] storage r = ratings[taskId];
+        for (uint256 i = 0; i < count; i++) {
+            balances[r[i].rater] += collateralPerRating;
+        }
+
+        t.phase = Phase.Cancelled;
+        _removeActive(taskId);
+
+        emit TaskCancelled(taskId);
     }
 
     // ── views ────────────────────────────────────────────────────────────
@@ -276,7 +347,7 @@ contract LichenCoordinator {
             sumRaw = sumRaw.add(rawPayments[i]);
         }
 
-        // redistribute the collateral pool matching the off-chain rust implementation:
+        // redistribute the collateral pool:
         // 1. shift all scores so the minimum becomes zero (all values >= 0)
         // 2. distribute pool proportionally to shifted scores
         int128 minPayment = rawPayments[0];
@@ -312,7 +383,7 @@ contract LichenCoordinator {
         // remove from active list
         _removeActive(taskId);
 
-        emit TaskScored(taskId, t.accepted);
+        emit TaskFinalized(taskId, n, t.accepted);
     }
 
     /// @dev remove a task from the active list (swap-and-pop).
