@@ -14,9 +14,21 @@ pub struct Task {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CreateTaskRequest {
     pub prompt: String,
+    /// Expected output for the task (optional, defaults to empty string)
+    #[serde(default)]
+    pub output: String,
     /// Number of raters required before scoring.
     #[serde(default = "default_num_raters")]
     pub num_raters: usize,
+    /// Maximum number of raters allowed (for on-chain mode)
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub max_raters: Option<u8>,
+    /// Minimum number of raters required (for on-chain mode)
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub min_raters: Option<u8>,
+    /// Timeout in seconds (for on-chain mode)
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub timeout_seconds: Option<u64>,
 }
 
 fn default_num_raters() -> usize {

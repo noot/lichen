@@ -1375,16 +1375,22 @@ dependencies = [
 name = "coordinator"
 version = "0.1.0"
 dependencies = [
+ "alloy",
+ "async-trait",
  "axum",
  "clap",
  "client",
  "eyre",
+ "futures-util",
+ "onchain",
  "protocol",
  "rand 0.8.5",
  "reqwest",
  "serde",
  "serde_json",
+ "sha2",
  "tokio",
+ "tokio-stream",
  "tokio-util",
  "tracing",
  "tracing-subscriber",

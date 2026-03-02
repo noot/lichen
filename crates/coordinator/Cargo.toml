@@ -8,6 +8,7 @@ workspace = true
 
 [dependencies]
 protocol = { path = "../protocol" }
+onchain = { path = "../onchain" }
 axum = "0.8"
 tokio = { version = "1", features = ["full"] }
 serde = { version = "1", features = ["derive"] }
@@ -20,6 +21,11 @@ tracing = "0.1"
 tokio-util = "0.7"
 tracing-subscriber = "0.3"
 rand = "0.8"
+alloy = { version = "1.7", features = ["signers"] }
+sha2 = "0.10"
+async-trait = "0.1"
+futures-util = "0.3"
+tokio-stream = "0.1"
 
 [dev-dependencies]
 client = { path = "../client" }

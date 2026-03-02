@@ -3,57 +3,71 @@ use std::sync::Arc;
 use axum::{
     extract::{Path, State},
     http::StatusCode,
+    response::{sse::Event, Sse},
     Json,
 };
-use protocol::{
-    CreateTaskRequest, SubmitRatingRequest, SubmitResultRequest, Task, TaskPhase, TaskStatus,
-};
+use futures_util::stream::Stream;
+use protocol::{CreateTaskRequest, SubmitRatingRequest, SubmitResultRequest, TaskStatus};
+use tokio_stream::wrappers::BroadcastStream;
+use tokio_stream::StreamExt as _;
 use tracing::info;
 use uuid::Uuid;
 
-use crate::coordinator::AppState;
-use protocol::scoring;
+use crate::coordinator::{AppState, TaskEvent};
 
 /// POST /tasks — create a new task
 pub(crate) async fn create_task(
     State(state): State<Arc<AppState>>,
     Json(req): Json<CreateTaskRequest>,
-) -> (StatusCode, Json<TaskStatus>) {
-    let task_id = Uuid::new_v4();
-    let status = TaskStatus {
-        task: Task {
-            id: task_id,
-            prompt: req.prompt,
-        },
-        phase: TaskPhase::AwaitingWork,
-        num_raters_required: req.num_raters,
-    };
+) -> Result<(StatusCode, Json<TaskStatus>), (StatusCode, String)> {
+    let status = state
+        .backend
+        .create_task(
+            req.prompt.clone(),
+            req.output,
+            req.num_raters,
+            req.max_raters,
+            req.min_raters,
+            req.timeout_seconds,
+        )
+        .await
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
-    state.tasks.write().await.insert(task_id, status.clone());
-    info!("created task {task_id}");
+    // Emit event
+    let _ = state.event_tx.send(TaskEvent::TaskCreated {
+        task_id: status.task.id,
+        prompt: req.prompt,
+    });
 
-    (StatusCode::CREATED, Json(status))
+    info!("created task {}", status.task.id);
+
+    Ok((StatusCode::CREATED, Json(status)))
 }
 
 /// GET /tasks — list all tasks
-pub(crate) async fn list_tasks(State(state): State<Arc<AppState>>) -> Json<Vec<TaskStatus>> {
-    let tasks = state.tasks.read().await;
-    Json(tasks.values().cloned().collect())
+pub(crate) async fn list_tasks(
+    State(state): State<Arc<AppState>>,
+) -> Result<Json<Vec<TaskStatus>>, (StatusCode, String)> {
+    let tasks = state
+        .backend
+        .list_tasks()
+        .await
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+    Ok(Json(tasks))
 }
 
 /// GET /tasks/:task_id — get task status
 pub(crate) async fn get_task(
     State(state): State<Arc<AppState>>,
     Path(task_id): Path<Uuid>,
-) -> Result<Json<TaskStatus>, StatusCode> {
+) -> Result<Json<TaskStatus>, (StatusCode, String)> {
     state
-        .tasks
-        .read()
+        .backend
+        .get_task(task_id)
         .await
-        .get(&task_id)
-        .cloned()
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?
         .map(Json)
-        .ok_or(StatusCode::NOT_FOUND)
+        .ok_or((StatusCode::NOT_FOUND, "task not found".to_string()))
 }
 
 /// POST /tasks/:task_id/result — worker pushes output
@@ -62,23 +76,23 @@ pub(crate) async fn submit_result(
     Path(task_id): Path<Uuid>,
     Json(req): Json<SubmitResultRequest>,
 ) -> Result<Json<TaskStatus>, (StatusCode, String)> {
-    let mut tasks = state.tasks.write().await;
-    let task = tasks
-        .get_mut(&task_id)
-        .ok_or((StatusCode::NOT_FOUND, "task not found".into()))?;
-
-    if !matches!(task.phase, TaskPhase::AwaitingWork) {
-        return Err((StatusCode::CONFLICT, "task already has a result".into()));
-    }
-
-    task.phase = TaskPhase::AwaitingRatings {
-        worker_id: req.agent_id.clone(),
-        worker_output: req.output,
-        ratings: vec![],
-    };
+    let status = state
+        .backend
+        .submit_result(task_id, req.agent_id.clone(), req.output)
+        .await
+        .map_err(|e| {
+            let msg = e.to_string();
+            if msg.contains("already has a result") {
+                (StatusCode::CONFLICT, msg)
+            } else if msg.contains("not found") {
+                (StatusCode::NOT_FOUND, msg)
+            } else {
+                (StatusCode::INTERNAL_SERVER_ERROR, msg)
+            }
+        })?;
 
     info!("task {task_id}: result submitted by {}", req.agent_id);
-    Ok(Json(task.clone()))
+    Ok(Json(status))
 }
 
 /// POST /tasks/:task_id/rating — rater pushes rating
@@ -87,70 +101,95 @@ pub(crate) async fn submit_rating(
     Path(task_id): Path<Uuid>,
     Json(req): Json<SubmitRatingRequest>,
 ) -> Result<Json<TaskStatus>, (StatusCode, String)> {
-    let mut tasks = state.tasks.write().await;
-    let task = tasks
-        .get_mut(&task_id)
-        .ok_or((StatusCode::NOT_FOUND, "task not found".into()))?;
-
-    // validate phase and check for duplicate raters
-    match &task.phase {
-        TaskPhase::AwaitingWork => {
-            return Err((StatusCode::CONFLICT, "task has no result yet".into()));
-        }
-        TaskPhase::Scored { .. } => {
-            return Err((StatusCode::CONFLICT, "task already scored".into()));
-        }
-        TaskPhase::AwaitingRatings { ratings, .. } => {
-            if ratings.iter().any(|r| r.agent_id == req.agent_id) {
-                return Err((StatusCode::CONFLICT, "agent already rated this task".into()));
+    let status = state
+        .backend
+        .submit_rating(
+            task_id,
+            req.agent_id.clone(),
+            req.signal,
+            req.prediction,
+            state.alpha,
+            state.beta,
+        )
+        .await
+        .map_err(|e| {
+            let msg = e.to_string();
+            if msg.contains("already rated")
+                || msg.contains("already scored")
+                || msg.contains("no result yet")
+            {
+                (StatusCode::CONFLICT, msg)
+            } else if msg.contains("not found") {
+                (StatusCode::NOT_FOUND, msg)
+            } else {
+                (StatusCode::INTERNAL_SERVER_ERROR, msg)
             }
-        }
+        })?;
+
+    // Emit event
+    let _ = state.event_tx.send(TaskEvent::TaskRated {
+        task_id,
+        agent_id: req.agent_id.clone(),
+    });
+
+    // Check if task was scored
+    if let protocol::TaskPhase::Scored { accepted, .. } = &status.phase {
+        let _ = state.event_tx.send(TaskEvent::TaskScored {
+            task_id,
+            accepted: *accepted,
+        });
     }
 
-    // push rating and check if we should score
-    let should_score = {
-        let TaskPhase::AwaitingRatings { ratings, .. } = &mut task.phase else {
-            unreachable!()
-        };
-        ratings.push(req.clone());
-        info!(
-            "task {task_id}: rating from {} ({}/{})",
-            req.agent_id,
-            ratings.len(),
-            task.num_raters_required
-        );
-        ratings.len() >= task.num_raters_required
-    };
+    info!("task {task_id}: rating submitted by {}", req.agent_id);
+    Ok(Json(status))
+}
 
-    if should_score {
-        let TaskPhase::AwaitingRatings {
-            worker_id,
-            worker_output,
-            ratings,
-        } = std::mem::replace(&mut task.phase, TaskPhase::AwaitingWork)
-        else {
-            unreachable!()
-        };
+/// GET /events/stream — SSE stream of task events
+pub(crate) async fn events_stream(
+    State(state): State<Arc<AppState>>,
+) -> Sse<impl Stream<Item = Result<Event, std::convert::Infallible>>> {
+    let rx = state.event_tx.subscribe();
+    let stream = BroadcastStream::new(rx);
 
-        let scores = scoring::rbts_score(&ratings, state.alpha, state.beta);
-        let actual_good = ratings.iter().filter(|r| r.signal).count() as f64 / ratings.len() as f64;
-        let predicted_good =
-            ratings.iter().map(|r| r.prediction).sum::<f64>() / ratings.len() as f64;
-        let bts_accepted = actual_good >= predicted_good;
-        let approval = actual_good;
-        let accepted = approval >= 0.5 && bts_accepted;
+    let event_stream = stream.filter_map(|result| {
+        result.ok().map(|event| {
+            let data = match &event {
+                TaskEvent::TaskCreated { task_id, prompt } => {
+                    serde_json::json!({
+                        "type": "task_created",
+                        "task_id": task_id,
+                        "prompt": prompt
+                    })
+                }
+                TaskEvent::TaskRated { task_id, agent_id } => {
+                    serde_json::json!({
+                        "type": "task_rated",
+                        "task_id": task_id,
+                        "agent_id": agent_id
+                    })
+                }
+                TaskEvent::TaskScored { task_id, accepted } => {
+                    serde_json::json!({
+                        "type": "task_scored",
+                        "task_id": task_id,
+                        "accepted": accepted
+                    })
+                }
+            };
 
-        info!("task {task_id}: scored (accepted={accepted}, approval={approval:.2}, bts_accepted={bts_accepted}) — {scores:?}");
-        task.phase = TaskPhase::Scored {
-            worker_id,
-            worker_output,
-            ratings,
-            scores,
-            bts_accepted,
-            approval,
-            accepted,
-        };
-    }
+            Ok::<_, std::convert::Infallible>(Event::default().data(data.to_string()).event(
+                match event {
+                    TaskEvent::TaskCreated { .. } => "task_created",
+                    TaskEvent::TaskRated { .. } => "task_rated",
+                    TaskEvent::TaskScored { .. } => "task_scored",
+                },
+            ))
+        })
+    });
 
-    Ok(Json(task.clone()))
+    Sse::new(event_stream).keep_alive(
+        axum::response::sse::KeepAlive::new()
+            .interval(std::time::Duration::from_secs(30))
+            .text("heartbeat"),
+    )
 }

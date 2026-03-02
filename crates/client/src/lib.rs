@@ -29,7 +29,11 @@ impl CoordinatorClient {
             .post(format!("{}/tasks", self.base_url))
             .json(&CreateTaskRequest {
                 prompt: prompt.to_string(),
+                output: String::new(),
                 num_raters,
+                max_raters: None,
+                min_raters: None,
+                timeout_seconds: None,
             })
             .send()
             .await

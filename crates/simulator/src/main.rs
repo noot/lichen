@@ -511,23 +511,26 @@ async fn run_round(
             .try_into()
             .wrap_err("active rater count exceeds u8::MAX")?;
 
+        // Use num_raters as both max and min
+        let max_raters = num_raters;
+        let min_raters = num_raters;
+        // Default timeout of 24 hours
+        let timeout_seconds = alloy::primitives::U256::from(24 * 60 * 60);
+
         match setup
             .worker_client
-            .create_task(prompt_hash, num_raters)
+            .create_task(
+                prompt_hash,
+                output_hash,
+                max_raters,
+                min_raters,
+                timeout_seconds,
+            )
             .await
         {
             Ok(tid) => {
-                println!("  [onchain] Task created, id={tid}");
-                match setup.worker_client.submit_result(tid, output_hash).await {
-                    Ok(()) => {
-                        println!("  [onchain] Result submitted for task {tid}");
-                        Some(tid)
-                    }
-                    Err(e) => {
-                        println!("  [onchain] submit_result failed: {e}, skipping round");
-                        return Ok(RoundOutcome::Skipped);
-                    }
-                }
+                println!("  [onchain] Task created with output, id={tid}");
+                Some(tid)
             }
             Err(e) => {
                 println!("  [onchain] create_task failed: {e}, skipping round");
@@ -678,8 +681,11 @@ async fn run_round(
     let num_good = responses.iter().filter(|(_, _, _, r)| r.signal).count();
     let num_rated = responses.len();
     let approval_pct = (num_good as f64 / num_rated as f64) * 100.0;
-    let avg_prediction =
-        responses.iter().map(|(_, _, _, r)| r.prediction).sum::<f64>() / num_rated as f64;
+    let avg_prediction = responses
+        .iter()
+        .map(|(_, _, _, r)| r.prediction)
+        .sum::<f64>()
+        / num_rated as f64;
     let actual_good_frac = num_good as f64 / num_rated as f64;
     let bts_accepted = actual_good_frac >= avg_prediction;
     if bts_accepted && actual_good_frac >= 0.5 {
@@ -728,7 +734,10 @@ async fn run_round(
                 if (offchain_bal - onchain_points).abs() > 0.01 {
                     println!(
                         "  ⚠️  BALANCE MISMATCH {}: offchain={:.4} onchain={:.4} (diff={:.4})",
-                        label, offchain_bal, onchain_points, offchain_bal - onchain_points
+                        label,
+                        offchain_bal,
+                        onchain_points,
+                        offchain_bal - onchain_points
                     );
                 }
                 (onchain_points, onchain_points < 1.0)

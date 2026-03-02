@@ -28,9 +28,24 @@ impl Backend {
             Self::Http(c) => c.create_task(prompt, num_raters).await,
             Self::Onchain(c) => {
                 let prompt_hash = B256::from(alloy::primitives::keccak256(prompt.as_bytes()));
+                // For now, use an empty output_hash - workers will create their own tasks with output
+                let output_hash = B256::ZERO;
                 let num_raters_u8 =
                     u8::try_from(num_raters).wrap_err("num_raters exceeds u8::MAX")?;
-                let task_id = c.create_task(prompt_hash, num_raters_u8).await?;
+                // Use num_raters as both max and min
+                let max_raters = num_raters_u8;
+                let min_raters = num_raters_u8;
+                // Default timeout of 24 hours
+                let timeout_seconds = alloy::primitives::U256::from(24 * 60 * 60);
+                let task_id = c
+                    .create_task(
+                        prompt_hash,
+                        output_hash,
+                        max_raters,
+                        min_raters,
+                        timeout_seconds,
+                    )
+                    .await?;
                 Ok(TaskStatus {
                     task: Task {
                         id: task_id_to_uuid(task_id),
@@ -78,10 +93,32 @@ impl Backend {
         match self {
             Self::Http(c) => c.submit_result(task_id, agent_id, output).await,
             Self::Onchain(c) => {
+                // In the onchain model, workers create new tasks with their output.
+                // Get the original task to retrieve the prompt_hash
                 let id = uuid_to_task_id(task_id);
+                let (task, _) = c.get_task(id).await?;
+
+                // Create a new task with the same prompt but include the output hash
+                let prompt_hash = task.promptHash;
                 let output_hash = B256::from(alloy::primitives::keccak256(output.as_bytes()));
-                c.submit_result(id, output_hash).await?;
-                self.get_task(task_id).await
+                let max_raters = task.maxRaters;
+                let min_raters = task.minRaters;
+                // Default timeout of 24 hours
+                let timeout_seconds = alloy::primitives::U256::from(24 * 60 * 60);
+
+                let new_task_id = c
+                    .create_task(
+                        prompt_hash,
+                        output_hash,
+                        max_raters,
+                        min_raters,
+                        timeout_seconds,
+                    )
+                    .await?;
+
+                // Return the status of the new task
+                let (new_task, new_ratings) = c.get_task(new_task_id).await?;
+                Ok(onchain_task_to_status(new_task_id, &new_task, &new_ratings))
             }
         }
     }
@@ -189,6 +226,6 @@ fn onchain_task_to_status(
             prompt: format!("{}", task.promptHash),
         },
         phase,
-        num_raters_required: task.numRatersRequired as usize,
+        num_raters_required: task.maxRaters as usize,
     }
 }

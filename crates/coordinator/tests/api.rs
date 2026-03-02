@@ -14,11 +14,15 @@ async fn spawn_coordinator() -> (CoordinatorClient, CancellationToken) {
         port: 0,
         alpha: 1.0,
         beta: 1.0,
+        onchain: false,
+        rpc_url: None,
+        contract_address: None,
+        private_key: None,
     };
 
     let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
     let addr = listener.local_addr().unwrap();
-    let coord = Coordinator::new(&args);
+    let coord = Coordinator::new(&args).unwrap();
 
     tokio::spawn(async move {
         coord.run(listener, cancel).await.unwrap();

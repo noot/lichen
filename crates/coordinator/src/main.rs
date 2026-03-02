@@ -18,7 +18,7 @@ async fn main() -> Result<()> {
         .await
         .wrap_err("failed to bind listener")?;
 
-    let coordinator = Coordinator::new(&args);
+    let coordinator = Coordinator::new(&args).wrap_err("failed to create coordinator")?;
     let handle = tokio::spawn(async move { coordinator.run(listener, run_token).await });
 
     tokio::select! {
