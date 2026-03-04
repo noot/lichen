@@ -17,6 +17,9 @@ const WORKER_MODEL: &str = "claude-sonnet-4-6";
 const STARTING_BALANCE: f64 = 100.0;
 const COLLATERAL: f64 = 1.0;
 const DEFAULT_NUM_ROUNDS: usize = 100;
+/// Default rater pool size when `--raters` is not specified (marketplace mode).
+/// Keep small while core architecture is being built out; override with --raters N.
+const DEFAULT_RATER_POOL_SIZE: usize = 10;
 const ALPHA: f64 = 1.0;
 const BETA: f64 = 1.0;
 const HISTORY_WINDOW: usize = 10;
@@ -860,7 +863,17 @@ async fn main() -> Result<()> {
         RATERS_DEFAULT
     };
 
-    let mut raters: Vec<RaterState> = if let Some(n) = custom_rater_count {
+    // Resolve effective rater count: explicit --raters N, or DEFAULT_RATER_POOL_SIZE for
+    // marketplace mode. Bankroll/stationary/onchain use their fixed configs when N is None.
+    let effective_rater_count: Option<usize> = custom_rater_count.or({
+        if !use_bankroll && !use_stationary && !use_onchain {
+            Some(DEFAULT_RATER_POOL_SIZE)
+        } else {
+            None
+        }
+    });
+
+    let mut raters: Vec<RaterState> = if let Some(n) = effective_rater_count {
         // Generate N raters by cycling through the model pool
         let models: Vec<(&str, &str)> = RATERS_DEFAULT.iter().map(|(l, m, _)| (*l, *m)).collect();
         (0..n)
@@ -893,12 +906,7 @@ async fn main() -> Result<()> {
             .collect()
     };
 
-    let (jsonl_path, summary_path) = if custom_rater_count.is_some() {
-        (
-            "lichen-economy-rounds-marketplace.jsonl",
-            "lichen-economy-summary-marketplace.md",
-        )
-    } else if use_stationary {
+    let (jsonl_path, summary_path) = if use_stationary {
         (
             "lichen-economy-rounds-stationary.jsonl",
             "lichen-economy-summary-stationary.md",
@@ -914,7 +922,11 @@ async fn main() -> Result<()> {
             "lichen-economy-summary-onchain.md",
         )
     } else {
-        ("lichen-economy-rounds.jsonl", "lichen-economy-summary.md")
+        // marketplace mode: explicit --raters N or default (no special flags)
+        (
+            "lichen-economy-rounds-marketplace.jsonl",
+            "lichen-economy-summary-marketplace.md",
+        )
     };
 
     let mut jsonl_file = std::fs::File::create(jsonl_path)?;
