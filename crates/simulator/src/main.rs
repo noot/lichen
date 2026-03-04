@@ -466,6 +466,7 @@ async fn run_round(
     provider_key: &str,
     onchain_setup: Option<&OnchainSetup>,
     stationary_task: Option<&str>,
+    max_concurrent: usize,
 ) -> Result<RoundOutcome> {
     let task_idx = (round - 1) % TASKS.len();
     let task = stationary_task.unwrap_or(TASKS[task_idx]);
@@ -551,7 +552,7 @@ async fn run_round(
         Some((*total_rounds_completed as u64, *total_approvals as u64))
     };
 
-    let semaphore = Arc::new(tokio::sync::Semaphore::new(6));
+    let semaphore = Arc::new(tokio::sync::Semaphore::new(max_concurrent));
     let mut futures = futures::stream::FuturesUnordered::new();
     for &idx in &active {
         let label = raters[idx].label.clone();
@@ -834,6 +835,12 @@ async fn main() -> Result<()> {
         .position(|a| a == "--raters")
         .and_then(|i| args.get(i + 1))
         .and_then(|v| v.parse::<usize>().ok());
+    let max_concurrent = args
+        .iter()
+        .position(|a| a == "--max-concurrent")
+        .and_then(|i| args.get(i + 1))
+        .and_then(|v| v.parse::<usize>().ok())
+        .unwrap_or(6);
 
     let provider_url = std::env::var("LLM_API_URL")
         .wrap_err("LLM_API_URL not set — add it to .env or environment")?;
@@ -925,7 +932,7 @@ async fn main() -> Result<()> {
     };
     println!("=== LICHEN ECONOMY SIMULATOR{mode_tag} ===");
     println!(
-        "Raters: {}, Rounds: {num_rounds}, Max concurrent: 6",
+        "Raters: {}, Rounds: {num_rounds}, Max concurrent: {max_concurrent}",
         raters.len()
     );
     println!();
@@ -957,6 +964,7 @@ async fn main() -> Result<()> {
             &provider_key,
             onchain_setup.as_ref(),
             stationary_task,
+            max_concurrent,
         )
         .await?
         {

@@ -1,0 +1,650 @@
+=== LICHEN ECONOMY SIMULATOR ===
+Raters: 50, Rounds: 20, Max concurrent: 6
+
+--- Round 1/20 (50 active raters) ---
+Task: Write a Rust function to reverse a string.
+  Worker output: 2739 chars
+[2m2026-03-04T03:57:11.126512Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgemini-3.1-pro [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+[2m2026-03-04T03:57:23.837615Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgemini-3-pro [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+[2m2026-03-04T03:57:23.865939Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgemini-3.1-pro [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+[2m2026-03-04T03:57:24.067785Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mo3 [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+[2m2026-03-04T03:57:24.804018Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgemini-3.1-pro [3mattempt[0m[2m=[0m2 [3mdelay_ms[0m[2m=[0m4000
+[2m2026-03-04T03:57:26.101421Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgemini-3-pro [3mattempt[0m[2m=[0m2 [3mdelay_ms[0m[2m=[0m4000
+[2m2026-03-04T03:57:26.131096Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgemini-3.1-pro [3mattempt[0m[2m=[0m2 [3mdelay_ms[0m[2m=[0m4000
+[2m2026-03-04T03:57:26.404092Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mo3 [3mattempt[0m[2m=[0m2 [3mdelay_ms[0m[2m=[0m4000
+[2m2026-03-04T03:57:27.047147Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mo4-mini [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+[2m2026-03-04T03:57:29.062737Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgemini-3.1-pro [3mattempt[0m[2m=[0m3 [3mdelay_ms[0m[2m=[0m8000
+[2m2026-03-04T03:57:29.309722Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mo4-mini [3mattempt[0m[2m=[0m2 [3mdelay_ms[0m[2m=[0m4000
+[2m2026-03-04T03:57:30.367716Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgemini-3.1-pro [3mattempt[0m[2m=[0m3 [3mdelay_ms[0m[2m=[0m8000
+[2m2026-03-04T03:57:30.382484Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgemini-3-pro [3mattempt[0m[2m=[0m3 [3mdelay_ms[0m[2m=[0m8000
+[2m2026-03-04T03:57:30.649756Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mo3 [3mattempt[0m[2m=[0m3 [3mdelay_ms[0m[2m=[0m8000
+[2m2026-03-04T03:57:33.614170Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mo4-mini [3mattempt[0m[2m=[0m3 [3mdelay_ms[0m[2m=[0m8000
+[2m2026-03-04T03:57:34.595277Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mclaude-haiku-4-5 [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+[2m2026-03-04T03:57:36.951884Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mclaude-haiku-4-5 [3mattempt[0m[2m=[0m2 [3mdelay_ms[0m[2m=[0m4000
+[2m2026-03-04T03:57:37.320932Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgemini-3.1-pro [3mattempt[0m[2m=[0m4 [3mdelay_ms[0m[2m=[0m16000
+[2m2026-03-04T03:57:38.655010Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgemini-3.1-pro [3mattempt[0m[2m=[0m4 [3mdelay_ms[0m[2m=[0m16000
+[2m2026-03-04T03:57:38.655091Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgemini-3-pro [3mattempt[0m[2m=[0m4 [3mdelay_ms[0m[2m=[0m16000
+[2m2026-03-04T03:57:38.900914Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mo3 [3mattempt[0m[2m=[0m4 [3mdelay_ms[0m[2m=[0m16000
+[2m2026-03-04T03:57:41.253958Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mclaude-haiku-4-5 [3mattempt[0m[2m=[0m3 [3mdelay_ms[0m[2m=[0m8000
+[2m2026-03-04T03:57:41.877886Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mo4-mini [3mattempt[0m[2m=[0m4 [3mdelay_ms[0m[2m=[0m16000
+[2m2026-03-04T03:57:49.547036Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mclaude-haiku-4-5 [3mattempt[0m[2m=[0m4 [3mdelay_ms[0m[2m=[0m16000
+[2m2026-03-04T03:57:53.580667Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgemini-3.1-pro [3mattempt[0m[2m=[0m5 [3mdelay_ms[0m[2m=[0m32000
+[2m2026-03-04T03:57:54.905928Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgemini-3.1-pro [3mattempt[0m[2m=[0m5 [3mdelay_ms[0m[2m=[0m32000
+[2m2026-03-04T03:57:54.933060Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgemini-3-pro [3mattempt[0m[2m=[0m5 [3mdelay_ms[0m[2m=[0m32000
+[2m2026-03-04T03:57:55.156692Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mo3 [3mattempt[0m[2m=[0m5 [3mdelay_ms[0m[2m=[0m32000
+[2m2026-03-04T03:57:58.158594Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mo4-mini [3mattempt[0m[2m=[0m5 [3mdelay_ms[0m[2m=[0m32000
+  gemini-3.1-pro:0: API error (openai request failed: model=gemini-3.1-pro status=429 Too Many Requests body={"error":{"message":"litellm.RateLimitError: litellm.RateLimitError: vertex_aiException - {\n  \"error\": {\n    \"code\": 429,\n    \"message\": \"Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.\",\n    \"status\": \"RESOURCE_EXHAUSTED\"\n  }\n}\n. Received Model Group=gemini-3.1-pro\nAvailable Model Group Fallbacks=None","type":"throttling_error","param":null,"code":"429"}}), defaulting GOOD/0.5
+  gemini-3.1-pro:1: API error (openai request failed: model=gemini-3.1-pro status=429 Too Many Requests body={"error":{"message":"litellm.RateLimitError: litellm.RateLimitError: vertex_aiException - {\n  \"error\": {\n    \"code\": 429,\n    \"message\": \"Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.\",\n    \"status\": \"RESOURCE_EXHAUSTED\"\n  }\n}\n. Received Model Group=gemini-3.1-pro\nAvailable Model Group Fallbacks=None","type":"throttling_error","param":null,"code":"429"}}), defaulting GOOD/0.5
+  gemini-3-pro:1: failed to parse response, defaulting GOOD/0.5
+  Consensus: 100% GOOD (50/50), avg pred: 0.87, BTS accepted: true
+  claude-sonnet-4-5:0 GOOD pred=0.92 payout=+1.1055 bal=100.11
+  claude-sonnet-4:0 GOOD pred=0.92 payout=+1.1055 bal=100.11
+  claude-3-7-sonnet:0 GOOD pred=0.97 payout=+1.1305 bal=100.13
+  claude-sonnet-4-6:0 GOOD pred=0.92 payout=+1.1055 bal=100.11
+  gpt-4o-mini:0 GOOD pred=0.85 payout=+1.0324 bal=100.03
+  gpt-4o:0 GOOD pred=0.75 payout=+0.8509 bal=99.85
+  claude-3-5-haiku:0 GOOD pred=0.85 payout=+1.0324 bal=100.03
+  gpt-4.1:0 GOOD pred=0.95 payout=+1.1232 bal=100.12
+  claude-haiku-4-5:0 GOOD pred=0.92 payout=+1.1055 bal=100.11
+  gpt-4.1-mini:0 GOOD pred=0.90 payout=+1.0892 bal=100.09
+  gpt-4.1-nano:0 GOOD pred=0.75 payout=+0.8509 bal=99.85
+  gpt-5.2:0 GOOD pred=0.92 payout=+1.1055 bal=100.11
+  gemini-2.0-flash:0 GOOD pred=0.75 payout=+0.8509 bal=99.85
+  gemini-3-flash:0 GOOD pred=0.98 payout=+1.1327 bal=100.13
+  gpt-5:0 GOOD pred=0.90 payout=+1.0892 bal=100.09
+  gemini-2.5-flash:0 GOOD pred=0.85 payout=+1.0324 bal=100.03
+  claude-opus-4-1:0 GOOD pred=0.87 payout=+1.0579 bal=100.06
+  gemini-3-pro:0 GOOD pred=0.98 payout=+1.1327 bal=100.13
+  gpt-5-mini:0 GOOD pred=0.90 payout=+1.0892 bal=100.09
+  o4-mini:0 GOOD pred=0.90 payout=+1.0892 bal=100.09
+  o3:0 GOOD pred=0.85 payout=+1.0324 bal=100.03
+  claude-3-5-haiku:1 GOOD pred=0.85 payout=+1.0324 bal=100.03
+  claude-sonnet-4-5:1 GOOD pred=0.92 payout=+1.1055 bal=100.11
+  claude-sonnet-4:1 GOOD pred=0.92 payout=+1.1055 bal=100.11
+  claude-3-7-sonnet:1 GOOD pred=0.95 payout=+1.1232 bal=100.12
+  claude-haiku-4-5:1 GOOD pred=0.92 payout=+1.1055 bal=100.11
+  claude-sonnet-4-6:1 GOOD pred=0.92 payout=+1.1055 bal=100.11
+  gpt-4o:1 GOOD pred=0.95 payout=+1.1232 bal=100.12
+  gpt-4o-mini:1 GOOD pred=0.75 payout=+0.8509 bal=99.85
+  gemini-2.5-pro:0 GOOD pred=0.95 payout=+1.1232 bal=100.12
+  gpt-4.1:1 GOOD pred=0.95 payout=+1.1232 bal=100.12
+  gpt-4.1-mini:1 GOOD pred=0.90 payout=+1.0892 bal=100.09
+  gpt-4.1-nano:1 GOOD pred=0.75 payout=+0.8509 bal=99.85
+  gpt-5.2:1 GOOD pred=0.92 payout=+1.1055 bal=100.11
+  gemini-2.0-flash:1 GOOD pred=0.95 payout=+1.1232 bal=100.12
+  gpt-5:1 GOOD pred=0.84 payout=+1.0184 bal=100.02
+  gpt-5-mini:1 GOOD pred=0.90 payout=+1.0892 bal=100.09
+  claude-opus-4-1:1 GOOD pred=0.85 payout=+1.0324 bal=100.03
+  gemini-3-flash:1 GOOD pred=0.95 payout=+1.1232 bal=100.12
+  gemini-2.5-flash:1 GOOD pred=0.85 payout=+1.0324 bal=100.03
+  gemini-2.5-pro:1 GOOD pred=0.95 payout=+1.1232 bal=100.12
+  claude-haiku-4-5:2 GOOD pred=0.92 payout=+1.1055 bal=100.11
+  claude-3-5-haiku:2 GOOD pred=0.85 payout=+1.0324 bal=100.03
+  claude-sonnet-4-5:2 GOOD pred=0.92 payout=+1.1055 bal=100.11
+  claude-sonnet-4:2 GOOD pred=0.92 payout=+1.1055 bal=100.11
+  gemini-3.1-pro:0 GOOD pred=0.50 payout=+0.0000 bal=99.00
+  o3:1 GOOD pred=0.90 payout=+1.0892 bal=100.09
+  gemini-3.1-pro:1 GOOD pred=0.50 payout=+0.0000 bal=99.00
+  o4-mini:1 GOOD pred=0.85 payout=+1.0324 bal=100.03
+  gemini-3-pro:1 GOOD pred=0.50 payout=+0.0000 bal=99.00
+
+--- Round 2/20 (50 active raters) ---
+Task: Write a Rust function to check if a number is prime.
+  Worker output: 2851 chars
+[2m2026-03-04T03:58:54.784499Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgemini-3-pro [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+[2m2026-03-04T03:58:57.048408Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgemini-3-pro [3mattempt[0m[2m=[0m2 [3mdelay_ms[0m[2m=[0m4000
+[2m2026-03-04T03:58:59.050875Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgemini-3.1-pro [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+[2m2026-03-04T03:58:59.291406Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mo3 [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+  claude-3-5-haiku:1: failed to parse response, defaulting GOOD/0.5
+  gemini-3-pro:0: failed to parse response, defaulting GOOD/0.5
+[2m2026-03-04T03:59:26.430598Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mclaude-sonnet-4 [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+  gemini-3-pro:1: failed to parse response, defaulting GOOD/0.5
+[2m2026-03-04T03:59:28.708491Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mclaude-sonnet-4 [3mattempt[0m[2m=[0m2 [3mdelay_ms[0m[2m=[0m4000
+[2m2026-03-04T03:59:33.034122Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mclaude-sonnet-4 [3mattempt[0m[2m=[0m3 [3mdelay_ms[0m[2m=[0m8000
+[2m2026-03-04T03:59:41.307820Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mclaude-sonnet-4 [3mattempt[0m[2m=[0m4 [3mdelay_ms[0m[2m=[0m16000
+[2m2026-03-04T03:59:57.565576Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mclaude-sonnet-4 [3mattempt[0m[2m=[0m5 [3mdelay_ms[0m[2m=[0m32000
+  Consensus: 100% GOOD (50/50), avg pred: 0.89, BTS accepted: true
+  claude-3-5-haiku:0 GOOD pred=0.95 payout=+1.1015 bal=100.13
+  claude-sonnet-4-5:0 GOOD pred=0.92 payout=+1.0842 bal=100.19
+  claude-sonnet-4:0 GOOD pred=0.93 payout=+1.0908 bal=100.20
+  claude-3-7-sonnet:0 GOOD pred=0.98 payout=+1.1109 bal=100.24
+  claude-sonnet-4-6:0 GOOD pred=0.93 payout=+1.0908 bal=100.20
+  gpt-4o:0 GOOD pred=0.75 payout=+0.8345 bal=99.69
+  gpt-4o-mini:0 GOOD pred=0.85 payout=+1.0125 bal=100.04
+  gpt-4.1:0 GOOD pred=0.95 payout=+1.1015 bal=100.22
+  gpt-4.1-mini:0 GOOD pred=0.95 payout=+1.1015 bal=100.19
+  gpt-4.1-nano:0 GOOD pred=0.75 payout=+0.8345 bal=99.69
+  claude-haiku-4-5:0 GOOD pred=0.93 payout=+1.0908 bal=100.20
+  gemini-2.0-flash:0 GOOD pred=0.75 payout=+0.8345 bal=99.69
+  gpt-5.2:0 GOOD pred=0.93 payout=+1.0908 bal=100.20
+  gemini-3-flash:0 GOOD pred=0.96 payout=+1.1055 bal=100.24
+  claude-opus-4-1:0 GOOD pred=0.92 payout=+1.0842 bal=100.14
+  gemini-2.5-flash:0 GOOD pred=0.95 payout=+1.1015 bal=100.13
+  gpt-5-mini:0 GOOD pred=0.90 payout=+1.0681 bal=100.16
+  gemini-2.5-pro:0 GOOD pred=0.95 payout=+1.1015 bal=100.22
+  claude-haiku-4-5:1 GOOD pred=0.94 payout=+1.0966 bal=100.20
+  o4-mini:0 GOOD pred=0.90 payout=+1.0681 bal=100.16
+  gemini-3.1-pro:0 GOOD pred=0.95 payout=+1.1015 bal=99.10
+  claude-sonnet-4:1 GOOD pred=0.92 payout=+1.0842 bal=100.19
+  claude-3-7-sonnet:1 GOOD pred=0.95 payout=+1.1015 bal=100.22
+  claude-3-5-haiku:1 GOOD pred=0.50 payout=+0.0000 bal=99.03
+  o3:0 GOOD pred=0.82 payout=+0.9684 bal=100.00
+  claude-sonnet-4-6:1 GOOD pred=0.95 payout=+1.1015 bal=100.21
+  gpt-4o:1 GOOD pred=0.95 payout=+1.1015 bal=100.22
+  gemini-3-pro:0 GOOD pred=0.50 payout=+0.0000 bal=99.13
+  gpt-4o-mini:1 GOOD pred=0.85 payout=+1.0125 bal=99.86
+  claude-sonnet-4-5:1 GOOD pred=0.95 payout=+1.1015 bal=100.21
+  gpt-4.1-nano:1 GOOD pred=0.80 payout=+0.9346 bal=99.79
+  gpt-4.1-mini:1 GOOD pred=0.95 payout=+1.1015 bal=100.19
+  gpt-4.1:1 GOOD pred=0.95 payout=+1.1015 bal=100.22
+  gemini-2.0-flash:1 GOOD pred=0.95 payout=+1.1015 bal=100.22
+  gpt-5.2:1 GOOD pred=0.93 payout=+1.0908 bal=100.20
+  gpt-5:0 GOOD pred=0.90 payout=+1.0681 bal=100.16
+  gemini-3-flash:1 GOOD pred=0.96 payout=+1.1055 bal=100.23
+  gpt-5:1 GOOD pred=0.90 payout=+1.0681 bal=100.09
+  claude-opus-4-1:1 GOOD pred=0.92 payout=+1.0842 bal=100.12
+  gemini-2.5-flash:1 GOOD pred=0.95 payout=+1.1015 bal=100.13
+  o4-mini:1 GOOD pred=0.85 payout=+1.0125 bal=100.04
+  gemini-3.1-pro:1 GOOD pred=0.98 payout=+1.1109 bal=99.11
+  claude-haiku-4-5:2 GOOD pred=0.94 payout=+1.0966 bal=100.20
+  claude-sonnet-4-5:2 GOOD pred=0.93 payout=+1.0908 bal=100.20
+  claude-3-5-haiku:2 GOOD pred=0.95 payout=+1.1015 bal=100.13
+  o3:1 GOOD pred=0.87 payout=+1.0374 bal=100.13
+  gemini-3-pro:1 GOOD pred=0.50 payout=+0.0000 bal=98.00
+  gemini-2.5-pro:1 GOOD pred=0.95 payout=+1.1015 bal=100.22
+  gpt-5-mini:1 GOOD pred=0.85 payout=+1.0125 bal=100.10
+  claude-sonnet-4:2 GOOD pred=0.95 payout=+1.1015 bal=100.21
+
+--- Round 3/20 (50 active raters) ---
+Task: Write a Rust FizzBuzz implementation.
+  Worker output: 985 chars
+  gemini-2.0-flash:0: failed to parse response, defaulting GOOD/0.5
+[2m2026-03-04T04:00:53.413220Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mclaude-3-7-sonnet [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+[2m2026-03-04T04:00:53.687884Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mclaude-opus-4-1 [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+[2m2026-03-04T04:00:54.403143Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mclaude-sonnet-4-6 [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+[2m2026-03-04T04:00:55.146661Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-4o [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+[2m2026-03-04T04:00:55.688475Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mclaude-3-7-sonnet [3mattempt[0m[2m=[0m2 [3mdelay_ms[0m[2m=[0m4000
+[2m2026-03-04T04:00:55.975432Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mclaude-opus-4-1 [3mattempt[0m[2m=[0m2 [3mdelay_ms[0m[2m=[0m4000
+[2m2026-03-04T04:00:56.263411Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-4o-mini [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+[2m2026-03-04T04:00:56.656136Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mclaude-sonnet-4-6 [3mattempt[0m[2m=[0m2 [3mdelay_ms[0m[2m=[0m4000
+[2m2026-03-04T04:00:57.436305Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-4o [3mattempt[0m[2m=[0m2 [3mdelay_ms[0m[2m=[0m4000
+[2m2026-03-04T04:00:57.994323Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-4.1 [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+[2m2026-03-04T04:00:58.510985Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-4o-mini [3mattempt[0m[2m=[0m2 [3mdelay_ms[0m[2m=[0m4000
+[2m2026-03-04T04:00:59.936688Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mclaude-3-7-sonnet [3mattempt[0m[2m=[0m3 [3mdelay_ms[0m[2m=[0m8000
+  gemini-2.5-flash:1: failed to parse response, defaulting GOOD/0.5
+  Consensus: 100% GOOD (50/50), avg pred: 0.92, BTS accepted: true
+  claude-haiku-4-5:0 GOOD pred=0.94 payout=+1.0555 bal=100.25
+  claude-3-5-haiku:0 GOOD pred=0.95 payout=+1.0602 bal=100.19
+  claude-sonnet-4-5:0 GOOD pred=0.95 payout=+1.0602 bal=100.25
+  claude-sonnet-4:0 GOOD pred=0.95 payout=+1.0602 bal=100.26
+  claude-sonnet-4-6:0 GOOD pred=0.95 payout=+1.0602 bal=100.26
+  claude-3-7-sonnet:0 GOOD pred=0.95 payout=+1.0602 bal=100.30
+  gpt-4o:0 GOOD pred=0.90 payout=+1.0281 bal=99.71
+  gpt-4o-mini:0 GOOD pred=0.85 payout=+0.9745 bal=100.02
+  gpt-4.1:0 GOOD pred=0.98 payout=+1.0692 bal=100.29
+  gpt-4.1-mini:0 GOOD pred=0.95 payout=+1.0602 bal=100.25
+  gpt-4.1-nano:0 GOOD pred=0.75 payout=+0.8032 bal=99.49
+  gemini-2.0-flash:0 GOOD pred=0.50 payout=+0.0000 bal=98.69
+  gpt-5.2:0 GOOD pred=0.93 payout=+1.0499 bal=100.25
+  gemini-3-flash:0 GOOD pred=0.96 payout=+1.0640 bal=100.30
+  gpt-5-mini:0 GOOD pred=0.95 payout=+1.0602 bal=100.22
+  gemini-2.5-flash:0 GOOD pred=0.97 payout=+1.0670 bal=100.20
+  gpt-5:0 GOOD pred=0.95 payout=+1.0602 bal=100.22
+  claude-opus-4-1:0 GOOD pred=0.90 payout=+1.0281 bal=100.17
+  gemini-3.1-pro:0 GOOD pred=0.95 payout=+1.0602 bal=99.16
+  o3:0 GOOD pred=0.95 payout=+1.0602 bal=100.06
+  o4-mini:0 GOOD pred=0.90 payout=+1.0281 bal=100.19
+  claude-sonnet-4-5:1 GOOD pred=0.95 payout=+1.0602 bal=100.27
+  claude-3-5-haiku:1 GOOD pred=0.95 payout=+1.0602 bal=99.09
+  gemini-2.5-pro:0 GOOD pred=0.96 payout=+1.0640 bal=100.29
+  claude-haiku-4-5:1 GOOD pred=0.93 payout=+1.0499 bal=100.25
+  claude-sonnet-4:1 GOOD pred=0.92 payout=+1.0435 bal=100.23
+  gemini-3-pro:0 GOOD pred=0.96 payout=+1.0640 bal=99.20
+  claude-sonnet-4-6:1 GOOD pred=0.95 payout=+1.0602 bal=100.27
+  gpt-4.1:1 GOOD pred=0.98 payout=+1.0692 bal=100.29
+  gpt-4o:1 GOOD pred=0.98 payout=+1.0692 bal=100.29
+  gpt-4.1-nano:1 GOOD pred=0.75 payout=+0.8032 bal=99.59
+  gpt-4.1-mini:1 GOOD pred=0.95 payout=+1.0602 bal=100.25
+  gpt-4o-mini:1 GOOD pred=0.85 payout=+0.9745 bal=99.84
+  gpt-5.2:1 GOOD pred=0.95 payout=+1.0602 bal=100.26
+  gemini-2.0-flash:1 GOOD pred=0.95 payout=+1.0602 bal=100.28
+  gpt-5:1 GOOD pred=0.90 payout=+1.0281 bal=100.11
+  claude-opus-4-1:1 GOOD pred=0.88 payout=+1.0092 bal=100.13
+  claude-3-7-sonnet:1 GOOD pred=0.95 payout=+1.0602 bal=100.28
+  gpt-5-mini:1 GOOD pred=0.95 payout=+1.0602 bal=100.16
+  gemini-3-flash:1 GOOD pred=0.96 payout=+1.0640 bal=100.29
+  gemini-2.5-flash:1 GOOD pred=0.50 payout=+0.0000 bal=99.13
+  o4-mini:1 GOOD pred=0.90 payout=+1.0281 bal=100.07
+  o3:1 GOOD pred=0.94 payout=+1.0555 bal=100.18
+  claude-3-5-haiku:2 GOOD pred=0.95 payout=+1.0602 bal=100.19
+  claude-sonnet-4-5:2 GOOD pred=0.95 payout=+1.0602 bal=100.26
+  claude-haiku-4-5:2 GOOD pred=0.96 payout=+1.0640 bal=100.27
+  claude-sonnet-4:2 GOOD pred=0.92 payout=+1.0435 bal=100.25
+  gemini-3.1-pro:1 GOOD pred=0.98 payout=+1.0692 bal=99.18
+  gemini-2.5-pro:1 GOOD pred=0.95 payout=+1.0602 bal=100.28
+  gemini-3-pro:1 GOOD pred=0.98 payout=+1.0692 bal=98.07
+
+--- Round 4/20 (50 active raters) ---
+Task: Write a Rust function to find the max element in a slice.
+  Worker output: 3358 chars
+[2m2026-03-04T04:01:39.771453Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mclaude-sonnet-4 [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+[2m2026-03-04T04:01:39.848226Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mclaude-opus-4-1 [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+[2m2026-03-04T04:01:39.905733Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mclaude-3-7-sonnet [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+[2m2026-03-04T04:01:40.804071Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mclaude-sonnet-4-6 [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+[2m2026-03-04T04:01:41.102773Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-4o [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+[2m2026-03-04T04:01:41.909539Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-4o-mini [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+[2m2026-03-04T04:01:42.025263Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mclaude-sonnet-4 [3mattempt[0m[2m=[0m2 [3mdelay_ms[0m[2m=[0m4000
+[2m2026-03-04T04:01:42.121765Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mclaude-opus-4-1 [3mattempt[0m[2m=[0m2 [3mdelay_ms[0m[2m=[0m4000
+[2m2026-03-04T04:01:42.176871Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mclaude-3-7-sonnet [3mattempt[0m[2m=[0m2 [3mdelay_ms[0m[2m=[0m4000
+[2m2026-03-04T04:01:43.070100Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mclaude-sonnet-4-6 [3mattempt[0m[2m=[0m2 [3mdelay_ms[0m[2m=[0m4000
+[2m2026-03-04T04:01:43.356038Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-4o [3mattempt[0m[2m=[0m2 [3mdelay_ms[0m[2m=[0m4000
+[2m2026-03-04T04:01:44.203465Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-4o-mini [3mattempt[0m[2m=[0m2 [3mdelay_ms[0m[2m=[0m4000
+[2m2026-03-04T04:01:46.311539Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mclaude-sonnet-4 [3mattempt[0m[2m=[0m3 [3mdelay_ms[0m[2m=[0m8000
+[2m2026-03-04T04:01:46.401854Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mclaude-opus-4-1 [3mattempt[0m[2m=[0m3 [3mdelay_ms[0m[2m=[0m8000
+[2m2026-03-04T04:01:46.435394Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mclaude-3-7-sonnet [3mattempt[0m[2m=[0m3 [3mdelay_ms[0m[2m=[0m8000
+[2m2026-03-04T04:01:47.387089Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mclaude-sonnet-4-6 [3mattempt[0m[2m=[0m3 [3mdelay_ms[0m[2m=[0m8000
+[2m2026-03-04T04:01:47.657110Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-4o [3mattempt[0m[2m=[0m3 [3mdelay_ms[0m[2m=[0m8000
+[2m2026-03-04T04:01:48.579010Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-4o-mini [3mattempt[0m[2m=[0m3 [3mdelay_ms[0m[2m=[0m8000
+[2m2026-03-04T04:01:54.621174Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mclaude-sonnet-4 [3mattempt[0m[2m=[0m4 [3mdelay_ms[0m[2m=[0m16000
+[2m2026-03-04T04:01:54.692595Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mclaude-opus-4-1 [3mattempt[0m[2m=[0m4 [3mdelay_ms[0m[2m=[0m16000
+[2m2026-03-04T04:01:54.699014Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mclaude-3-7-sonnet [3mattempt[0m[2m=[0m4 [3mdelay_ms[0m[2m=[0m16000
+[2m2026-03-04T04:01:55.662507Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mclaude-sonnet-4-6 [3mattempt[0m[2m=[0m4 [3mdelay_ms[0m[2m=[0m16000
+[2m2026-03-04T04:01:55.934114Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-4o [3mattempt[0m[2m=[0m4 [3mdelay_ms[0m[2m=[0m16000
+[2m2026-03-04T04:01:56.874909Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-4o-mini [3mattempt[0m[2m=[0m4 [3mdelay_ms[0m[2m=[0m16000
+[2m2026-03-04T04:02:34.868633Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-4.1-mini [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+[2m2026-03-04T04:02:35.892585Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-4.1-nano [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+[2m2026-03-04T04:02:36.506889Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-5 [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+[2m2026-03-04T04:02:37.128046Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-4.1-mini [3mattempt[0m[2m=[0m2 [3mdelay_ms[0m[2m=[0m4000
+[2m2026-03-04T04:02:38.247941Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-4.1-nano [3mattempt[0m[2m=[0m2 [3mdelay_ms[0m[2m=[0m4000
+[2m2026-03-04T04:02:38.796073Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-5 [3mattempt[0m[2m=[0m2 [3mdelay_ms[0m[2m=[0m4000
+[2m2026-03-04T04:02:41.384672Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-4.1-mini [3mattempt[0m[2m=[0m3 [3mdelay_ms[0m[2m=[0m8000
+[2m2026-03-04T04:02:42.554408Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-4.1-nano [3mattempt[0m[2m=[0m3 [3mdelay_ms[0m[2m=[0m8000
+[2m2026-03-04T04:02:43.060441Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-5 [3mattempt[0m[2m=[0m3 [3mdelay_ms[0m[2m=[0m8000
+[2m2026-03-04T04:02:43.613177Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-5-mini [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+[2m2026-03-04T04:02:45.535117Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-5.2 [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+[2m2026-03-04T04:02:45.928726Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-5-mini [3mattempt[0m[2m=[0m2 [3mdelay_ms[0m[2m=[0m4000
+[2m2026-03-04T04:02:47.809460Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-5.2 [3mattempt[0m[2m=[0m2 [3mdelay_ms[0m[2m=[0m4000
+[2m2026-03-04T04:02:47.888009Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgemini-2.0-flash [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+[2m2026-03-04T04:02:49.659525Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-4.1-mini [3mattempt[0m[2m=[0m4 [3mdelay_ms[0m[2m=[0m16000
+[2m2026-03-04T04:02:50.185432Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-5-mini [3mattempt[0m[2m=[0m3 [3mdelay_ms[0m[2m=[0m8000
+[2m2026-03-04T04:02:50.185480Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgemini-2.0-flash [3mattempt[0m[2m=[0m2 [3mdelay_ms[0m[2m=[0m4000
+[2m2026-03-04T04:02:50.821952Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-4.1-nano [3mattempt[0m[2m=[0m4 [3mdelay_ms[0m[2m=[0m16000
+[2m2026-03-04T04:02:51.339321Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-5 [3mattempt[0m[2m=[0m4 [3mdelay_ms[0m[2m=[0m16000
+[2m2026-03-04T04:02:52.118089Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-5.2 [3mattempt[0m[2m=[0m3 [3mdelay_ms[0m[2m=[0m8000
+[2m2026-03-04T04:02:54.467429Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgemini-2.0-flash [3mattempt[0m[2m=[0m3 [3mdelay_ms[0m[2m=[0m8000
+[2m2026-03-04T04:02:58.449797Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-5-mini [3mattempt[0m[2m=[0m4 [3mdelay_ms[0m[2m=[0m16000
+  Consensus: 100% GOOD (50/50), avg pred: 0.92, BTS accepted: true
+  claude-haiku-4-5:0 GOOD pred=0.93 payout=+1.0882 bal=100.34
+  claude-sonnet-4-5:0 GOOD pred=0.95 payout=+1.1336 bal=100.38
+  claude-3-5-haiku:0 GOOD pred=0.95 payout=+1.1336 bal=100.33
+  claude-sonnet-4:0 GOOD pred=0.95 payout=+1.1336 bal=100.39
+  claude-3-7-sonnet:0 GOOD pred=0.97 payout=+1.1638 bal=100.47
+  gpt-4o:0 GOOD pred=0.75 payout=+0.0000 bal=98.71
+  gpt-4.1:0 GOOD pred=0.98 payout=+1.1732 bal=100.47
+  gpt-4.1-mini:0 GOOD pred=0.90 payout=+0.9919 bal=100.24
+  gpt-4o-mini:0 GOOD pred=0.85 payout=+0.7557 bal=99.78
+  claude-sonnet-4-6:0 GOOD pred=0.95 payout=+1.1336 bal=100.39
+  gpt-4.1-nano:0 GOOD pred=0.75 payout=+0.0000 bal=98.49
+  gemini-2.0-flash:0 GOOD pred=0.75 payout=+0.0000 bal=97.69
+  gpt-5.2:0 GOOD pred=0.93 payout=+1.0882 bal=100.33
+  gemini-3-flash:0 GOOD pred=0.96 payout=+1.1506 bal=100.45
+  gemini-2.5-flash:0 GOOD pred=0.98 payout=+1.1732 bal=100.37
+  claude-opus-4-1:0 GOOD pred=0.91 payout=+1.0278 bal=100.20
+  gpt-5-mini:0 GOOD pred=0.95 payout=+1.1336 bal=100.35
+  gemini-3.1-pro:0 GOOD pred=0.95 payout=+1.1336 bal=99.30
+  claude-haiku-4-5:1 GOOD pred=0.94 payout=+1.1128 bal=100.36
+  claude-3-5-haiku:1 GOOD pred=0.95 payout=+1.1336 bal=99.23
+  o4-mini:0 GOOD pred=0.95 payout=+1.1336 bal=100.32
+  claude-sonnet-4-5:1 GOOD pred=0.95 payout=+1.1336 bal=100.40
+  claude-sonnet-4:1 GOOD pred=0.95 payout=+1.1336 bal=100.37
+  claude-3-7-sonnet:1 GOOD pred=0.95 payout=+1.1336 bal=100.42
+  o3:0 GOOD pred=0.90 payout=+0.9919 bal=100.05
+  gpt-5:0 GOOD pred=0.90 payout=+0.9919 bal=100.21
+  claude-sonnet-4-6:1 GOOD pred=0.95 payout=+1.1336 bal=100.40
+  gpt-4o:1 GOOD pred=0.95 payout=+1.1336 bal=100.43
+  gpt-4o-mini:1 GOOD pred=0.85 payout=+0.7557 bal=99.59
+  gpt-4.1:1 GOOD pred=0.97 payout=+1.1638 bal=100.46
+  claude-opus-4-1:1 GOOD pred=0.91 payout=+1.0278 bal=100.15
+  gemini-3-pro:0 GOOD pred=0.95 payout=+1.1336 bal=99.33
+  gemini-2.5-pro:0 GOOD pred=0.88 payout=+0.9087 bal=100.20
+  gpt-5.2:1 GOOD pred=0.93 payout=+1.0882 bal=100.34
+  gemini-2.0-flash:1 GOOD pred=0.75 payout=+0.0000 bal=99.28
+  gpt-4.1-mini:1 GOOD pred=0.95 payout=+1.1336 bal=100.38
+  gpt-4.1-nano:1 GOOD pred=0.85 payout=+0.7557 bal=99.34
+  gemini-3-flash:1 GOOD pred=0.96 payout=+1.1506 bal=100.44
+  gemini-2.5-flash:1 GOOD pred=0.95 payout=+1.1336 bal=99.27
+  gemini-3.1-pro:1 GOOD pred=0.95 payout=+1.1336 bal=99.31
+  gemini-2.5-pro:1 GOOD pred=0.95 payout=+1.1336 bal=100.42
+  claude-haiku-4-5:2 GOOD pred=0.94 payout=+1.1128 bal=100.38
+  o4-mini:1 GOOD pred=0.95 payout=+1.1336 bal=100.21
+  gemini-3-pro:1 GOOD pred=0.96 payout=+1.1506 bal=98.22
+  o3:1 GOOD pred=0.90 payout=+0.9919 bal=100.17
+  claude-sonnet-4-5:2 GOOD pred=0.95 payout=+1.1336 bal=100.39
+  claude-sonnet-4:2 GOOD pred=0.95 payout=+1.1336 bal=100.38
+  claude-3-5-haiku:2 GOOD pred=0.95 payout=+1.1336 bal=100.33
+  gpt-5-mini:1 GOOD pred=0.95 payout=+1.1336 bal=100.30
+  gpt-5:1 GOOD pred=0.94 payout=+1.1128 bal=100.23
+
+--- Round 5/20 (50 active raters) ---
+Task: Write a Rust function to count vowels in a string.
+  Worker output: 3611 chars
+  gpt-4o:0: failed to parse response, defaulting GOOD/0.5
+[2m2026-03-04T04:03:43.665260Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-4.1-nano [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+[2m2026-03-04T04:03:43.764843Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-5 [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+[2m2026-03-04T04:03:44.455972Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-5-mini [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+[2m2026-03-04T04:03:44.814108Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-5.2 [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+[2m2026-03-04T04:03:46.042349Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-5 [3mattempt[0m[2m=[0m2 [3mdelay_ms[0m[2m=[0m4000
+[2m2026-03-04T04:03:46.116822Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-4.1-nano [3mattempt[0m[2m=[0m2 [3mdelay_ms[0m[2m=[0m4000
+[2m2026-03-04T04:03:46.205840Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgemini-2.0-flash [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+[2m2026-03-04T04:03:46.759990Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-5-mini [3mattempt[0m[2m=[0m2 [3mdelay_ms[0m[2m=[0m4000
+[2m2026-03-04T04:03:47.074014Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-5.2 [3mattempt[0m[2m=[0m2 [3mdelay_ms[0m[2m=[0m4000
+[2m2026-03-04T04:03:48.469057Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgemini-2.0-flash [3mattempt[0m[2m=[0m2 [3mdelay_ms[0m[2m=[0m4000
+[2m2026-03-04T04:03:50.303958Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-5 [3mattempt[0m[2m=[0m3 [3mdelay_ms[0m[2m=[0m8000
+[2m2026-03-04T04:03:50.358086Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-4.1-nano [3mattempt[0m[2m=[0m3 [3mdelay_ms[0m[2m=[0m8000
+[2m2026-03-04T04:03:51.064248Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-5-mini [3mattempt[0m[2m=[0m3 [3mdelay_ms[0m[2m=[0m8000
+[2m2026-03-04T04:03:51.368204Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-5.2 [3mattempt[0m[2m=[0m3 [3mdelay_ms[0m[2m=[0m8000
+[2m2026-03-04T04:03:52.779633Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgemini-2.0-flash [3mattempt[0m[2m=[0m3 [3mdelay_ms[0m[2m=[0m8000
+[2m2026-03-04T04:03:55.535182Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgemini-2.5-flash [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+[2m2026-03-04T04:03:57.789908Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgemini-2.5-flash [3mattempt[0m[2m=[0m2 [3mdelay_ms[0m[2m=[0m4000
+[2m2026-03-04T04:03:58.639257Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-5 [3mattempt[0m[2m=[0m4 [3mdelay_ms[0m[2m=[0m16000
+[2m2026-03-04T04:03:58.639344Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-4.1-nano [3mattempt[0m[2m=[0m4 [3mdelay_ms[0m[2m=[0m16000
+[2m2026-03-04T04:03:59.356152Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-5-mini [3mattempt[0m[2m=[0m4 [3mdelay_ms[0m[2m=[0m16000
+[2m2026-03-04T04:03:59.664786Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-5.2 [3mattempt[0m[2m=[0m4 [3mdelay_ms[0m[2m=[0m16000
+  claude-3-7-sonnet:1: failed to parse response, defaulting GOOD/0.5
+[2m2026-03-04T04:04:38.413330Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgemini-3-flash [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+[2m2026-03-04T04:04:39.012108Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgemini-3-pro [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+[2m2026-03-04T04:04:40.729731Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgemini-3-flash [3mattempt[0m[2m=[0m2 [3mdelay_ms[0m[2m=[0m4000
+[2m2026-03-04T04:04:41.310324Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgemini-3-pro [3mattempt[0m[2m=[0m2 [3mdelay_ms[0m[2m=[0m4000
+[2m2026-03-04T04:04:41.651078Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgemini-3.1-pro [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+[2m2026-03-04T04:04:42.026050Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mo3 [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+[2m2026-03-04T04:04:44.015295Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgemini-3.1-pro [3mattempt[0m[2m=[0m2 [3mdelay_ms[0m[2m=[0m4000
+[2m2026-03-04T04:04:44.313598Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mo3 [3mattempt[0m[2m=[0m2 [3mdelay_ms[0m[2m=[0m4000
+[2m2026-03-04T04:04:45.132932Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgemini-3-flash [3mattempt[0m[2m=[0m3 [3mdelay_ms[0m[2m=[0m8000
+[2m2026-03-04T04:04:45.644888Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgemini-3-pro [3mattempt[0m[2m=[0m3 [3mdelay_ms[0m[2m=[0m8000
+[2m2026-03-04T04:04:48.307220Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgemini-3.1-pro [3mattempt[0m[2m=[0m3 [3mdelay_ms[0m[2m=[0m8000
+[2m2026-03-04T04:04:48.614640Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mo3 [3mattempt[0m[2m=[0m3 [3mdelay_ms[0m[2m=[0m8000
+[2m2026-03-04T04:04:52.137955Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mo4-mini [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+[2m2026-03-04T04:04:53.387880Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgemini-3-flash [3mattempt[0m[2m=[0m4 [3mdelay_ms[0m[2m=[0m16000
+[2m2026-03-04T04:04:53.654540Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mclaude-haiku-4-5 [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+[2m2026-03-04T04:04:53.942050Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgemini-3-pro [3mattempt[0m[2m=[0m4 [3mdelay_ms[0m[2m=[0m16000
+[2m2026-03-04T04:04:54.410904Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mo4-mini [3mattempt[0m[2m=[0m2 [3mdelay_ms[0m[2m=[0m4000
+[2m2026-03-04T04:04:55.920215Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mclaude-haiku-4-5 [3mattempt[0m[2m=[0m2 [3mdelay_ms[0m[2m=[0m4000
+[2m2026-03-04T04:04:56.595947Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgemini-3.1-pro [3mattempt[0m[2m=[0m4 [3mdelay_ms[0m[2m=[0m16000
+[2m2026-03-04T04:04:56.870796Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mo3 [3mattempt[0m[2m=[0m4 [3mdelay_ms[0m[2m=[0m16000
+[2m2026-03-04T04:04:58.676057Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mo4-mini [3mattempt[0m[2m=[0m3 [3mdelay_ms[0m[2m=[0m8000
+  Consensus: 100% GOOD (50/50), avg pred: 0.92, BTS accepted: true
+  claude-haiku-4-5:0 GOOD pred=0.93 payout=+1.0429 bal=100.38
+  claude-sonnet-4-5:0 GOOD pred=0.95 payout=+1.0531 bal=100.44
+  claude-sonnet-4:0 GOOD pred=0.95 payout=+1.0531 bal=100.44
+  claude-3-7-sonnet:0 GOOD pred=0.96 payout=+1.0569 bal=100.52
+  claude-3-5-haiku:0 GOOD pred=0.95 payout=+1.0531 bal=100.38
+  claude-sonnet-4-6:0 GOOD pred=0.95 payout=+1.0531 bal=100.44
+  gpt-4o:0 GOOD pred=0.50 payout=+0.0000 bal=97.71
+  gpt-4.1:0 GOOD pred=0.97 payout=+1.0599 bal=100.53
+  gpt-4o-mini:0 GOOD pred=0.85 payout=+0.9680 bal=99.74
+  gpt-4.1-mini:0 GOOD pred=0.95 payout=+1.0531 bal=100.30
+  claude-opus-4-1:0 GOOD pred=0.93 payout=+1.0429 bal=100.24
+  gemini-2.0-flash:0 GOOD pred=0.95 payout=+1.0531 bal=97.74
+  gemini-2.5-flash:0 GOOD pred=0.98 payout=+1.0621 bal=100.44
+  gemini-3-flash:0 GOOD pred=0.96 payout=+1.0569 bal=100.51
+  gpt-4.1-nano:0 GOOD pred=0.75 payout=+0.7978 bal=98.29
+  gpt-5.2:0 GOOD pred=0.93 payout=+1.0429 bal=100.38
+  gemini-2.5-pro:0 GOOD pred=0.97 payout=+1.0599 bal=100.26
+  gemini-3.1-pro:0 GOOD pred=0.95 payout=+1.0531 bal=99.35
+  claude-haiku-4-5:1 GOOD pred=0.94 payout=+1.0484 bal=100.41
+  o3:0 GOOD pred=0.94 payout=+1.0484 bal=100.10
+  o4-mini:0 GOOD pred=0.92 payout=+1.0365 bal=100.36
+  claude-sonnet-4-5:1 GOOD pred=0.95 payout=+1.0531 bal=100.45
+  claude-3-5-haiku:1 GOOD pred=0.95 payout=+1.0531 bal=99.28
+  claude-sonnet-4:1 GOOD pred=0.95 payout=+1.0531 bal=100.42
+  claude-3-7-sonnet:1 GOOD pred=0.50 payout=+0.0000 bal=99.42
+  claude-sonnet-4-6:1 GOOD pred=0.95 payout=+1.0531 bal=100.45
+  gpt-5-mini:0 GOOD pred=0.95 payout=+1.0531 bal=100.40
+  gpt-4o:1 GOOD pred=0.95 payout=+1.0531 bal=100.48
+  gpt-4.1:1 GOOD pred=0.97 payout=+1.0599 bal=100.52
+  gpt-4o-mini:1 GOOD pred=0.85 payout=+0.9680 bal=99.56
+  gpt-4.1-mini:1 GOOD pred=0.95 payout=+1.0531 bal=100.44
+  gpt-5:0 GOOD pred=0.98 payout=+1.0621 bal=100.27
+  gpt-4.1-nano:1 GOOD pred=0.85 payout=+0.9680 bal=99.31
+  gpt-5.2:1 GOOD pred=0.93 payout=+1.0429 bal=100.39
+  gemini-2.0-flash:1 GOOD pred=0.95 payout=+1.0531 bal=99.34
+  gpt-5-mini:1 GOOD pred=0.95 payout=+1.0531 bal=100.35
+  claude-opus-4-1:1 GOOD pred=0.91 payout=+1.0293 bal=100.18
+  gemini-3-pro:0 GOOD pred=0.95 payout=+1.0531 bal=99.38
+  gemini-2.5-flash:1 GOOD pred=0.98 payout=+1.0621 bal=99.33
+  gemini-2.5-pro:1 GOOD pred=0.96 payout=+1.0569 bal=100.48
+  gpt-5:1 GOOD pred=0.96 payout=+1.0569 bal=100.28
+  claude-haiku-4-5:2 GOOD pred=0.94 payout=+1.0484 bal=100.43
+  claude-3-5-haiku:2 GOOD pred=0.95 payout=+1.0531 bal=100.38
+  claude-sonnet-4-5:2 GOOD pred=0.95 payout=+1.0531 bal=100.44
+  o4-mini:1 GOOD pred=0.95 payout=+1.0531 bal=100.26
+  gemini-3-flash:1 GOOD pred=0.96 payout=+1.0569 bal=100.50
+  claude-sonnet-4:2 GOOD pred=0.95 payout=+1.0531 bal=100.44
+  gemini-3.1-pro:1 GOOD pred=0.95 payout=+1.0531 bal=99.37
+  o3:1 GOOD pred=0.93 payout=+1.0429 bal=100.22
+  gemini-3-pro:1 GOOD pred=0.95 payout=+1.0531 bal=98.27
+
+--- Round 6/20 (50 active raters) ---
+Task: Implement a stack data structure in Rust.
+  Worker output: 12469 chars
+  gemini-2.5-flash:0: failed to parse response, defaulting GOOD/0.5
+[2m2026-03-04T04:06:40.956210Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mclaude-opus-4-1 [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+[2m2026-03-04T04:06:41.582301Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mclaude-sonnet-4-6 [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+[2m2026-03-04T04:06:41.761836Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-4o [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+[2m2026-03-04T04:06:43.278135Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mclaude-opus-4-1 [3mattempt[0m[2m=[0m2 [3mdelay_ms[0m[2m=[0m4000
+[2m2026-03-04T04:06:43.846683Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mclaude-sonnet-4-6 [3mattempt[0m[2m=[0m2 [3mdelay_ms[0m[2m=[0m4000
+[2m2026-03-04T04:06:44.075037Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-4o [3mattempt[0m[2m=[0m2 [3mdelay_ms[0m[2m=[0m4000
+[2m2026-03-04T04:06:44.292095Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-4o-mini [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+[2m2026-03-04T04:06:46.690323Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-4o-mini [3mattempt[0m[2m=[0m2 [3mdelay_ms[0m[2m=[0m4000
+[2m2026-03-04T04:06:47.560155Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mclaude-opus-4-1 [3mattempt[0m[2m=[0m3 [3mdelay_ms[0m[2m=[0m8000
+[2m2026-03-04T04:06:48.122184Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mclaude-sonnet-4-6 [3mattempt[0m[2m=[0m3 [3mdelay_ms[0m[2m=[0m8000
+[2m2026-03-04T04:06:48.360536Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-4o [3mattempt[0m[2m=[0m3 [3mdelay_ms[0m[2m=[0m8000
+[2m2026-03-04T04:06:49.868611Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-4.1 [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+[2m2026-03-04T04:06:50.961113Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-4o-mini [3mattempt[0m[2m=[0m3 [3mdelay_ms[0m[2m=[0m8000
+[2m2026-03-04T04:06:52.138219Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-4.1 [3mattempt[0m[2m=[0m2 [3mdelay_ms[0m[2m=[0m4000
+[2m2026-03-04T04:06:53.654018Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-4.1-mini [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+[2m2026-03-04T04:06:55.836009Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mclaude-opus-4-1 [3mattempt[0m[2m=[0m4 [3mdelay_ms[0m[2m=[0m16000
+[2m2026-03-04T04:06:55.926946Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-4.1-mini [3mattempt[0m[2m=[0m2 [3mdelay_ms[0m[2m=[0m4000
+[2m2026-03-04T04:06:56.390339Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mclaude-sonnet-4-6 [3mattempt[0m[2m=[0m4 [3mdelay_ms[0m[2m=[0m16000
+[2m2026-03-04T04:06:56.424263Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-4.1 [3mattempt[0m[2m=[0m3 [3mdelay_ms[0m[2m=[0m8000
+[2m2026-03-04T04:06:56.727178Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-4o [3mattempt[0m[2m=[0m4 [3mdelay_ms[0m[2m=[0m16000
+[2m2026-03-04T04:06:59.238089Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-4o-mini [3mattempt[0m[2m=[0m4 [3mdelay_ms[0m[2m=[0m16000
+  Consensus: 94% GOOD (47/50), avg pred: 0.91, BTS accepted: true
+  claude-sonnet-4-5:0 GOOD pred=0.95 payout=+1.0521 bal=100.49
+  claude-sonnet-4:0 GOOD pred=0.95 payout=+1.0521 bal=100.50
+  claude-3-7-sonnet:0 GOOD pred=0.95 payout=+1.0521 bal=100.57
+  claude-3-5-haiku:0 GOOD pred=0.95 payout=+1.0521 bal=100.43
+  claude-sonnet-4-6:0 GOOD pred=0.95 payout=+1.0521 bal=100.50
+  gpt-4o:0 GOOD pred=0.99 payout=+1.0478 bal=97.76
+  gpt-4o-mini:0 GOOD pred=0.85 payout=+1.0377 bal=99.78
+  gpt-4.1-nano:0 GOOD pred=0.75 payout=+0.9874 bal=98.27
+  gpt-4.1-mini:0 GOOD pred=0.95 payout=+1.0521 bal=100.35
+  claude-haiku-4-5:0 GOOD pred=0.94 payout=+1.0523 bal=100.44
+  gpt-5.2:0 GOOD pred=0.93 payout=+1.0521 bal=100.43
+  gemini-2.0-flash:0 GOOD pred=0.95 payout=+1.0521 bal=97.79
+  gpt-4.1:0 GOOD pred=0.98 payout=+1.0494 bal=100.58
+  gemini-3-flash:0 GOOD pred=0.96 payout=+1.0516 bal=100.56
+  gemini-2.5-flash:0 GOOD pred=0.50 payout=+0.7041 bal=100.14
+  claude-opus-4-1:0 GOOD pred=0.94 payout=+1.0523 bal=100.29
+  gemini-3-pro:0 GOOD pred=0.98 payout=+1.0494 bal=99.43
+  gemini-2.5-pro:0 GOOD pred=0.96 payout=+1.0516 bal=100.31
+  gemini-3.1-pro:0 GOOD pred=0.95 payout=+1.0521 bal=99.40
+  claude-haiku-4-5:1 GOOD pred=0.93 payout=+1.0521 bal=100.47
+  claude-sonnet-4-5:1 GOOD pred=0.95 payout=+1.0521 bal=100.51
+  claude-3-5-haiku:1 GOOD pred=0.95 payout=+1.0521 bal=99.33
+  claude-sonnet-4:1 GOOD pred=0.95 payout=+1.0521 bal=100.47
+  o4-mini:0 GOOD pred=0.95 payout=+1.0521 bal=100.41
+  claude-3-7-sonnet:1 GOOD pred=0.95 payout=+1.0521 bal=99.47
+  gpt-5:0 GOOD pred=0.95 payout=+1.0521 bal=100.32
+  gpt-5-mini:0 BAD pred=0.70 payout=+0.5225 bal=99.93
+  o3:0 GOOD pred=0.88 payout=+1.0458 bal=100.15
+  gpt-4.1-mini:1 GOOD pred=0.95 payout=+1.0521 bal=100.49
+  gpt-4.1-nano:1 GOOD pred=0.75 payout=+0.9874 bal=99.30
+  gpt-4.1:1 GOOD pred=0.98 payout=+1.0494 bal=100.57
+  gpt-4o:1 GOOD pred=0.95 payout=+1.0521 bal=100.53
+  claude-sonnet-4-6:1 GOOD pred=0.95 payout=+1.0521 bal=100.51
+  gpt-5.2:1 GOOD pred=0.93 payout=+1.0521 bal=100.44
+  gemini-2.0-flash:1 GOOD pred=0.75 payout=+0.9874 bal=99.33
+  gpt-4o-mini:1 GOOD pred=0.90 payout=+1.0494 bal=99.61
+  gemini-3-flash:1 GOOD pred=0.96 payout=+1.0516 bal=100.55
+  gemini-2.5-flash:1 GOOD pred=0.97 payout=+1.0507 bal=99.38
+  claude-opus-4-1:1 GOOD pred=0.91 payout=+1.0507 bal=100.23
+  gpt-5:1 GOOD pred=0.96 payout=+1.0516 bal=100.34
+  gemini-3-pro:1 GOOD pred=0.95 payout=+1.0521 bal=98.32
+  gemini-2.5-pro:1 GOOD pred=0.96 payout=+1.0516 bal=100.53
+  claude-haiku-4-5:2 GOOD pred=0.94 payout=+1.0523 bal=100.48
+  gpt-5-mini:1 BAD pred=0.85 payout=+0.6115 bal=99.96
+  claude-sonnet-4-5:2 GOOD pred=0.95 payout=+1.0521 bal=100.50
+  claude-3-5-haiku:2 GOOD pred=0.95 payout=+1.0521 bal=100.43
+  claude-sonnet-4:2 GOOD pred=0.95 payout=+1.0521 bal=100.49
+  o4-mini:1 GOOD pred=0.95 payout=+1.0521 bal=100.31
+  gemini-3.1-pro:1 GOOD pred=0.95 payout=+1.0521 bal=99.42
+  o3:1 BAD pred=0.35 payout=+0.0000 bal=99.22
+
+--- Round 7/20 (50 active raters) ---
+Task: Write a Rust function to check if a string is a palindrome.
+  Worker output: 4605 chars
+  claude-3-7-sonnet:0: failed to parse response, defaulting GOOD/0.5
+  claude-3-5-haiku:1: failed to parse response, defaulting GOOD/0.5
+[2m2026-03-04T04:08:25.518339Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-4o [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+[2m2026-03-04T04:08:27.795485Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-4o [3mattempt[0m[2m=[0m2 [3mdelay_ms[0m[2m=[0m4000
+[2m2026-03-04T04:08:29.199686Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-4o-mini [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+[2m2026-03-04T04:08:30.019974Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-4.1 [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+[2m2026-03-04T04:08:31.475701Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-4o-mini [3mattempt[0m[2m=[0m2 [3mdelay_ms[0m[2m=[0m4000
+[2m2026-03-04T04:08:32.091267Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-4o [3mattempt[0m[2m=[0m3 [3mdelay_ms[0m[2m=[0m8000
+[2m2026-03-04T04:08:32.281613Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-4.1 [3mattempt[0m[2m=[0m2 [3mdelay_ms[0m[2m=[0m4000
+[2m2026-03-04T04:08:32.892896Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-4.1-mini [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+[2m2026-03-04T04:08:35.241284Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-4.1-mini [3mattempt[0m[2m=[0m2 [3mdelay_ms[0m[2m=[0m4000
+[2m2026-03-04T04:08:35.752732Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-4o-mini [3mattempt[0m[2m=[0m3 [3mdelay_ms[0m[2m=[0m8000
+[2m2026-03-04T04:08:36.498779Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-4.1-nano [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+[2m2026-03-04T04:08:36.574715Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-4.1 [3mattempt[0m[2m=[0m3 [3mdelay_ms[0m[2m=[0m8000
+[2m2026-03-04T04:08:38.825076Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-4.1-nano [3mattempt[0m[2m=[0m2 [3mdelay_ms[0m[2m=[0m4000
+[2m2026-03-04T04:08:38.834894Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-5 [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+[2m2026-03-04T04:08:39.515689Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-4.1-mini [3mattempt[0m[2m=[0m3 [3mdelay_ms[0m[2m=[0m8000
+[2m2026-03-04T04:08:40.463413Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-4o [3mattempt[0m[2m=[0m4 [3mdelay_ms[0m[2m=[0m16000
+[2m2026-03-04T04:08:41.105386Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-5 [3mattempt[0m[2m=[0m2 [3mdelay_ms[0m[2m=[0m4000
+[2m2026-03-04T04:08:43.083218Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-4.1-nano [3mattempt[0m[2m=[0m3 [3mdelay_ms[0m[2m=[0m8000
+[2m2026-03-04T04:08:44.034750Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-4o-mini [3mattempt[0m[2m=[0m4 [3mdelay_ms[0m[2m=[0m16000
+[2m2026-03-04T04:08:44.866609Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-4.1 [3mattempt[0m[2m=[0m4 [3mdelay_ms[0m[2m=[0m16000
+[2m2026-03-04T04:08:45.396607Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-5 [3mattempt[0m[2m=[0m3 [3mdelay_ms[0m[2m=[0m8000
+[2m2026-03-04T04:08:47.837498Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-4.1-mini [3mattempt[0m[2m=[0m4 [3mdelay_ms[0m[2m=[0m16000
+[2m2026-03-04T04:08:51.417764Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-4.1-nano [3mattempt[0m[2m=[0m4 [3mdelay_ms[0m[2m=[0m16000
+[2m2026-03-04T04:08:53.688506Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-5 [3mattempt[0m[2m=[0m4 [3mdelay_ms[0m[2m=[0m16000
+[2m2026-03-04T04:08:56.752593Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-4o [3mattempt[0m[2m=[0m5 [3mdelay_ms[0m[2m=[0m32000
+  Consensus: 100% GOOD (50/50), avg pred: 0.92, BTS accepted: true
+  claude-haiku-4-5:0 GOOD pred=0.93 payout=+1.0408 bal=100.48
+  claude-sonnet-4-5:0 GOOD pred=0.95 payout=+1.0510 bal=100.54
+  claude-3-7-sonnet:0 GOOD pred=0.50 payout=+0.0000 bal=99.57
+  claude-3-5-haiku:0 GOOD pred=0.95 payout=+1.0510 bal=100.48
+  gpt-4o:0 GOOD pred=0.95 payout=+1.0510 bal=97.81
+  claude-sonnet-4-6:0 GOOD pred=0.95 payout=+1.0510 bal=100.55
+  gpt-4o-mini:0 GOOD pred=0.90 payout=+1.0192 bal=99.80
+  gpt-4.1:0 GOOD pred=0.97 payout=+1.0578 bal=100.63
+  gpt-4.1-mini:0 GOOD pred=0.95 payout=+1.0510 bal=100.40
+  gpt-4.1-nano:0 GOOD pred=0.75 payout=+0.7962 bal=98.07
+  gpt-5.2:0 GOOD pred=0.94 payout=+1.0463 bal=100.48
+  gemini-2.0-flash:0 GOOD pred=0.95 payout=+1.0510 bal=97.84
+  claude-sonnet-4:0 GOOD pred=0.95 payout=+1.0510 bal=100.55
+  claude-opus-4-1:0 GOOD pred=0.92 payout=+1.0344 bal=100.33
+  gemini-3-flash:0 GOOD pred=0.96 payout=+1.0548 bal=100.62
+  gemini-2.5-flash:0 GOOD pred=0.95 payout=+1.0510 bal=100.19
+  gpt-5-mini:0 GOOD pred=0.95 payout=+1.0510 bal=99.98
+  gemini-3.1-pro:0 GOOD pred=0.95 payout=+1.0510 bal=99.45
+  gpt-5:0 GOOD pred=0.95 payout=+1.0510 bal=100.37
+  claude-haiku-4-5:1 GOOD pred=0.94 payout=+1.0463 bal=100.51
+  o3:0 GOOD pred=0.90 payout=+1.0192 bal=100.17
+  o4-mini:0 GOOD pred=0.90 payout=+1.0192 bal=100.43
+  claude-3-5-haiku:1 GOOD pred=0.50 payout=+0.0000 bal=98.33
+  claude-sonnet-4:1 GOOD pred=0.95 payout=+1.0510 bal=100.52
+  claude-3-7-sonnet:1 GOOD pred=0.95 payout=+1.0510 bal=99.52
+  gemini-3-pro:0 GOOD pred=0.96 payout=+1.0548 bal=99.49
+  claude-sonnet-4-5:1 GOOD pred=0.95 payout=+1.0510 bal=100.56
+  claude-sonnet-4-6:1 GOOD pred=0.97 payout=+1.0578 bal=100.56
+  claude-opus-4-1:1 GOOD pred=0.91 payout=+1.0272 bal=100.26
+  gemini-2.5-pro:0 GOOD pred=0.95 payout=+1.0510 bal=100.36
+  gpt-4o-mini:1 GOOD pred=0.90 payout=+1.0192 bal=99.63
+  gpt-4.1:1 GOOD pred=0.98 payout=+1.0599 bal=100.63
+  gpt-5.2:1 GOOD pred=0.93 payout=+1.0408 bal=100.48
+  gpt-4.1-mini:1 GOOD pred=0.95 payout=+1.0510 bal=100.54
+  gemini-2.0-flash:1 GOOD pred=0.95 payout=+1.0510 bal=99.38
+  gpt-4.1-nano:1 GOOD pred=0.90 payout=+1.0192 bal=99.32
+  gpt-5-mini:1 GOOD pred=0.95 payout=+1.0510 bal=100.01
+  gemini-3-flash:1 GOOD pred=0.96 payout=+1.0548 bal=100.61
+  gemini-2.5-flash:1 GOOD pred=0.98 payout=+1.0599 bal=99.44
+  gemini-3.1-pro:1 GOOD pred=0.95 payout=+1.0510 bal=99.47
+  o4-mini:1 GOOD pred=0.95 payout=+1.0510 bal=100.36
+  claude-haiku-4-5:2 GOOD pred=0.93 payout=+1.0408 bal=100.52
+  gemini-2.5-pro:1 GOOD pred=0.96 payout=+1.0548 bal=100.58
+  o3:1 GOOD pred=0.94 payout=+1.0463 bal=99.26
+  claude-sonnet-4-5:2 GOOD pred=0.95 payout=+1.0510 bal=100.55
+  claude-3-5-haiku:2 GOOD pred=0.95 payout=+1.0510 bal=100.48
+  claude-sonnet-4:2 GOOD pred=0.95 payout=+1.0510 bal=100.54
+  gpt-4o:1 GOOD pred=0.95 payout=+1.0510 bal=100.58
+  gpt-5:1 GOOD pred=0.95 payout=+1.0510 bal=100.39
+  gemini-3-pro:1 GOOD pred=0.96 payout=+1.0548 bal=98.38
+
+--- Round 8/20 (50 active raters) ---
+Task: Write a Rust function to compute fibonacci numbers.
+  Worker output: 4431 chars
+[2m2026-03-04T04:09:58.688743Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-4o-mini [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+[2m2026-03-04T04:09:59.280432Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-4.1 [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+  claude-3-5-haiku:1: failed to parse response, defaulting GOOD/0.5
+[2m2026-03-04T04:10:25.512904Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgemini-2.0-flash [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+[2m2026-03-04T04:10:25.735868Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgemini-2.5-flash [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+[2m2026-03-04T04:10:26.248799Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgemini-2.5-pro [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+[2m2026-03-04T04:10:27.807408Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgemini-2.0-flash [3mattempt[0m[2m=[0m2 [3mdelay_ms[0m[2m=[0m4000
+[2m2026-03-04T04:10:28.091268Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgemini-2.5-flash [3mattempt[0m[2m=[0m2 [3mdelay_ms[0m[2m=[0m4000
+[2m2026-03-04T04:10:28.500809Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgemini-2.5-pro [3mattempt[0m[2m=[0m2 [3mdelay_ms[0m[2m=[0m4000
+[2m2026-03-04T04:10:29.933132Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgemini-3-flash [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+[2m2026-03-04T04:10:32.098840Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgemini-2.0-flash [3mattempt[0m[2m=[0m3 [3mdelay_ms[0m[2m=[0m8000
+[2m2026-03-04T04:10:32.211053Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgemini-3-flash [3mattempt[0m[2m=[0m2 [3mdelay_ms[0m[2m=[0m4000
+[2m2026-03-04T04:10:32.392152Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgemini-2.5-flash [3mattempt[0m[2m=[0m3 [3mdelay_ms[0m[2m=[0m8000
+[2m2026-03-04T04:10:32.783380Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgemini-2.5-pro [3mattempt[0m[2m=[0m3 [3mdelay_ms[0m[2m=[0m8000
+[2m2026-03-04T04:10:36.493444Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgemini-3-flash [3mattempt[0m[2m=[0m3 [3mdelay_ms[0m[2m=[0m8000
+[2m2026-03-04T04:10:38.822278Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgemini-3-pro [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+[2m2026-03-04T04:10:40.379566Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgemini-2.0-flash [3mattempt[0m[2m=[0m4 [3mdelay_ms[0m[2m=[0m16000
+[2m2026-03-04T04:10:40.691931Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgemini-2.5-flash [3mattempt[0m[2m=[0m4 [3mdelay_ms[0m[2m=[0m16000
+[2m2026-03-04T04:10:41.043457Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgemini-2.5-pro [3mattempt[0m[2m=[0m4 [3mdelay_ms[0m[2m=[0m16000
+[2m2026-03-04T04:10:41.056585Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgemini-3.1-pro [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+[2m2026-03-04T04:10:41.081853Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgemini-3-pro [3mattempt[0m[2m=[0m2 [3mdelay_ms[0m[2m=[0m4000
+[2m2026-03-04T04:10:43.351052Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgemini-3.1-pro [3mattempt[0m[2m=[0m2 [3mdelay_ms[0m[2m=[0m4000
+[2m2026-03-04T04:10:44.791871Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgemini-3-flash [3mattempt[0m[2m=[0m4 [3mdelay_ms[0m[2m=[0m16000
+[2m2026-03-04T04:10:45.361315Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgemini-3-pro [3mattempt[0m[2m=[0m3 [3mdelay_ms[0m[2m=[0m8000
+[2m2026-03-04T04:10:47.616749Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgemini-3.1-pro [3mattempt[0m[2m=[0m3 [3mdelay_ms[0m[2m=[0m8000
+[2m2026-03-04T04:10:53.628016Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgemini-3-pro [3mattempt[0m[2m=[0m4 [3mdelay_ms[0m[2m=[0m16000
+[2m2026-03-04T04:10:55.881865Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgemini-3.1-pro [3mattempt[0m[2m=[0m4 [3mdelay_ms[0m[2m=[0m16000
+[2m2026-03-04T04:10:56.665861Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgemini-2.0-flash [3mattempt[0m[2m=[0m5 [3mdelay_ms[0m[2m=[0m32000
+[2m2026-03-04T04:10:56.980625Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgemini-2.5-flash [3mattempt[0m[2m=[0m5 [3mdelay_ms[0m[2m=[0m32000
+[2m2026-03-04T04:10:57.317247Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgemini-2.5-pro [3mattempt[0m[2m=[0m5 [3mdelay_ms[0m[2m=[0m32000
+  gemini-3-pro:1: failed to parse response, defaulting GOOD/0.5
+  gemini-2.5-flash:1: failed to parse response, defaulting GOOD/0.5
+=== LICHEN ECONOMY SIMULATOR ===
+Raters: 50, Rounds: 20, Max concurrent: 6
+
+--- Round 1/20 (50 active raters) ---
+Task: Write a Rust function to reverse a string.
+  Worker output: 2969 chars
+[2m2026-03-04T04:12:21.759959Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mclaude-opus-4-1 [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+[2m2026-03-04T04:12:22.628650Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-4o [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+[2m2026-03-04T04:12:22.944916Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-4o-mini [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+[2m2026-03-04T04:12:23.046934Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-4.1 [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+[2m2026-03-04T04:12:24.002873Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mclaude-opus-4-1 [3mattempt[0m[2m=[0m2 [3mdelay_ms[0m[2m=[0m4000
+[2m2026-03-04T04:12:24.033101Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-4.1-mini [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+[2m2026-03-04T04:12:24.596247Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-4.1-nano [3mattempt[0m[2m=[0m1 [3mdelay_ms[0m[2m=[0m2000
+[2m2026-03-04T04:12:24.937484Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-4o [3mattempt[0m[2m=[0m2 [3mdelay_ms[0m[2m=[0m4000
+[2m2026-03-04T04:12:25.198113Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-4o-mini [3mattempt[0m[2m=[0m2 [3mdelay_ms[0m[2m=[0m4000
+[2m2026-03-04T04:12:25.308638Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-4.1 [3mattempt[0m[2m=[0m2 [3mdelay_ms[0m[2m=[0m4000
+[2m2026-03-04T04:12:26.368092Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-4.1-mini [3mattempt[0m[2m=[0m2 [3mdelay_ms[0m[2m=[0m4000
+[2m2026-03-04T04:12:26.874376Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-4.1-nano [3mattempt[0m[2m=[0m2 [3mdelay_ms[0m[2m=[0m4000
+[2m2026-03-04T04:12:28.270716Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mclaude-opus-4-1 [3mattempt[0m[2m=[0m3 [3mdelay_ms[0m[2m=[0m8000
+[2m2026-03-04T04:12:29.224008Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-4o [3mattempt[0m[2m=[0m3 [3mdelay_ms[0m[2m=[0m8000
+[2m2026-03-04T04:12:29.447623Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-4o-mini [3mattempt[0m[2m=[0m3 [3mdelay_ms[0m[2m=[0m8000
+[2m2026-03-04T04:12:29.849880Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-4.1 [3mattempt[0m[2m=[0m3 [3mdelay_ms[0m[2m=[0m8000
+[2m2026-03-04T04:12:30.617629Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-4.1-mini [3mattempt[0m[2m=[0m3 [3mdelay_ms[0m[2m=[0m8000
+[2m2026-03-04T04:12:31.181015Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-4.1-nano [3mattempt[0m[2m=[0m3 [3mdelay_ms[0m[2m=[0m8000
+[2m2026-03-04T04:12:36.555358Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mclaude-opus-4-1 [3mattempt[0m[2m=[0m4 [3mdelay_ms[0m[2m=[0m16000
+[2m2026-03-04T04:12:37.489175Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-4o [3mattempt[0m[2m=[0m4 [3mdelay_ms[0m[2m=[0m16000
+[2m2026-03-04T04:12:37.726840Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-4o-mini [3mattempt[0m[2m=[0m4 [3mdelay_ms[0m[2m=[0m16000
+[2m2026-03-04T04:12:38.144636Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-4.1 [3mattempt[0m[2m=[0m4 [3mdelay_ms[0m[2m=[0m16000
+[2m2026-03-04T04:12:38.894242Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-4.1-mini [3mattempt[0m[2m=[0m4 [3mdelay_ms[0m[2m=[0m16000
+[2m2026-03-04T04:12:39.456199Z[0m [33m WARN[0m [2magent::llm[0m[2m:[0m rate limited (429), retrying after backoff [3mmodel[0m[2m=[0mgpt-4.1-nano [3mattempt[0m[2m=[0m4 [3mdelay_ms[0m[2m=[0m16000
