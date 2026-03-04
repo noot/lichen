@@ -1,6 +1,9 @@
-mod backend;
 pub mod cli;
-mod coordinator;
-mod handlers;
+pub mod coordinator;
 
 pub use coordinator::Coordinator;
+
+pub(crate) mod backend;
+pub(crate) mod handlers;
+pub(crate) mod notifier;
+pub(crate) mod watcher;

@@ -1,6 +1,6 @@
 use client::CoordinatorClient;
 use coordinator::{cli::Args, Coordinator};
-use protocol::TaskPhase;
+use protocol::{AgentRole, TaskPhase};
 use reqwest::StatusCode;
 use tokio_util::sync::CancellationToken;
 use uuid::Uuid;
@@ -212,4 +212,110 @@ async fn list_tasks_returns_all() {
 
     let tasks = c.list_tasks().await.unwrap();
     assert_eq!(tasks.len(), 2);
+}
+
+// ── Open-marketplace subscription and accept/decline tests ────────────────────
+
+#[tokio::test]
+async fn subscribe_and_unsubscribe() {
+    let (c, _tok) = spawn_coordinator().await;
+
+    // Subscribe
+    let resp = c
+        .subscribe("agent1", "http://localhost:9001/notify", vec![])
+        .await
+        .unwrap();
+    assert_eq!(resp.agent_id, "agent1");
+
+    // List — should see 1
+    let subs = c.list_subscriptions().await.unwrap();
+    assert_eq!(subs["count"], 1);
+
+    // Unsubscribe
+    c.unsubscribe("agent1").await.unwrap();
+
+    // List — should see 0
+    let subs = c.list_subscriptions().await.unwrap();
+    assert_eq!(subs["count"], 0);
+}
+
+#[tokio::test]
+async fn unsubscribe_unknown_returns_404() {
+    let (c, _tok) = spawn_coordinator().await;
+    let resp = c.http.delete(format!("{}/subscribe/nobody", c.base_url))
+        .send().await.unwrap();
+    assert_eq!(resp.status(), StatusCode::NOT_FOUND);
+}
+
+#[tokio::test]
+async fn accept_task_as_worker_first_come_wins() {
+    let (c, _tok) = spawn_coordinator().await;
+
+    let task = c.create_task("write a function", 2).await.unwrap();
+    let task_id = task.task.id;
+
+    // First accept gets worker role
+    let r1 = c.accept_task(task_id, "agent-a", AgentRole::Worker).await.unwrap();
+    assert_eq!(r1.role_granted, "worker");
+
+    // Second accept with worker role falls back to rater
+    let r2 = c.accept_task(task_id, "agent-b", AgentRole::Worker).await.unwrap();
+    assert_eq!(r2.role_granted, "rater");
+}
+
+#[tokio::test]
+async fn accept_task_as_rater_directly() {
+    let (c, _tok) = spawn_coordinator().await;
+
+    let task = c.create_task("evaluate this", 2).await.unwrap();
+    let task_id = task.task.id;
+
+    let r = c.accept_task(task_id, "rater-1", AgentRole::Rater).await.unwrap();
+    assert_eq!(r.role_granted, "rater");
+}
+
+#[tokio::test]
+async fn decline_task_records_declination() {
+    let (c, _tok) = spawn_coordinator().await;
+
+    let task = c.create_task("hard task", 2).await.unwrap();
+    let task_id = task.task.id;
+
+    let r = c.decline_task(task_id, "agent-x", "not my domain").await.unwrap();
+    assert_eq!(r.role_granted, "declined");
+    assert!(r.message.contains("agent-x"));
+}
+
+#[tokio::test]
+async fn accept_nonexistent_task_returns_404() {
+    let (c, _tok) = spawn_coordinator().await;
+    let (status, _) = c
+        .accept_task_raw(Uuid::new_v4(), "agent1", AgentRole::Worker)
+        .await
+        .unwrap();
+    assert_eq!(status, StatusCode::NOT_FOUND);
+}
+
+#[tokio::test]
+async fn finalize_and_cancel_off_chain_return_400() {
+    let (c, _tok) = spawn_coordinator().await;
+    let task = c.create_task("a task", 1).await.unwrap();
+
+    let (status, _) = c.finalize_task(task.task.id, "agent1").await.unwrap();
+    assert_eq!(status, StatusCode::BAD_REQUEST);
+
+    let (status, _) = c.cancel_task(task.task.id, "agent1").await.unwrap();
+    assert_eq!(status, StatusCode::BAD_REQUEST);
+}
+
+#[tokio::test]
+async fn duplicate_subscribe_overwrites() {
+    let (c, _tok) = spawn_coordinator().await;
+
+    c.subscribe("agent1", "http://localhost:9001/v1", vec![]).await.unwrap();
+    c.subscribe("agent1", "http://localhost:9001/v2", vec![]).await.unwrap();
+
+    // Still just one subscription
+    let subs = c.list_subscriptions().await.unwrap();
+    assert_eq!(subs["count"], 1);
 }

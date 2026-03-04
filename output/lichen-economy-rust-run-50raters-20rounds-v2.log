@@ -1,0 +1,7 @@
+    Finished `release` profile [optimized] target(s) in 0.55s
+     Running `target/release/simulator --raters 50 --rounds 20 --max-concurrent 2`
+=== LICHEN ECONOMY SIMULATOR ===
+Raters: 50, Rounds: 20, Max concurrent: 2
+
+--- Round 1/20 (50 active raters) ---
+Task: Write a Rust function to reverse a string.

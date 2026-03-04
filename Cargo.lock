@@ -1315,6 +1315,7 @@ dependencies = [
  "eyre",
  "protocol",
  "reqwest",
+ "serde_json",
  "uuid",
 ]
 

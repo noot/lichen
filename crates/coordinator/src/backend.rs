@@ -48,7 +48,25 @@ pub(crate) trait TaskBackend: Send + Sync {
         alpha: f64,
         beta: f64,
     ) -> Result<TaskStatus>;
+
+    /// Trigger on-chain finalization for a task.
+    ///
+    /// The default implementation returns an error (not supported off-chain).
+    async fn finalize_task(&self, task_id: Uuid) -> Result<()> {
+        let _ = task_id;
+        Err(eyre::eyre!("finalize_task not supported by this backend"))
+    }
+
+    /// Trigger on-chain cancellation for a task.
+    ///
+    /// The default implementation returns an error (not supported off-chain).
+    async fn cancel_task(&self, task_id: Uuid) -> Result<()> {
+        let _ = task_id;
+        Err(eyre::eyre!("cancel_task not supported by this backend"))
+    }
 }
+
+// ── In-memory backend ─────────────────────────────────────────────────────────
 
 /// In-memory backend for task storage.
 pub(crate) struct InMemoryBackend {
@@ -211,6 +229,8 @@ impl TaskBackend for InMemoryBackend {
     }
 }
 
+// ── On-chain backend ──────────────────────────────────────────────────────────
+
 /// On-chain backend for task storage.
 pub(crate) struct OnchainBackend {
     client: OnchainClient,
@@ -277,10 +297,17 @@ impl OnchainBackend {
                 });
             }
 
-            let actual_good =
-                task_ratings.iter().filter(|r| r.signal).count() as f64 / task_ratings.len() as f64;
-            let predicted_good =
-                task_ratings.iter().map(|r| r.prediction).sum::<f64>() / task_ratings.len() as f64;
+            let actual_good = if task_ratings.is_empty() {
+                0.0
+            } else {
+                task_ratings.iter().filter(|r| r.signal).count() as f64
+                    / task_ratings.len() as f64
+            };
+            let predicted_good = if task_ratings.is_empty() {
+                0.0
+            } else {
+                task_ratings.iter().map(|r| r.prediction).sum::<f64>() / task_ratings.len() as f64
+            };
             let bts_accepted = actual_good >= predicted_good;
             let approval = actual_good;
             let accepted = approval >= 0.5 && bts_accepted;
@@ -323,6 +350,16 @@ impl OnchainBackend {
             phase,
             num_raters_required: task.minRaters as usize,
         })
+    }
+
+    /// Look up the on-chain task ID for a coordinator UUID.
+    async fn onchain_id(&self, task_id: Uuid) -> Result<u64> {
+        self.task_mapping
+            .read()
+            .await
+            .get(&task_id)
+            .copied()
+            .ok_or_else(|| eyre::eyre!("task not found"))
     }
 }
 
@@ -441,13 +478,7 @@ impl TaskBackend for OnchainBackend {
         _alpha: f64,
         _beta: f64,
     ) -> Result<TaskStatus> {
-        let onchain_id = {
-            let mapping = self.task_mapping.read().await;
-            *mapping
-                .get(&task_id)
-                .ok_or_else(|| eyre::eyre!("task not found"))?
-        };
-
+        let onchain_id = self.onchain_id(task_id).await?;
         let prediction_fixed = OnchainClient::prediction_to_fixed(prediction);
 
         self.client
@@ -471,7 +502,7 @@ impl TaskBackend for OnchainBackend {
             .convert_onchain_task(onchain_id, &task, &ratings)
             .await?;
 
-        // Check if we should finalize
+        // Check if we should finalize (reached max raters)
         if ratings.len() >= task.maxRaters as usize {
             self.client
                 .finalize_task(onchain_id)
@@ -484,5 +515,25 @@ impl TaskBackend for OnchainBackend {
         }
 
         Ok(status)
+    }
+
+    async fn finalize_task(&self, task_id: Uuid) -> Result<()> {
+        let onchain_id = self.onchain_id(task_id).await?;
+        self.client
+            .finalize_task(onchain_id)
+            .await
+            .wrap_err("failed to finalize on-chain task")?;
+        info!("finalized on-chain task {} (task_id: {})", onchain_id, task_id);
+        Ok(())
+    }
+
+    async fn cancel_task(&self, task_id: Uuid) -> Result<()> {
+        let onchain_id = self.onchain_id(task_id).await?;
+        self.client
+            .cancel_task(onchain_id)
+            .await
+            .wrap_err("failed to cancel on-chain task")?;
+        info!("cancelled on-chain task {} (task_id: {})", onchain_id, task_id);
+        Ok(())
     }
 }

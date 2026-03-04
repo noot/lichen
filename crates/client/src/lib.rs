@@ -1,11 +1,16 @@
 use eyre::{bail, Result, WrapErr as _};
-use protocol::{CreateTaskRequest, SubmitRatingRequest, SubmitResultRequest, TaskStatus};
+use protocol::{
+    AcceptTaskRequest, AgentRole, CancelTaskRequest, CreateTaskRequest, DeclineTaskRequest,
+    FinalizeTaskRequest, SubmitRatingRequest, SubmitResultRequest, SubscribeRequest,
+    SubscribeResponse, TaskAcceptResponse, TaskStatus,
+};
+use serde_json::Value as JsonValue;
 use uuid::Uuid;
 
 /// HTTP client for the coordinator API.
 pub struct CoordinatorClient {
-    base_url: String,
-    http: reqwest::Client,
+    pub base_url: String,
+    pub http: reqwest::Client,
 }
 
 impl std::fmt::Display for CoordinatorClient {
@@ -159,6 +164,156 @@ impl CoordinatorClient {
             .send()
             .await
             .wrap_err("failed to submit result")?;
+        let status = resp.status();
+        let body = resp.text().await.unwrap_or_default();
+        Ok((status, body))
+    }
+
+    /// POST /subscribe
+    pub async fn subscribe(
+        &self,
+        agent_id: &str,
+        callback_url: &str,
+        roles: Vec<AgentRole>,
+    ) -> Result<SubscribeResponse> {
+        let resp = self
+            .http
+            .post(format!("{}/subscribe", self.base_url))
+            .json(&SubscribeRequest {
+                agent_id: agent_id.to_string(),
+                callback_url: callback_url.to_string(),
+                roles,
+            })
+            .send()
+            .await
+            .wrap_err("failed to subscribe")?;
+        check_status(&resp).wrap_err("subscribe returned error status")?;
+        resp.json().await.wrap_err("failed to parse subscribe response")
+    }
+
+    /// DELETE /subscribe/:agent_id
+    pub async fn unsubscribe(&self, agent_id: &str) -> Result<JsonValue> {
+        let resp = self
+            .http
+            .delete(format!("{}/subscribe/{agent_id}", self.base_url))
+            .send()
+            .await
+            .wrap_err("failed to unsubscribe")?;
+        check_status(&resp).wrap_err("unsubscribe returned error status")?;
+        resp.json().await.wrap_err("failed to parse unsubscribe response")
+    }
+
+    /// GET /subscriptions
+    pub async fn list_subscriptions(&self) -> Result<JsonValue> {
+        let resp = self
+            .http
+            .get(format!("{}/subscriptions", self.base_url))
+            .send()
+            .await
+            .wrap_err("failed to list subscriptions")?;
+        check_status(&resp).wrap_err("list subscriptions returned error status")?;
+        resp.json().await.wrap_err("failed to parse subscriptions")
+    }
+
+    /// POST /tasks/:id/accept
+    pub async fn accept_task(
+        &self,
+        task_id: Uuid,
+        agent_id: &str,
+        role: AgentRole,
+    ) -> Result<TaskAcceptResponse> {
+        let resp = self
+            .http
+            .post(format!("{}/tasks/{task_id}/accept", self.base_url))
+            .json(&AcceptTaskRequest {
+                agent_id: agent_id.to_string(),
+                role,
+            })
+            .send()
+            .await
+            .wrap_err("failed to accept task")?;
+        check_status(&resp).wrap_err("accept task returned error status")?;
+        resp.json().await.wrap_err("failed to parse accept response")
+    }
+
+    /// POST /tasks/:id/accept (raw)
+    pub async fn accept_task_raw(
+        &self,
+        task_id: Uuid,
+        agent_id: &str,
+        role: AgentRole,
+    ) -> Result<(reqwest::StatusCode, String)> {
+        let resp = self
+            .http
+            .post(format!("{}/tasks/{task_id}/accept", self.base_url))
+            .json(&AcceptTaskRequest {
+                agent_id: agent_id.to_string(),
+                role,
+            })
+            .send()
+            .await
+            .wrap_err("failed to accept task")?;
+        let status = resp.status();
+        let body = resp.text().await.unwrap_or_default();
+        Ok((status, body))
+    }
+
+    /// POST /tasks/:id/decline
+    pub async fn decline_task(
+        &self,
+        task_id: Uuid,
+        agent_id: &str,
+        reason: &str,
+    ) -> Result<TaskAcceptResponse> {
+        let resp = self
+            .http
+            .post(format!("{}/tasks/{task_id}/decline", self.base_url))
+            .json(&DeclineTaskRequest {
+                agent_id: agent_id.to_string(),
+                reason: reason.to_string(),
+            })
+            .send()
+            .await
+            .wrap_err("failed to decline task")?;
+        check_status(&resp).wrap_err("decline task returned error status")?;
+        resp.json().await.wrap_err("failed to parse decline response")
+    }
+
+    /// POST /tasks/:id/finalize
+    pub async fn finalize_task(
+        &self,
+        task_id: Uuid,
+        agent_id: &str,
+    ) -> Result<(reqwest::StatusCode, String)> {
+        let resp = self
+            .http
+            .post(format!("{}/tasks/{task_id}/finalize", self.base_url))
+            .json(&FinalizeTaskRequest {
+                agent_id: agent_id.to_string(),
+            })
+            .send()
+            .await
+            .wrap_err("failed to finalize task")?;
+        let status = resp.status();
+        let body = resp.text().await.unwrap_or_default();
+        Ok((status, body))
+    }
+
+    /// POST /tasks/:id/cancel
+    pub async fn cancel_task(
+        &self,
+        task_id: Uuid,
+        agent_id: &str,
+    ) -> Result<(reqwest::StatusCode, String)> {
+        let resp = self
+            .http
+            .post(format!("{}/tasks/{task_id}/cancel", self.base_url))
+            .json(&CancelTaskRequest {
+                agent_id: agent_id.to_string(),
+            })
+            .send()
+            .await
+            .wrap_err("failed to cancel task")?;
         let status = resp.status();
         let body = resp.text().await.unwrap_or_default();
         Ok((status, body))

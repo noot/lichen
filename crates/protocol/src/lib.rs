@@ -3,6 +3,102 @@ pub mod scoring;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
+// ── Agent subscription / open-marketplace types ───────────────────────────────
+
+/// Registration request from an agent that wants to receive task notifications.
+///
+/// The coordinator will POST [`TaskNotification`] to `callback_url` whenever a
+/// new task is available.  The agent replies with accept/decline via the
+/// coordinator's REST endpoints.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SubscribeRequest {
+    /// Stable identifier for this agent (e.g. "worker-alpha", Ethereum address, …).
+    pub agent_id: String,
+    /// HTTP(S) endpoint the coordinator will POST [`TaskNotification`] to.
+    pub callback_url: String,
+    /// Roles this agent can play.  If empty the coordinator defaults to
+    /// `[AgentRole::Worker, AgentRole::Rater]`.
+    #[serde(default)]
+    pub roles: Vec<AgentRole>,
+}
+
+/// Roles an agent can fill in the marketplace.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum AgentRole {
+    /// Can submit work for a task.
+    Worker,
+    /// Can submit ratings for task outputs.
+    Rater,
+}
+
+/// Confirmation returned after a successful subscription.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SubscribeResponse {
+    pub agent_id: String,
+    pub message: String,
+}
+
+/// Payload POSTed by the coordinator to each subscribed agent when a new task
+/// becomes available.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TaskNotification {
+    pub task_id: Uuid,
+    pub prompt: String,
+    /// On-chain task ID (present when coordinator is in on-chain mode).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub onchain_task_id: Option<u64>,
+    pub max_raters: u8,
+    pub min_raters: u8,
+    /// Unix timestamp of the on-chain deadline (0 when off-chain).
+    pub deadline: u64,
+    /// Coordinator endpoint the agent should call to accept.
+    pub accept_url: String,
+    /// Coordinator endpoint the agent should call to decline.
+    pub decline_url: String,
+}
+
+/// Posted by an agent to accept a task offer.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AcceptTaskRequest {
+    pub agent_id: String,
+    /// Role the agent is accepting as.
+    pub role: AgentRole,
+}
+
+/// Posted by an agent to decline a task offer.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct DeclineTaskRequest {
+    pub agent_id: String,
+    /// Optional human-readable reason (logged, not acted on).
+    #[serde(default)]
+    pub reason: String,
+}
+
+/// Returned after accept/decline.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TaskAcceptResponse {
+    pub task_id: Uuid,
+    /// `"worker"` if this agent won the worker slot, `"rater"` if queued as
+    /// rater, or `"declined"`.
+    pub role_granted: String,
+    pub message: String,
+}
+
+/// Posted to trigger on-chain finalization.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct FinalizeTaskRequest {
+    /// Agent initiating the finalization (for audit / logging).
+    pub agent_id: String,
+}
+
+/// Posted to trigger on-chain cancellation.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CancelTaskRequest {
+    /// Agent initiating the cancellation (for audit / logging).
+    pub agent_id: String,
+}
+
 /// A task to be completed by a worker agent.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Task {
