@@ -45,6 +45,29 @@ pub struct Args {
     /// Poll interval in seconds for checking new tasks
     #[arg(long, default_value = "5")]
     pub poll_interval: u64,
+
+    // ── Subscription / open-marketplace flags ────────────────────────────────
+
+    /// Enable push-based task dispatch via coordinator subscriptions.
+    /// When set, the agent registers a callback URL and waits for task
+    /// notifications instead of polling.
+    #[arg(long, default_value = "false")]
+    pub subscribe: bool,
+
+    /// Callback URL the coordinator will POST TaskNotification to.
+    /// Defaults to `http://localhost:<port>/notify`.
+    /// Must be reachable from the coordinator process.
+    #[arg(long)]
+    pub callback_url: Option<String>,
+
+    /// Maximum number of tasks to process concurrently (subscription mode).
+    #[arg(long, default_value = "4")]
+    pub max_concurrent_tasks: usize,
+
+    /// Probability of randomly declining a task (0.0–1.0, subscription mode).
+    /// Useful for simulation.
+    #[arg(long, default_value = "0.0")]
+    pub decline_probability: f64,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, clap::ValueEnum)]

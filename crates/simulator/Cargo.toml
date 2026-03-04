@@ -9,6 +9,8 @@ workspace = true
 [dependencies]
 protocol = { path = "../protocol" }
 agent = { path = "../agent" }
+client = { path = "../client" }
+coordinator = { path = "../coordinator" }
 onchain = { path = "../onchain" }
 tokio = { version = "1", features = ["full"] }
 serde = { version = "1", features = ["derive"] }
@@ -29,3 +31,6 @@ alloy = { version = "1.7", features = [
     "node-bindings",
 ] }
 futures = "0.3"
+rand = "0.8"
+axum = "0.8"
+tokio-util = "0.7"

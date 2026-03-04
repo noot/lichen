@@ -50,6 +50,29 @@ pub(crate) async fn poll_once(
     Ok(())
 }
 
+/// Public (within crate) entry point for subscription-based task dispatch.
+pub(crate) async fn handle_work_notification(
+    agent_id: &str,
+    llm: &LlmClient,
+    backend: &Backend,
+    task_id: uuid::Uuid,
+    prompt: &str,
+) {
+    handle_work(agent_id, llm, backend, &task_id, prompt).await;
+}
+
+/// Public (within crate) entry point for subscription-based rating dispatch.
+pub(crate) async fn handle_rate_notification(
+    agent_id: &str,
+    llm: &LlmClient,
+    backend: &Backend,
+    task_id: uuid::Uuid,
+    prompt: &str,
+    worker_output: &str,
+) {
+    handle_rate(agent_id, llm, backend, &task_id, prompt, worker_output).await;
+}
+
 async fn handle_work(
     agent_id: &str,
     llm: &LlmClient,

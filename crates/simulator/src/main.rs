@@ -299,6 +299,7 @@ fn parse_rater_response(raw: &str) -> Option<RaterResponse> {
     None
 }
 
+mod marketplace;
 mod payouts;
 
 /// Deploy LichenCoordinator on the already-running anvil node.
@@ -816,6 +817,194 @@ async fn run_round(
     Ok(RoundOutcome::Completed)
 }
 
+// ── Subscription-based simulation ─────────────────────────────────────────────
+
+/// Run a full end-to-end subscription simulation:
+///
+/// 1. Start an in-process coordinator.
+/// 2. Create simulated worker + rater agents with callback servers.
+/// 3. Register each agent via `POST /subscribe`.
+/// 4. Post `num_rounds` tasks to the coordinator.
+/// 5. Coordinator broadcasts to agents; agents accept/decline and do work.
+/// 6. Wait for all tasks to reach `Scored` phase.
+/// 7. Unsubscribe all agents and shut down.
+#[allow(clippy::arithmetic_side_effects)]
+async fn run_subscription_simulation(
+    provider_url: &str,
+    provider_key: &str,
+    num_rounds: usize,
+    max_concurrent_per_agent: usize,
+) -> Result<()> {
+    use std::sync::Arc;
+    use coordinator::{cli::Args as CoordArgs, Coordinator};
+    use protocol::{AgentRole, TaskPhase};
+    use tokio_util::sync::CancellationToken;
+    use agent::Provider;
+
+    println!("=== LICHEN SUBSCRIPTION SIMULATION ===");
+    println!("Rounds: {num_rounds}, Max concurrent per agent: {max_concurrent_per_agent}");
+
+    // --- Start coordinator ---
+    let token = CancellationToken::new();
+    let coord_args = CoordArgs {
+        port: 0,
+        alpha: 1.0,
+        beta: 1.0,
+        onchain: false,
+        rpc_url: None,
+        contract_address: None,
+        private_key: None,
+    };
+    let listener = tokio::net::TcpListener::bind("127.0.0.1:0")
+        .await
+        .wrap_err("bind coordinator")?;
+    let coord_addr = listener.local_addr().wrap_err("get coord addr")?;
+    let coordinator_url = format!("http://{coord_addr}");
+    let coord = Coordinator::new(&coord_args).wrap_err("create coordinator")?;
+    let coord_token = token.child_token();
+    tokio::spawn(async move {
+        if let Err(e) = coord.run(listener, coord_token).await {
+            eprintln!("coordinator error: {e}");
+        }
+    });
+
+    // Give coordinator a moment to start
+    tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
+
+    let num_raters = 3usize;
+    // One worker + num_raters raters.
+    let worker_model = WORKER_MODEL;
+
+    // --- Create agents ---
+    let mut agents: Vec<Arc<marketplace::SimAgent>> = Vec::new();
+
+    // Worker agent: 10% random decline, max 2 concurrent tasks
+    let worker_llm = LlmClient::new(
+        provider_url.to_string(),
+        worker_model.to_string(),
+        Some(provider_key.to_string()),
+        Provider::Openai,
+    );
+    let worker_agent = Arc::new(marketplace::SimAgent::new(
+        "sim-worker",
+        AgentRole::Worker,
+        2,   // max concurrent
+        0.1, // 10% decline probability
+        &coordinator_url,
+        worker_llm,
+    ));
+    agents.push(Arc::clone(&worker_agent));
+
+    // Rater agents: 15% random decline, max 4 concurrent tasks
+    for i in 0..num_raters {
+        let rater_llm = LlmClient::new(
+            provider_url.to_string(),
+            "claude-haiku-4-5".to_string(),
+            Some(provider_key.to_string()),
+            Provider::Openai,
+        );
+        let rater = Arc::new(marketplace::SimAgent::new(
+            format!("sim-rater-{i}"),
+            AgentRole::Rater,
+            max_concurrent_per_agent,
+            0.15, // 15% decline probability
+            &coordinator_url,
+            rater_llm,
+        ));
+        agents.push(Arc::clone(&rater));
+    }
+
+    // --- Start callback servers and subscribe ---
+    let agent_token = token.child_token();
+    for agent in &agents {
+        let port = marketplace::start_agent_server(Arc::clone(agent), agent_token.clone())
+            .await
+            .wrap_err("start agent server")?;
+        let callback_url = format!("http://127.0.0.1:{port}/notify");
+        marketplace::subscribe_agent(agent, &callback_url)
+            .await
+            .wrap_err("subscribe agent")?;
+    }
+
+    let coord_client = client::CoordinatorClient::new(&coordinator_url);
+
+    // --- Post tasks and wait for completion ---
+    let mut completed = 0usize;
+    let mut declined_rounds = 0usize;
+
+    for round in 1..=num_rounds {
+        let task_idx = (round - 1) % TASKS.len();
+        let prompt = TASKS[task_idx];
+
+        println!("\n--- Subscription round {round}/{num_rounds} ---");
+        println!("Task: {}", &prompt[..prompt.len().min(80)]);
+
+        // Create task (coordinator will broadcast to subscribed agents)
+        let task_status = match coord_client
+            .create_task(prompt, num_raters)
+            .await
+        {
+            Ok(t) => t,
+            Err(e) => {
+                eprintln!("create_task failed: {e}");
+                continue;
+            }
+        };
+        let task_id = task_status.task.id;
+        println!("Task {task_id} created, waiting for agents...");
+
+        // Poll until scored (or timeout)
+        let deadline =
+            tokio::time::Instant::now() + tokio::time::Duration::from_secs(120);
+        let mut scored = false;
+        loop {
+            if tokio::time::Instant::now() > deadline {
+                println!("⚠️  Task {task_id} timed out waiting for Scored phase");
+                declined_rounds = declined_rounds.saturating_add(1);
+                break;
+            }
+            match coord_client.get_task(task_id).await {
+                Ok(status) => {
+                    if let TaskPhase::Scored {
+                        accepted,
+                        approval,
+                        ..
+                    } = &status.phase
+                    {
+                        println!(
+                            "✓ Task {task_id} scored — accepted={accepted}, approval={approval:.2}"
+                        );
+                        completed = completed.saturating_add(1);
+                        scored = true;
+                        break;
+                    }
+                }
+                Err(e) => eprintln!("get_task error: {e}"),
+            }
+            tokio::time::sleep(tokio::time::Duration::from_secs(2)).await;
+        }
+
+        if !scored {
+            // Brief pause before next round to let agents finish in-flight work
+            tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
+        }
+    }
+
+    // --- Unsubscribe all agents ---
+    for agent in &agents {
+        marketplace::unsubscribe_agent(agent).await;
+    }
+
+    token.cancel();
+
+    println!("\n=== SUBSCRIPTION SIMULATION COMPLETE ===");
+    println!(
+        "Rounds completed: {completed}/{num_rounds}, timed-out: {declined_rounds}"
+    );
+
+    Ok(())
+}
+
 #[tokio::main]
 #[allow(clippy::arithmetic_side_effects)]
 async fn main() -> Result<()> {
@@ -827,6 +1016,7 @@ async fn main() -> Result<()> {
     let use_onchain = args.iter().any(|a| a == "--onchain");
     let use_bankroll = args.iter().any(|a| a == "--bankroll");
     let use_stationary = args.iter().any(|a| a == "--stationary");
+    let use_subscription = args.iter().any(|a| a == "--subscription");
     let num_rounds = args
         .iter()
         .position(|a| a == "--rounds")
@@ -849,6 +1039,17 @@ async fn main() -> Result<()> {
         .wrap_err("LLM_API_URL not set — add it to .env or environment")?;
     let provider_key = std::env::var("LLM_API_KEY")
         .wrap_err("LLM_API_KEY not set — add it to .env or environment")?;
+
+    // Subscription-mode: run a coordinator + subscription-based agents
+    if use_subscription {
+        return run_subscription_simulation(
+            &provider_url,
+            &provider_key,
+            num_rounds,
+            max_concurrent,
+        )
+        .await;
+    }
 
     let llm_worker_client = LlmClient::new(
         provider_url.clone(),

@@ -109,6 +109,11 @@ fn spawn_agent_with_model(
         rpc_url: "http://localhost:8545".to_string(),
         role,
         poll_interval: 1,
+        // Subscription fields: disabled in polling-based e2e tests
+        subscribe: false,
+        callback_url: None,
+        max_concurrent_tasks: 4,
+        decline_probability: 0.0,
     };
 
     let agent = Agent::new(args).expect("failed to create agent");
