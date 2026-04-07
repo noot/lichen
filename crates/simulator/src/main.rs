@@ -1,34 +1,43 @@
+use std::collections::HashMap;
 use std::io::Write as _;
 use std::sync::Arc;
 
 use agent::{LlmClient, Message, Provider};
-use alloy::primitives::{keccak256, Address, B256, U256};
-use alloy::signers::local::PrivateKeySigner;
+use clap::Parser;
 use eyre::{Result, WrapErr as _};
 use futures::stream::StreamExt as _;
-use onchain::OnchainClient;
 use protocol::scoring::rbts_score;
 use protocol::SubmitRatingRequest;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 use uuid::Uuid;
+
+#[cfg(feature = "onchain")]
+use alloy::primitives::{keccak256, Address, B256, U256};
+#[cfg(feature = "onchain")]
+use alloy::signers::local::PrivateKeySigner;
+#[cfg(feature = "onchain")]
+use onchain::OnchainClient;
+
+mod payouts;
+mod scenarios;
+
+use scenarios::{apply_special_behavior, Scenario, ScenarioConfig, SpecialBehavior};
 
 const WORKER_MODEL: &str = "gpt-4.1";
 const STARTING_BALANCE: f64 = 100.0;
-const COLLATERAL: f64 = 1.0;
+const DEFAULT_COLLATERAL: f64 = 1.0;
 const DEFAULT_NUM_ROUNDS: usize = 100;
 const ALPHA: f64 = 1.0;
 const BETA: f64 = 1.0;
 const HISTORY_WINDOW: usize = 10;
 
-// 1 ETH in wei
+#[cfg(feature = "onchain")]
 const ETH_WEI: u64 = 1_000_000_000_000_000_000;
 
-// Anvil RPC URL (local)
+#[cfg(feature = "onchain")]
 const ANVIL_RPC: &str = "http://127.0.0.1:8545";
 
-/// All 30 deterministic private keys for:
-///   anvil --accounts 30 --mnemonic "test test test test test test test test test test test junk"
+#[cfg(feature = "onchain")]
 const ANVIL_KEYS: &[&str] = &[
     "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80",
     "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d",
@@ -129,6 +138,42 @@ const TASKS: &[&str] = &[
     "Write a quantum computing simulator in Rust in under 50 lines.",
 ];
 
+#[derive(Parser)]
+#[command(name = "simulator", about = "Lichen economy adversarial simulator")]
+struct Cli {
+    #[arg(long, default_value_t = DEFAULT_NUM_ROUNDS)]
+    rounds: usize,
+
+    #[arg(long, value_enum, default_value_t = Scenario::Baseline)]
+    scenario: Scenario,
+
+    #[arg(long, default_value_t = 1)]
+    concurrency: usize,
+
+    #[arg(long, default_value_t = DEFAULT_COLLATERAL)]
+    collateral: f64,
+
+    #[arg(long, default_value = "output")]
+    output_dir: String,
+
+    #[cfg(feature = "onchain")]
+    #[arg(long)]
+    onchain: bool,
+}
+
+impl Cli {
+    fn use_onchain(&self) -> bool {
+        #[cfg(feature = "onchain")]
+        {
+            self.onchain
+        }
+        #[cfg(not(feature = "onchain"))]
+        {
+            false
+        }
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct RoundRecord {
     round: usize,
@@ -160,9 +205,9 @@ struct ConsensusStats {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-struct RaterResponse {
-    signal: bool,
-    prediction: f64,
+pub(crate) struct RaterResponse {
+    pub(crate) signal: bool,
+    pub(crate) prediction: f64,
 }
 
 struct RaterState {
@@ -189,13 +234,14 @@ fn build_rater_prompt(
     task: &str,
     worker_output: &str,
     worker_reputation: Option<(u64, u64)>,
+    collateral: f64,
 ) -> String {
     let mut prompt = format!(
         "You are a rater in a decentralized quality assurance protocol with real economic stakes.\n\n\
          === YOUR ECONOMIC STATE ===\n\
          Current balance: {:.2} points\n\
          Collateral this round: {:.2} points\n",
-        state.balance, COLLATERAL
+        state.balance, collateral
     );
 
     if let Some((completed, approvals)) = worker_reputation {
@@ -274,10 +320,9 @@ fn parse_rater_response(raw: &str) -> Option<RaterResponse> {
     None
 }
 
-mod payouts;
+// ── on-chain support (behind feature gate) ──────────────────────────────
 
-/// Deploy LichenCoordinator on the already-running anvil node.
-/// Returns deployed contract address.
+#[cfg(feature = "onchain")]
 async fn deploy_contract(rpc_url: &str, deployer_key: &str) -> Result<Address> {
     use alloy::network::{EthereumWallet, TransactionBuilder as _};
     use alloy::providers::{Provider as _, ProviderBuilder};
@@ -295,7 +340,6 @@ async fn deploy_contract(rpc_url: &str, deployer_key: &str) -> Result<Address> {
     let bytecode =
         alloy::primitives::hex::decode(hex_bytecode).wrap_err("failed to decode bytecode hex")?;
 
-    // alpha=1<<64, beta=1<<64, collateral=1 ETH
     let alpha_fixed: i128 = 1i128 << 64;
     let beta_fixed: i128 = 1i128 << 64;
     let collateral_wei = U256::from(ETH_WEI);
@@ -327,19 +371,19 @@ async fn deploy_contract(rpc_url: &str, deployer_key: &str) -> Result<Address> {
     Ok(addr)
 }
 
-/// Key index 0 = worker, keys 1..=25 = raters
+#[cfg(feature = "onchain")]
 struct OnchainSetup {
     _anvil: std::process::Child,
     worker_client: OnchainClient,
     worker_address: Address,
-    rater_clients: Vec<(OnchainClient, Address)>, // (client, address) for each rater
+    rater_clients: Vec<(OnchainClient, Address)>,
 }
 
+#[cfg(feature = "onchain")]
 #[allow(clippy::arithmetic_side_effects)]
 async fn setup_onchain() -> Result<OnchainSetup> {
     use std::time::Duration;
 
-    // Spawn anvil
     println!("[onchain] Spawning anvil...");
     let anvil = std::process::Command::new("anvil")
         .args([
@@ -357,7 +401,6 @@ async fn setup_onchain() -> Result<OnchainSetup> {
         .spawn()
         .wrap_err("failed to spawn anvil")?;
 
-    // Wait for anvil to be ready — keep polling until we get a valid JSON-RPC response
     let http_client = reqwest::Client::new();
     let mut ready = false;
     for attempt in 0..60 {
@@ -370,7 +413,6 @@ async fn setup_onchain() -> Result<OnchainSetup> {
         });
         match http_client.post(ANVIL_RPC).json(&body).send().await {
             Ok(resp) if resp.status().is_success() => {
-                // Actually parse the response to ensure anvil is fully up
                 if resp.text().await.unwrap_or_default().contains("result") {
                     ready = true;
                     println!("[onchain] Anvil ready after {}ms", (attempt + 1) * 500);
@@ -383,20 +425,16 @@ async fn setup_onchain() -> Result<OnchainSetup> {
     if !ready {
         eyre::bail!("Anvil did not become ready in time");
     }
-    // Extra safety margin
     tokio::time::sleep(Duration::from_millis(500)).await;
     println!("[onchain] Anvil ready at {ANVIL_RPC}");
 
-    // Deploy contract using key[0]
     let contract_address = deploy_contract(ANVIL_RPC, ANVIL_KEYS[0]).await?;
     println!("[onchain] Contract deployed at {contract_address}");
 
-    // Create worker client (key[0])
     let worker_signer: PrivateKeySigner = ANVIL_KEYS[0].parse().wrap_err("bad worker key")?;
     let worker_address = worker_signer.address();
     let worker_client = OnchainClient::new(ANVIL_RPC, contract_address, ANVIL_KEYS[0])?;
 
-    // Create rater clients (keys 1..=25)
     let mut rater_clients = Vec::new();
     for key in &ANVIL_KEYS[1..=25] {
         let signer: PrivateKeySigner = key.parse().wrap_err("bad rater key")?;
@@ -405,7 +443,6 @@ async fn setup_onchain() -> Result<OnchainSetup> {
         rater_clients.push((client, addr));
     }
 
-    // Each rater deposits 100 ETH
     println!("[onchain] Depositing 100 ETH for each rater...");
     for (client, _addr) in &rater_clients {
         #[allow(clippy::arithmetic_side_effects)]
@@ -425,6 +462,8 @@ async fn setup_onchain() -> Result<OnchainSetup> {
     })
 }
 
+// ── round execution ─────────────────────────────────────────────────────
+
 enum RoundOutcome {
     Completed,
     Skipped,
@@ -442,7 +481,10 @@ async fn run_round(
     llm_worker_client: &LlmClient,
     provider_url: &str,
     provider_key: &str,
-    onchain_setup: Option<&OnchainSetup>,
+    collateral: f64,
+    concurrency: usize,
+    scenario_config: &ScenarioConfig,
+    #[cfg(feature = "onchain")] onchain_setup: Option<&OnchainSetup>,
 ) -> Result<RoundOutcome> {
     let task_idx = (round - 1) % TASKS.len();
     let task = TASKS[task_idx];
@@ -465,10 +507,17 @@ async fn run_round(
     );
     println!("Task: {}", &task[..task.len().min(80)]);
 
+    let worker_prompt = match &scenario_config.worker_prompt_suffix {
+        Some(suffix) => {
+            format!("{task}\n\nProvide a complete, working Rust implementation.{suffix}")
+        }
+        None => format!("{task}\n\nProvide a complete, working Rust implementation."),
+    };
+
     let worker_output = match llm_worker_client
         .chat(&[Message {
             role: "user".to_string(),
-            content: format!("{task}\n\nProvide a complete, working Rust implementation."),
+            content: worker_prompt,
         }])
         .await
     {
@@ -480,9 +529,14 @@ async fn run_round(
     };
     println!("  Worker output: {} chars", worker_output.len());
 
-    let onchain_task_id: Option<u64> = if let Some(setup) = onchain_setup {
+    // on-chain task creation
+    #[allow(unused_mut)]
+    let mut onchain_task_id: Option<u64> = None;
+
+    #[cfg(feature = "onchain")]
+    if let Some(setup) = onchain_setup {
         let prompt_hash = B256::from(keccak256(task.as_bytes()));
-        let output_hash = B256::from(keccak256(worker_output.as_bytes()));
+        let _output_hash = B256::from(keccak256(worker_output.as_bytes()));
         let num_raters: u8 = active
             .len()
             .try_into()
@@ -495,10 +549,11 @@ async fn run_round(
         {
             Ok(tid) => {
                 println!("  [onchain] Task created, id={tid}");
+                let output_hash = B256::from(keccak256(worker_output.as_bytes()));
                 match setup.worker_client.submit_result(tid, output_hash).await {
                     Ok(()) => {
                         println!("  [onchain] Result submitted for task {tid}");
-                        Some(tid)
+                        onchain_task_id = Some(tid);
                     }
                     Err(e) => {
                         println!("  [onchain] submit_result failed: {e}, skipping round");
@@ -511,10 +566,14 @@ async fn run_round(
                 return Ok(RoundOutcome::Skipped);
             }
         }
-    } else {
-        None
-    };
+    }
 
+    // worker reputation
+    #[allow(unused_variables)]
+    let worker_rep_offchain: Option<(u64, u64)> =
+        Some((*total_rounds_completed as u64, *total_approvals as u64));
+
+    #[cfg(feature = "onchain")]
     let worker_rep: Option<(u64, u64)> = if let Some(setup) = onchain_setup {
         setup
             .worker_client
@@ -522,63 +581,88 @@ async fn run_round(
             .await
             .ok()
     } else {
-        Some((*total_rounds_completed as u64, *total_approvals as u64))
+        worker_rep_offchain
     };
+    #[cfg(not(feature = "onchain"))]
+    let worker_rep = worker_rep_offchain;
 
-    let semaphore = Arc::new(tokio::sync::Semaphore::new(6));
+    // build special-rater lookup
+    let special_map: HashMap<usize, SpecialBehavior> =
+        scenario_config.special_raters.iter().copied().collect();
+
+    let semaphore = Arc::new(tokio::sync::Semaphore::new(concurrency));
     let mut futures = futures::stream::FuturesUnordered::new();
     for &idx in &active {
+        let behavior = special_map.get(&idx).copied();
+        let needs_llm = !matches!(behavior, Some(SpecialBehavior::Hardcoded { .. }));
+
         let model = raters[idx].model.clone();
-        let prompt = build_rater_prompt(&raters[idx], task, &worker_output, worker_rep);
-        let url = provider_url.to_owned();
-        let key = provider_key.to_owned();
-        let client = LlmClient::new(url, model.clone(), Some(key), Provider::Openai);
-        let sem = semaphore.clone();
-        futures.push(tokio::spawn(async move {
-            let _permit = sem.acquire().await.unwrap();
-            let result = client
-                .chat(&[Message {
-                    role: "user".to_string(),
-                    content: prompt,
-                }])
-                .await;
-            (idx, model, result)
-        }));
+
+        if needs_llm {
+            let prompt =
+                build_rater_prompt(&raters[idx], task, &worker_output, worker_rep, collateral);
+            let url = provider_url.to_owned();
+            let key = provider_key.to_owned();
+            let client = LlmClient::new(url, model.clone(), Some(key), Provider::Openai);
+            let sem = semaphore.clone();
+            futures.push(tokio::spawn(async move {
+                let _permit = sem.acquire().await.expect("semaphore closed unexpectedly");
+                let result = client
+                    .chat(&[Message {
+                        role: "user".to_string(),
+                        content: prompt,
+                    }])
+                    .await;
+                (idx, model, result, behavior)
+            }));
+        } else {
+            futures.push(tokio::spawn(async move {
+                (idx, model, Err(eyre::eyre!("skipped")), behavior)
+            }));
+        }
     }
 
     let mut responses: Vec<(usize, String, RaterResponse)> = Vec::new();
     while let Some(result) = futures.next().await {
         match result {
-            Ok((idx, model, Ok(raw))) => match parse_rater_response(&raw) {
-                Some(resp) => {
-                    let resp = RaterResponse {
-                        signal: resp.signal,
-                        prediction: resp.prediction.clamp(0.01, 0.99),
-                    };
-                    responses.push((idx, model, resp));
-                }
-                None => {
-                    println!("  {model}: failed to parse response, defaulting GOOD/0.5");
-                    responses.push((
-                        idx,
-                        model,
-                        RaterResponse {
-                            signal: true,
-                            prediction: 0.5,
-                        },
-                    ));
-                }
-            },
-            Ok((idx, model, Err(e))) => {
-                println!("  {model}: API error ({e}), defaulting GOOD/0.5");
-                responses.push((
-                    idx,
-                    model,
-                    RaterResponse {
+            Ok((idx, model, llm_result, behavior)) => {
+                let llm_response = match &llm_result {
+                    Ok(raw) => match parse_rater_response(raw) {
+                        Some(resp) => Some(RaterResponse {
+                            signal: resp.signal,
+                            prediction: resp.prediction.clamp(0.01, 0.99),
+                        }),
+                        None => {
+                            if behavior.is_none() {
+                                println!(
+                                    "  {model}: failed to parse response, defaulting GOOD/0.5"
+                                );
+                            }
+                            None
+                        }
+                    },
+                    Err(e) => {
+                        if behavior.is_none() {
+                            println!("  {model}: API error ({e}), defaulting GOOD/0.5");
+                        }
+                        None
+                    }
+                };
+
+                let resp = if let Some(b) = behavior {
+                    apply_special_behavior(b, llm_response)
+                } else {
+                    llm_response.unwrap_or(RaterResponse {
                         signal: true,
                         prediction: 0.5,
-                    },
-                ));
+                    })
+                };
+
+                let resp = RaterResponse {
+                    signal: resp.signal,
+                    prediction: resp.prediction.clamp(0.01, 0.99),
+                };
+                responses.push((idx, model, resp));
             }
             Err(e) => {
                 println!("  rater task panicked: {e}");
@@ -591,9 +675,11 @@ async fn run_round(
         return Ok(RoundOutcome::Skipped);
     }
 
-    // on-chain: submit ratings via smart contract
+    // on-chain: submit ratings
+    #[cfg(feature = "onchain")]
     let mut onchain_balances: Option<HashMap<Address, f64>> = None;
 
+    #[cfg(feature = "onchain")]
     if let (Some(setup), Some(tid)) = (onchain_setup, onchain_task_id) {
         for (idx, _model, resp) in &responses {
             let rater_idx = *idx;
@@ -646,7 +732,7 @@ async fn run_round(
         .collect();
 
     let scores = rbts_score(&submit_ratings, ALPHA, BETA);
-    let payouts = payouts::zero_sum_payouts(&scores, active.len());
+    let payouts = payouts::zero_sum_payouts(&scores, active.len(), collateral);
 
     let num_good = responses.iter().filter(|(_, _, r)| r.signal).count();
     let num_rated = responses.len();
@@ -686,14 +772,24 @@ async fn run_round(
             .find(|s| s.agent_id == *model)
             .map(|s| s.payment)
             .unwrap_or(0.0);
-        raters[*idx].balance += payout;
 
-        let rater_addr = onchain_setup
-            .and_then(|s| s.rater_clients.get(*idx))
-            .map(|(_, addr)| *addr);
-        let (balance_after, eliminated) = if let Some(ref bals) = onchain_balances {
-            if let Some(&points) = rater_addr.and_then(|a| bals.get(&a)) {
-                (points, points < 1.0)
+        #[cfg(feature = "onchain")]
+        let (balance_after, eliminated) = {
+            let rater_addr = onchain_setup
+                .and_then(|s| s.rater_clients.get(*idx))
+                .map(|(_, addr)| *addr);
+            if let Some(ref bals) = onchain_balances {
+                if let Some(&points) = rater_addr.and_then(|a| bals.get(&a)) {
+                    (points, points < 1.0)
+                } else {
+                    raters[*idx].balance += payout;
+                    if raters[*idx].balance <= 0.0 {
+                        raters[*idx].balance = 0.0;
+                        (0.0, true)
+                    } else {
+                        (raters[*idx].balance, false)
+                    }
+                }
             } else {
                 raters[*idx].balance += payout;
                 if raters[*idx].balance <= 0.0 {
@@ -703,7 +799,10 @@ async fn run_round(
                     (raters[*idx].balance, false)
                 }
             }
-        } else {
+        };
+
+        #[cfg(not(feature = "onchain"))]
+        let (balance_after, eliminated) = {
             raters[*idx].balance += payout;
             if raters[*idx].balance <= 0.0 {
                 raters[*idx].balance = 0.0;
@@ -767,21 +866,24 @@ async fn run_round(
     Ok(RoundOutcome::Completed)
 }
 
+// ── main ────────────────────────────────────────────────────────────────
+
 #[tokio::main]
 #[allow(clippy::arithmetic_side_effects)]
 async fn main() -> Result<()> {
     tracing_subscriber::fmt::init();
     dotenvy::dotenv().ok();
 
-    // Parse CLI flags
-    let args: Vec<String> = std::env::args().collect();
-    let use_onchain = args.iter().any(|a| a == "--onchain");
-    let num_rounds = args
-        .iter()
-        .position(|a| a == "--rounds")
-        .and_then(|i| args.get(i + 1))
-        .and_then(|v| v.parse::<usize>().ok())
-        .unwrap_or(DEFAULT_NUM_ROUNDS);
+    let cli = Cli::parse();
+    let scenario = cli.scenario;
+    let num_rounds = cli.rounds;
+    let concurrency = cli.concurrency;
+    let use_onchain = cli.use_onchain();
+
+    let scenario_config = scenario.config(MODELS.len());
+    let collateral = scenario_config
+        .collateral_override
+        .unwrap_or(cli.collateral);
 
     let provider_url = std::env::var("LLM_API_URL")
         .wrap_err("LLM_API_URL not set — add it to .env or environment")?;
@@ -795,49 +897,76 @@ async fn main() -> Result<()> {
         Provider::Openai,
     );
 
-    let mut raters: Vec<RaterState> = MODELS
+    let num_initial_raters = if matches!(scenario, Scenario::LateJoiner) {
+        scenario_config.starting_balances.len()
+    } else {
+        MODELS.len()
+    };
+
+    let models_to_use = &MODELS[..num_initial_raters];
+    let mut raters: Vec<RaterState> = models_to_use
         .iter()
-        .map(|m| RaterState {
+        .enumerate()
+        .map(|(i, m)| RaterState {
             model: m.to_string(),
-            balance: STARTING_BALANCE,
+            balance: scenario_config
+                .starting_balances
+                .get(i)
+                .copied()
+                .unwrap_or(STARTING_BALANCE),
             eliminated: false,
             history: Vec::new(),
         })
         .collect();
 
-    let (jsonl_path, summary_path) = if use_onchain {
-        (
-            "lichen-economy-rounds-onchain.jsonl",
-            "lichen-economy-summary-onchain.md",
-        )
-    } else {
-        ("lichen-economy-rounds.jsonl", "lichen-economy-summary.md")
-    };
+    let output_dir = format!("{}/{scenario}", cli.output_dir);
+    std::fs::create_dir_all(&output_dir)
+        .wrap_err_with(|| format!("failed to create output directory: {output_dir}"))?;
 
-    let mut jsonl_file = std::fs::File::create(jsonl_path)?;
+    let jsonl_path = format!("{output_dir}/rounds.jsonl");
+    let summary_path = format!("{output_dir}/summary.md");
+
+    let mut jsonl_file =
+        std::fs::File::create(&jsonl_path).wrap_err("failed to create rounds.jsonl")?;
     let mut total_approvals: usize = 0;
     let mut total_rounds_completed: usize = 0;
 
+    println!("=== LICHEN ECONOMY SIMULATOR ===");
+    println!("Scenario: {scenario}");
+    if use_onchain {
+        println!("Mode: on-chain");
+    }
     println!(
-        "=== LICHEN ECONOMY SIMULATOR{} ===",
-        if use_onchain { " (ON-CHAIN)" } else { "" }
-    );
-    println!(
-        "Raters: {}, Rounds: {num_rounds}, Starting balance: {}, Max concurrent: 6",
-        MODELS.len(),
-        STARTING_BALANCE
+        "Raters: {}, Rounds: {num_rounds}, Collateral: {collateral}, Concurrency: {concurrency}",
+        raters.len(),
     );
     println!();
 
+    #[cfg(feature = "onchain")]
     let onchain_setup = if use_onchain {
         Some(setup_onchain().await?)
     } else {
         None
     };
 
-    let total_gas_used: u64 = 0;
-
     for round in 1..=num_rounds {
+        if let Some(ref lj) = scenario_config.late_joiners {
+            if round == lj.at_round {
+                let current_count = raters.len();
+                let remaining_models = &MODELS[current_count..];
+                let to_add = lj.count.min(remaining_models.len());
+                for m in &remaining_models[..to_add] {
+                    println!("  [late-joiner] Adding rater: {m}");
+                    raters.push(RaterState {
+                        model: m.to_string(),
+                        balance: lj.starting_balance,
+                        eliminated: false,
+                        history: Vec::new(),
+                    });
+                }
+            }
+        }
+
         match run_round(
             round,
             num_rounds,
@@ -848,6 +977,10 @@ async fn main() -> Result<()> {
             &llm_worker_client,
             &provider_url,
             &provider_key,
+            collateral,
+            concurrency,
+            &scenario_config,
+            #[cfg(feature = "onchain")]
             onchain_setup.as_ref(),
         )
         .await?
@@ -857,20 +990,18 @@ async fn main() -> Result<()> {
         }
     }
 
-    // write summary
     let mut summary = String::new();
     summary.push_str("# Lichen Economy Simulation Summary\n\n");
+    summary.push_str(&format!("- **Scenario:** {scenario}\n"));
     summary.push_str(&format!("- **Rounds:** {num_rounds}\n"));
-    summary.push_str(&format!("- **Starting raters:** {}\n", MODELS.len()));
-    summary.push_str(&format!("- **Starting balance:** {}\n", STARTING_BALANCE));
-    summary.push_str(&format!("- **Collateral per round:** {}\n", COLLATERAL));
+    summary.push_str(&format!("- **Starting raters:** {}\n", raters.len()));
+    summary.push_str(&format!("- **Collateral per round:** {collateral}\n"));
+    summary.push_str(&format!("- **Concurrency:** {concurrency}\n"));
     if use_onchain {
         summary.push_str("- **Mode:** On-chain via LichenCoordinator smart contract\n");
-        summary.push_str(&format!("- **Total gas used:** {} units\n", total_gas_used));
     }
     summary.push('\n');
 
-    // sort by balance descending
     let mut standings: Vec<(String, f64, bool)> = raters
         .iter()
         .map(|r| (r.model.clone(), r.balance, r.eliminated))
@@ -921,15 +1052,13 @@ async fn main() -> Result<()> {
         ));
     }
 
-    std::fs::write(summary_path, &summary)?;
+    std::fs::write(&summary_path, &summary).wrap_err("failed to write summary")?;
     println!("=== SIMULATION COMPLETE ===");
+    println!("Scenario: {scenario}");
     println!(
         "Worker approvals: {total_approvals}/{total_rounds_completed} ({:.0}%)",
         total_approvals as f64 / total_rounds_completed.max(1) as f64 * 100.0
     );
-    if use_onchain {
-        println!("Total gas used: {total_gas_used} units");
-    }
     println!("Results written to {jsonl_path} and {summary_path}");
 
     for (i, (model, balance, _)) in standings.iter().enumerate() {

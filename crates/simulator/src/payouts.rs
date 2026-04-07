@@ -1,12 +1,11 @@
 use std::collections::HashMap;
 
-use crate::COLLATERAL;
-
 pub(crate) fn zero_sum_payouts(
     scores: &[protocol::ScoreResult],
     active_count: usize,
+    collateral: f64,
 ) -> HashMap<String, f64> {
-    let pool = active_count as f64 * COLLATERAL;
+    let pool = active_count as f64 * collateral;
     let n = scores.len() as f64;
 
     let min_score = scores
@@ -34,6 +33,8 @@ pub(crate) fn zero_sum_payouts(
 mod tests {
     use super::*;
 
+    const TEST_COLLATERAL: f64 = 1.0;
+
     fn score(agent_id: &str, payment: f64) -> protocol::ScoreResult {
         protocol::ScoreResult {
             agent_id: agent_id.to_string(),
@@ -42,7 +43,7 @@ mod tests {
     }
 
     fn assert_pool_fully_distributed(payouts: &HashMap<String, f64>, active_count: usize) {
-        let pool = active_count as f64 * COLLATERAL;
+        let pool = active_count as f64 * TEST_COLLATERAL;
         let total: f64 = payouts.values().sum();
         assert!(
             (total - pool).abs() < 1e-10,
@@ -60,7 +61,7 @@ mod tests {
     #[test]
     fn payouts_sum_to_pool() {
         let scores = vec![score("alice", 2.0), score("bob", -1.0), score("carol", 0.5)];
-        let payouts = zero_sum_payouts(&scores, 3);
+        let payouts = zero_sum_payouts(&scores, 3, TEST_COLLATERAL);
         assert_pool_fully_distributed(&payouts, 3);
     }
 
@@ -72,7 +73,7 @@ mod tests {
             score("carol", 1.0),
             score("dave", -10.0),
         ];
-        let payouts = zero_sum_payouts(&scores, 4);
+        let payouts = zero_sum_payouts(&scores, 4, TEST_COLLATERAL);
         assert_all_non_negative(&payouts);
         assert_pool_fully_distributed(&payouts, 4);
     }
@@ -85,7 +86,7 @@ mod tests {
             score("carol", 1.0),
             score("dave", -2.0),
         ];
-        let payouts = zero_sum_payouts(&scores, 4);
+        let payouts = zero_sum_payouts(&scores, 4, TEST_COLLATERAL);
         for s in &scores {
             assert!(
                 payouts.contains_key(&s.agent_id),
@@ -98,8 +99,8 @@ mod tests {
     #[test]
     fn larger_pool_scales_payouts() {
         let scores = vec![score("a", 10.0), score("b", -5.0), score("c", 3.0)];
-        let small = zero_sum_payouts(&scores, 2);
-        let large = zero_sum_payouts(&scores, 10);
+        let small = zero_sum_payouts(&scores, 2, TEST_COLLATERAL);
+        let large = zero_sum_payouts(&scores, 10, TEST_COLLATERAL);
         let ratio = large["a"] / small["a"];
         assert!(
             (ratio - 5.0).abs() < 1e-10,
@@ -110,8 +111,8 @@ mod tests {
     #[test]
     fn equal_scores_split_pool_evenly() {
         let scores = vec![score("alice", 1.0), score("bob", 1.0), score("carol", 1.0)];
-        let payouts = zero_sum_payouts(&scores, 3);
-        let expected = 3.0 * COLLATERAL / 3.0;
+        let payouts = zero_sum_payouts(&scores, 3, TEST_COLLATERAL);
+        let expected = 3.0 * TEST_COLLATERAL / 3.0;
         for (id, &payout) in &payouts {
             assert!(
                 (payout - expected).abs() < 1e-12,
@@ -124,7 +125,7 @@ mod tests {
     #[test]
     fn higher_score_gets_higher_payout() {
         let scores = vec![score("high", 10.0), score("low", -10.0)];
-        let payouts = zero_sum_payouts(&scores, 2);
+        let payouts = zero_sum_payouts(&scores, 2, TEST_COLLATERAL);
         assert!(
             payouts["high"] > payouts["low"],
             "higher scorer should get more: high={}, low={}",
@@ -137,13 +138,13 @@ mod tests {
     #[test]
     fn lowest_scorer_gets_zero() {
         let scores = vec![score("good", 100.0), score("bad", -100.0)];
-        let payouts = zero_sum_payouts(&scores, 2);
+        let payouts = zero_sum_payouts(&scores, 2, TEST_COLLATERAL);
         assert!(
             payouts["bad"].abs() < 1e-12,
             "lowest scorer should get 0, got {}",
             payouts["bad"]
         );
-        let pool = 2.0 * COLLATERAL;
+        let pool = 2.0 * TEST_COLLATERAL;
         assert!(
             (payouts["good"] - pool).abs() < 1e-12,
             "highest scorer should get entire pool ({pool}), got {}",
@@ -155,7 +156,7 @@ mod tests {
     fn active_count_larger_than_participants() {
         let scores = vec![score("alice", 3.0), score("bob", -1.0)];
         let active_count = 10;
-        let payouts = zero_sum_payouts(&scores, active_count);
+        let payouts = zero_sum_payouts(&scores, active_count, TEST_COLLATERAL);
 
         assert_pool_fully_distributed(&payouts, active_count);
         assert_all_non_negative(&payouts);
@@ -165,9 +166,9 @@ mod tests {
     #[test]
     fn single_participant_gets_entire_pool() {
         let scores = vec![score("solo", 5.0)];
-        let payouts = zero_sum_payouts(&scores, 1);
+        let payouts = zero_sum_payouts(&scores, 1, TEST_COLLATERAL);
         assert_eq!(payouts.len(), 1);
-        let pool = COLLATERAL;
+        let pool = TEST_COLLATERAL;
         assert!(
             (payouts["solo"] - pool).abs() < 1e-12,
             "single participant should get entire pool ({pool}), got {}",
@@ -180,7 +181,7 @@ mod tests {
         let scores: Vec<protocol::ScoreResult> = (0..50)
             .map(|i| score(&format!("agent_{i}"), (i as f64 - 25.0) * 0.3))
             .collect();
-        let payouts = zero_sum_payouts(&scores, 50);
+        let payouts = zero_sum_payouts(&scores, 50, TEST_COLLATERAL);
         assert_pool_fully_distributed(&payouts, 50);
         assert_all_non_negative(&payouts);
         assert_eq!(payouts.len(), 50);
