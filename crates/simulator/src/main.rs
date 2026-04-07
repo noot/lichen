@@ -297,7 +297,11 @@ fn build_rater_prompt(
          Study your history carefully.\n\n\
          === TASK ===\n{task}\n\n\
          === WORKER OUTPUT ===\n{worker_output}\n\n\
-         Rate this as GOOD or BAD based on correctness, completeness, and quality.\n\
+         Rate this as GOOD or BAD. Be STRICT:\n\
+         - BAD if any function is unimplemented, contains todo!(), unimplemented!(), or TODO comments instead of real code\n\
+         - BAD if the code would not compile\n\
+         - BAD if the code has obvious logic errors or missing edge case handling\n\
+         - GOOD only if the code is correct, complete, and would work as-is\n\
          Then predict what fraction of other raters will say GOOD (0.0 to 1.0).\n\n\
          Respond ONLY as JSON: {{\"signal\": true, \"prediction\": 0.75}}"
     ));
@@ -507,24 +511,29 @@ async fn run_round(
     );
     println!("Task: {}", &task[..task.len().min(80)]);
 
-    let worker_prompt = match &scenario_config.worker_prompt_suffix {
-        Some(suffix) => {
-            format!("{task}\n\nProvide a complete, working Rust implementation.{suffix}")
-        }
-        None => format!("{task}\n\nProvide a complete, working Rust implementation."),
-    };
+    let worker_output = if let Some(ref override_output) = scenario_config.worker_output_override {
+        println!("  Worker output: OVERRIDDEN by scenario");
+        override_output.clone()
+    } else {
+        let worker_prompt = match &scenario_config.worker_prompt_suffix {
+            Some(suffix) => {
+                format!("{task}\n\nProvide a complete, working Rust implementation.{suffix}")
+            }
+            None => format!("{task}\n\nProvide a complete, working Rust implementation."),
+        };
 
-    let worker_output = match llm_worker_client
-        .chat(&[Message {
-            role: "user".to_string(),
-            content: worker_prompt,
-        }])
-        .await
-    {
-        Ok(output) => output,
-        Err(e) => {
-            println!("  Worker failed: {e}, skipping round");
-            return Ok(RoundOutcome::Skipped);
+        match llm_worker_client
+            .chat(&[Message {
+                role: "user".to_string(),
+                content: worker_prompt,
+            }])
+            .await
+        {
+            Ok(output) => output,
+            Err(e) => {
+                println!("  Worker failed: {e}, skipping round");
+                return Ok(RoundOutcome::Skipped);
+            }
         }
     };
     println!("  Worker output: {} chars", worker_output.len());
