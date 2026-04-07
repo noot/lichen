@@ -1,0 +1,18 @@
+Done. Here's what was changed:
+
+**Cargo.toml** — `onchain` and `alloy` are now optional deps behind a `[features] onchain` flag. Added `clap` with derive.
+
+**scenarios.rs** (new) — `Scenario` enum with 10 variants (Baseline through LateJoiner), each with a `config()` method returning `ScenarioConfig` that defines special raters, starting balances, collateral overrides, worker prompt modifications, and late-joiner rules. `apply_special_behavior()` handles Hardcoded, FlipSignal, Hedger, and Extremist behaviors.
+
+**main.rs** — 
+- All on-chain code (`deploy_contract`, `setup_onchain`, `OnchainSetup`, constants) gated behind `#[cfg(feature = "onchain")]`
+- Clap CLI: `--rounds`, `--scenario`, `--concurrency`, `--collateral`, `--output-dir`, `--onchain` (onchain feature only)
+- `run_round` now checks the special-rater map — hardcoded raters skip the LLM call entirely, others have their responses modified post-call
+- Output goes to `<output-dir>/<scenario-name>/rounds.jsonl` and `summary.md`
+- Default concurrency changed from 6 to 1
+- Late joiners are injected at the configured round
+
+**payouts.rs** — `zero_sum_payouts` now takes `collateral` as a parameter instead of using a constant, enabling the MassElimination scenario's `collateral=5`.
+
+`cargo build -p simulator` succeeds, all 10 tests pass, clippy clean.
+EXIT_CODE=0

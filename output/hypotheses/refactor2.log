@@ -1,0 +1,9 @@
+Everything is already done. The simulator:
+
+1. **Compiles without Foundry** — all on-chain code is behind `#[cfg(feature = "onchain")]`
+2. **Has CLI with clap** — `--rounds`, `--scenario`, `--concurrency`, `--collateral`, `--output-dir`, `--onchain`
+3. **Has scenario framework** in `scenarios.rs` with all 10 scenarios (Baseline, SybilCartel, WorkerRaterCollusion, Copycat, MassElimination, SubtleBugs, Contrarian, ConfidenceManip, AsymmetricBalances, LateJoiner) plus `SpecialBehavior` enum and `apply_special_behavior`
+4. **Output paths** go to `<output-dir>/<scenario-name>/rounds.jsonl` and `summary.md`
+5. **Builds clean** — `cargo build -p simulator` succeeds, clippy passes, all 10 tests pass
+
+This refactor was already completed in commit `76dca42` ("refactor: add scenario framework for hypothesis testing").
