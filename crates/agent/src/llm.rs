@@ -115,13 +115,17 @@ impl LlmClient {
                 Err(e) => {
                     let is_rate_limited = e.to_string().contains("429");
                     if is_rate_limited && attempt < Self::MAX_RETRIES {
+                        #[allow(clippy::arithmetic_side_effects)]
                         let delay = Self::RETRY_BASE_DELAY * 2u32.pow(attempt);
-                        tracing::warn!(
-                            model = %self.model,
-                            attempt = attempt + 1,
-                            delay_ms = delay.as_millis() as u64,
-                            "rate limited (429), retrying after backoff"
-                        );
+                        #[allow(clippy::arithmetic_side_effects, clippy::cast_possible_truncation)]
+                        {
+                            tracing::warn!(
+                                model = %self.model,
+                                attempt = attempt + 1,
+                                delay_ms = delay.as_millis() as u64,
+                                "rate limited (429), retrying after backoff"
+                            );
+                        }
                         tokio::time::sleep(delay).await;
                         last_err = Some(e);
                         continue;

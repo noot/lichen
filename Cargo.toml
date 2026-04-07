@@ -1,10 +1,12 @@
 [workspace]
-members = ["crates/agent", "crates/client", "crates/coordinator", "crates/protocol", "crates/simulator"]
+members = ["crates/agent", "crates/client", "crates/coordinator", "crates/onchain", "crates/protocol", "crates/simulator"]
 resolver = "2"
 
 [workspace.lints.rust]
 unreachable_pub = "warn"
 
 [workspace.lints.clippy]
+arithmetic_side_effects = "warn"
+cast_possible_truncation = "warn"
 needless_pass_by_value = "warn"
 unused_async = "warn"

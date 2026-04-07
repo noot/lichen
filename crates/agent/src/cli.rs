@@ -22,9 +22,21 @@ pub struct Args {
     #[arg(long, value_enum, default_value = "openai")]
     pub provider: Provider,
 
-    /// Coordinator URL to push results/ratings to
+    /// Coordinator URL to push results/ratings to (HTTP backend)
     #[arg(long, default_value = "http://localhost:3000")]
     pub coordinator_url: String,
+
+    /// Backend mode: "http" or "onchain"
+    #[arg(long, default_value = "http")]
+    pub backend: BackendMode,
+
+    /// Contract address (required for onchain backend)
+    #[arg(long)]
+    pub contract_address: Option<String>,
+
+    /// RPC URL for onchain backend
+    #[arg(long, default_value = "http://localhost:8545")]
+    pub rpc_url: String,
 
     /// Run mode: "worker" or "rater"
     #[arg(long, default_value = "worker")]
@@ -39,4 +51,10 @@ pub struct Args {
 pub enum AgentRole {
     Worker,
     Rater,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, clap::ValueEnum)]
+pub enum BackendMode {
+    Http,
+    Onchain,
 }

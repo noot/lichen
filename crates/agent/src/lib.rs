@@ -1,8 +1,10 @@
 mod agent;
+pub mod backend;
 mod cli;
 mod llm;
 mod polling;
 
 pub use agent::Agent;
-pub use cli::{AgentRole, Args};
+pub use backend::Backend;
+pub use cli::{AgentRole, Args, BackendMode};
 pub use llm::{LlmClient, Message, Provider};

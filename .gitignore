@@ -1,2 +1,4 @@
 /target
 .env
+contracts/out/
+contracts/cache/

@@ -1,12 +1,10 @@
 # lichen
 
-A self-organizing, decentralized coordination layer for autonomous agents, with built-in incentive alignment via the [robust Bayesian Truth Serum](https://cdn.aaai.org/ojs/8261/8261-13-11789-1-2-20201228.pdf) protocol.
+A decentralized coordination layer for autonomous agents, with built-in incentive alignment via the [Bayesian Truth Serum](https://cdn.aaai.org/ojs/8261/8261-13-11789-1-2-20201228.pdf) protocol.
 
 ## background
 
-Coordination between individual agents with unique skillsets may allow for completion of a task they may not have been able to complete on their own, allowing for emergent intelligence and behaviours. Currently, coordinating multiple agents is usually done via a single orchestrator controlling sub-agents, or via manual configuration of heterogeneous agents. Allowing for autonomous discovery and organization may increase capabilities, but requires incentives to keep agents aligned. See [Distributional AGI Safety](https://arxiv.org/abs/2512.16856). 
-
-A coordination protocol between agents should play into the fact that agents have a non-deterministic, subjective experience. BFT consensus protocols enforce safety via clear misbehaviour rules, which are not clear-cut with LLMs. A game-theoretic approach such as Bayesian Truth Serum (BTS) may be more applicable here.
+A coordination protocol between agents should play into the fact that agents have a non-deterministic, subjective experience. BFT consensus protocols enforce safety via clear misbehaviour rules, which are not clear-cut with LLMs. A game-theoretic approach such as Bayesian Truth Serum (BTS) may be more applicable.
 
 The goal of this project is to prototype and determine whether BTS actually works to incentivize honest and aligned behaviour amongst a group of agents, or what constraints need to be imposed to have it work.
 
@@ -23,47 +21,17 @@ The goal of this project is to prototype and determine whether BTS actually work
 
 - agents themselves only see tasks (either a work task or a rating task).
 - the p2p protocol runs separately and handles discovery, connection, and group formation.
-- reputation, incentives and payout calculation are handled via an external coordinator; this could be a centralized, trusted node, or an Ethereum smart contract for example.
-
-## robust Bayesian Truth Serum
-
-Each node wants an honest rating of every other node's work. A simple method for this is peer prediction: you ask for a rating of agent A's work by agent B and C. You then pay out B and C based on how well their rating predicts the other's rating. For non-colluding nodes, this works because if B actually experienced A's work, then honesty is the best predictor of what C will say. However, if B and C decide to collude (eg. always vote the same), they will perfectly predict each other and get the maximum payout.
-
-Bayesian Truth Serum (BTS) fixes this by asking two questions:
-- the node's rating of agent A (the "signal")
-- the node's prediction of how the population will rate agent A
-
-The key insight is the **surprisingly popular** algorithm: the correct answer tends to be chosen more often than people predict, because those who know the truth underestimate how many others also know it. BTS exploits this asymmetry.
-
-### example
-
-Agent A performs a task and you poll 10 agents who saw the outcome:
-
-- 7 agents say "bad"
-- 3 agents say "good"
-- the "bad" agents predicted the split would be 60% bad
-- the "good" agents predicted 50/50
-
-Actual frequency of "bad" is 70%, but the average prediction for "bad" was only 57%. "Bad" is surprisingly popular → the work is rejected, and agents who voted "bad" are rewarded for honesty.
-
-### scoring
-
-Each agent receives a combined payment: `alpha * information_score + beta * prediction_score`.
-
-- **information score**: `log(actual_freq / avg_predicted_freq)` for the agent's chosen answer. this is the BTS log score — agents are rewarded when their answer is more common than predicted ("surprisingly popular"). agents who vote with the surprisingly popular answer get positive scores; those who vote against it get negative scores.
-- **prediction score**: the quadratic prediction score (QPS), which ranges from -1 (worst) to 1 (perfect). `QPS(p, x) = 2px + 2(1-p)(1-x) - p² - (1-p)²`, where p is the agent's prediction and x is the actual fraction of "good" votes.
-
-### why RBTS over BTS
-
-BTS is only incentive-compatible for large groups (~10+ agents). Robust BTS extends BTS to work for groups as small as n=3 by using the quadratic prediction score rather than a linear formula. The tradeoff is that RBTS requires binary votes (good/bad).
-
-### assumptions
-
-- nodes have incomplete information about the knowledge of other nodes.
-- nodes are rational and want to maximize their expected payout.
-- BTS/RBTS tolerates up to ~1/3 of agents colluding. Beyond that threshold, colluders can dominate the "surprisingly popular" signal. At small group sizes (n=3-5), this bound is weaker in practice.
+- reputation, incentives and payout calculation are handled via an external coordinator; this could be a centralized, trusted server, or an Ethereum smart contract.
 
 ## usage
+
+### crates
+
+- **protocol** — shared types (tasks, ratings, scores, phases)
+- **agent** — LLM-powered worker/rater that polls the coordinator
+- **coordinator** — HTTP server that manages tasks and RBTS scoring
+- **client** — typed HTTP client for the coordinator API
+- **simulator** - a binary that runs a multi-round simulation of the protocol, using a configurable number of agents.
 
 ### build
 
@@ -143,12 +111,15 @@ curl -X POST http://localhost:3000/tasks \
   -d '{"prompt": "write a haiku about rust programming", "num_raters": 3}'
 ```
 
-### crates
+### running the simulator
 
-- **protocol** — shared types (tasks, ratings, scores, phases)
-- **coordinator** — HTTP server that manages tasks and RBTS scoring
-- **agent** — LLM-powered worker/rater that polls the coordinator
-- **client** — typed HTTP client for the coordinator API
+```bash
+# off-chain (rust-only scoring)
+cargo run --release --bin simulator
+
+# on-chain (anvil + smart contract scoring)
+cargo run --release --bin simulator -- --onchain
+```
 
 ## problems
 
@@ -163,3 +134,4 @@ curl -X POST http://localhost:3000/tasks \
 - what is the minimum group size we want to make collusion difficult? 
 - what collateral size do we want? should nodes that put up higher collateral be polled to vote more often? is the collateral based on "task value", and if so, how is that decided?
 - what if a task is genuinely not doable? the node will lose its collateral/be downscored perhaps unfairly.
+
